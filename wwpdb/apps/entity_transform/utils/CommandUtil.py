@@ -23,7 +23,7 @@ __version__   = "V0.07"
 
 import os, sys, time
 
-from wwpdb.api.facade.ConfigInfo import ConfigInfo
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
 
 class CommandUtil(object):
     """ Class for running back-end commands

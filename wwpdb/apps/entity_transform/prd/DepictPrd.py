@@ -23,11 +23,11 @@ __version__   = "V0.07"
 
 import os, sys, string, traceback
 
-from wwpdb.api.facade.ConfigInfo                   import ConfigInfo
+from wwpdb.utils.config.ConfigInfo                   import ConfigInfo
 from wwpdb.apps.entity_transform.prd.DepictUtil    import DepictUtil
 from wwpdb.apps.entity_transform.prd.HtmlUtil      import HtmlUtil
 from wwpdb.apps.entity_transform.utils.CommandUtil import CommandUtil
-from wwpdb.utils.rcsb.mmCIFUtil                    import mmCIFUtil
+from wwpdb.io.file.mmCIFUtil                    import mmCIFUtil
 #
 
 class DepictPrd(object):

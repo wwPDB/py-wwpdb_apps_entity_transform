@@ -24,7 +24,7 @@ __version__   = "V0.07"
 import multiprocessing, os, sys, string, traceback
 
 from wwpdb.apps.entity_transform.utils.CommandUtil import CommandUtil
-from wwpdb.utils.rcsb.MultiProcUtil                import MultiProcUtil
+from rcsb.utils.multiproc.MultiProcUtil                import MultiProcUtil
 
 class ImageGenerator(object):
     """ Class responsible generating instance's image

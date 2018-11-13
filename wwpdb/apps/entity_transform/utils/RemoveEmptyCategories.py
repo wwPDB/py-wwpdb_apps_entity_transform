@@ -23,9 +23,9 @@ __version__   = "V0.07"
 
 import os, sys, string, traceback
 from datetime import date
-from pdbx.reader.PdbxReader  import PdbxReader
-from pdbx.writer.PdbxWriter  import PdbxWriter
-from pdbx.reader.PdbxContainers import *
+from mmcif.io.PdbxReader  import PdbxReader
+from mmcif.io.PdbxWriter  import PdbxWriter
+from mmcif.api.PdbxContainers import *
 #
 def ReadCif(filepath):
     try:

@@ -24,10 +24,10 @@ __version__   = "V0.07"
 import os, sys, string, traceback
 from datetime import date
 
-from pdbx.reader.PdbxReader                          import PdbxReader
-from pdbx.reader.PdbxContainers                      import *
-from pdbx.writer.PdbxWriter                          import PdbxWriter
-from wwpdb.api.facade.ConfigInfo                     import ConfigInfo
+from mmcif.io.PdbxReader                          import PdbxReader
+from mmcif.api.PdbxContainers                      import *
+from mmcif.io.PdbxWriter                          import PdbxWriter
+from wwpdb.utils.config.ConfigInfo                     import ConfigInfo
 #
 
 class ReadFormUtil(object):

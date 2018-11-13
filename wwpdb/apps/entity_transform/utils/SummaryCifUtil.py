@@ -23,7 +23,7 @@ __version__   = "V0.07"
 
 import os, sys, string, traceback
 
-from wwpdb.utils.rcsb.mmCIFUtil import mmCIFUtil
+from wwpdb.io.file.mmCIFUtil import mmCIFUtil
 #
 
 class SummaryCifUtil(object):

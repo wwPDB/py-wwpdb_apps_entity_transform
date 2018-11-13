@@ -23,11 +23,11 @@ __version__   = "V0.07"
 
 import os, sys, string, traceback
 
-from cc_dict_util.persist.PdbxChemCompPersist         import PdbxChemCompIt,PdbxChemCompAtomIt,PdbxChemCompBondIt
+from wwpdb.utils.cc_dict_util.persist.PdbxChemCompPersist         import PdbxChemCompIt,PdbxChemCompAtomIt,PdbxChemCompBondIt
 from oe_util.oedepict.OeAlignDepict                   import OeDepictMCSAlign
 from wwpdb.apps.entity_transform.utils.CompUtil       import CompUtil
-from wwpdb.utils.rcsb.mmCIFUtil                       import mmCIFUtil
-from wwpdb.api.facade.ConfigInfo                      import ConfigInfo
+from wwpdb.io.file.mmCIFUtil                       import mmCIFUtil
+from wwpdb.utils.config.ConfigInfo                      import ConfigInfo
 #
 
 class OpenEyeUtil(object):

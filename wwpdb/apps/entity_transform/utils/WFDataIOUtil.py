@@ -19,8 +19,8 @@ __version__   = "V0.01"
 
 import sys, os, os.path, shutil, traceback
 
-from wwpdb.utils.rcsb.DataExchange   import DataExchange
-from wwpdb.utils.rcsb.PathInfo       import PathInfo
+from wwpdb.io.file.DataExchange   import DataExchange
+from wwpdb.io.locator.PathInfo       import PathInfo
 
 class WFDataIOUtil(object):
     """ Controlling class for data import operations

@@ -12,9 +12,9 @@ __version__ = "V0.001"
 
 import sys
 
-from pdbx_v2.reader.PdbxContainers     import *
-from pdbx_v2.reader.PdbxReader         import PdbxReader
-from pdbx_v2.writer.PdbxWriter         import PdbxWriter
+from mmcif.api.PdbxContainers     import *
+from mmcif.io.PdbxReader         import PdbxReader
+from mmcif.io.PdbxWriter         import PdbxWriter
 
 class mmCIFUtil:
     """Using pdbx mmCIF utility to parse mmCIF file

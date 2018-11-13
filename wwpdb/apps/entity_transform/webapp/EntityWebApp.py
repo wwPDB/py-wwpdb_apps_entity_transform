@@ -24,7 +24,7 @@ __version__   = "V0.07"
 import os, sys, time, types, string, traceback, ntpath, threading, shutil
 from json import loads, dumps
 
-from wwpdb.api.facade.ConfigInfo                          import ConfigInfo
+from wwpdb.utils.config.ConfigInfo                          import ConfigInfo
 from wwpdb.api.status.dbapi.WfTracking                    import WfTracking
 from wwpdb.apps.editormodule.depict.EditorDepict          import EditorDepict
 from wwpdb.apps.editormodule.io.PdbxDataIo                import PdbxDataIo
@@ -50,9 +50,9 @@ from wwpdb.apps.entity_transform.utils.RemoveEmptyCategories import RemoveEmptyC
 from wwpdb.apps.entity_transform.utils.WFDataIOUtil       import WFDataIOUtil
 from wwpdb.apps.entity_transform.webapp.FormPreProcess    import FormPreProcess
 from wwpdb.utils.rcsb.DetachUtils                         import DetachUtils
-from wwpdb.utils.rcsb.mmCIFUtil                           import mmCIFUtil
-from wwpdb.utils.rcsb.RcsbDpUtility                       import RcsbDpUtility
-from wwpdb.utils.rcsb.WebRequest                          import InputRequest,ResponseContent
+from wwpdb.io.file.mmCIFUtil                           import mmCIFUtil
+from wwpdb.utils.dp.RcsbDpUtility                       import RcsbDpUtility
+from wwpdb.utils.session.WebRequest                          import InputRequest,ResponseContent
 #
 
 class EntityWebApp(object):
