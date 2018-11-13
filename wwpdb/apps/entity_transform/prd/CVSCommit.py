@@ -25,7 +25,6 @@ import os, sys, string, traceback
 
 from wwpdb.utils.config.ConfigInfo                     import ConfigInfo
 from wwpdb.apps.entity_transform.utils.GetLogMessage import GetLogMessage
-from wwpdb.apps.releasemodule.utils.Utility          import *
 #
 
 class CVSCommit(object):
@@ -55,9 +54,9 @@ class CVSCommit(object):
         if not self.__PrdIDList:
             return 'No PRD entry selected'
         #
-        scriptfile = getFileName(self.__sessionPath, 'cvs_commit', 'csh')
-        logfile    = getFileName(self.__sessionPath, 'cvs_commit', 'log')
-        script = os.path.join(self.__sessionPath, scriptfile)
+        scriptfile = self.__getFileName(self.__sessionPath, 'cvs_commit', 'csh')
+        logfile    = self.__getFileName(self.__sessionPath, 'cvs_commit', 'log')
+        script = self.__os.path.join(self.__sessionPath, scriptfile)
         f = file(script, 'w')
         f.write('#!/bin/tcsh -f\n')
         f.write('#\n')
@@ -84,10 +83,32 @@ class CVSCommit(object):
         if self.__returnError:
             return self.__returnError
         #
-        RunScript(self.__sessionPath, scriptfile, logfile)
+        self.__RunScript(self.__sessionPath, scriptfile, logfile)
         logPath = os.path.join(self.__sessionPath, logfile)
         return GetLogMessage(logPath)
 
+    def __getFileName(self, path, root, ext):
+        """Create unique file name.
+        """
+        count = 1
+        while True:
+            filename = root + '_' + str(count) + '.' + ext
+            fullname = os.path.join(path, filename)
+            if not os.access(fullname, os.F_OK):
+                return filename
+            #
+            count += 1
+        #
+        return root + '_1.' + ext
+
+    def __RunScript(self, path, script, log):
+        """Run script command
+        """
+        cmd = 'cd ' + path + '; chmod 755 ' + script \
+            + '; ./' + script + ' >& ' + log
+        os.system(cmd)
+
+    
     def __getSession(self):
         """ Join existing session or create new session as required.
         """
