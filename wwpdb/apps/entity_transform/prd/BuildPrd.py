@@ -23,9 +23,10 @@ __version__   = "V0.07"
 
 import os, shutil, string, sys, traceback
 
-from wwpdb.utils.config.ConfigInfo                     import ConfigInfo
+from wwpdb.utils.config.ConfigInfo                   import ConfigInfo
 from wwpdb.apps.entity_transform.utils.CommandUtil   import CommandUtil
 from wwpdb.apps.entity_transform.utils.GetLogMessage import GetLogMessage
+from wwpdb.io.file.mmCIFUtil                         import mmCIFUtil
 #
 
 class BuildPrd(object):
@@ -48,6 +49,7 @@ class BuildPrd(object):
         #
         self.__prdID = 'PRD_XXXXXX'
         self.__prdccID = 'PRDCC_XXXXXX'
+        self.__prdccFlag = True
         self.__message = ''
         #
         self.__cmdUtil = CommandUtil(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
@@ -66,9 +68,9 @@ class BuildPrd(object):
         # Build with real IDs
         self.__build_prd()
         #
-        #self.__copyFile(os.path.join(self.__instancePath, self.__prdID + '.comp.cif'), os.path.join(self.__instancePath, self.__prdccID + '.cif'))
         self.__copyFile(os.path.join(self.__instancePath, self.__prdID + '.cif'), os.path.join(self.__sessionPath, self.__prdID + '.cif'))
-        self.__copyFile(os.path.join(self.__instancePath, self.__prdccID + '.cif'), os.path.join(self.__sessionPath, self.__prdccID + '.cif'))
+        if os.access(os.path.join(self.__instancePath, self.__prdccID + '.cif'), os.F_OK):
+            self.__copyFile(os.path.join(self.__instancePath, self.__prdccID + '.cif'), os.path.join(self.__sessionPath, self.__prdccID + '.cif'))
         #
         return self.__message
 
@@ -98,6 +100,10 @@ class BuildPrd(object):
         #
         self.__build_PRD()
         if self.__message:
+            return
+        #
+        self.__prdccFlag = self.__checkPRDCCFlag()
+        if not self.__prdccFlag:
             return
         #
         self.__build_PRDCC()
@@ -146,6 +152,22 @@ class BuildPrd(object):
         #
         self.__parseLogFile(rootName + '.log')
         self.__parseLogFile(rootName + '.clog')
+
+    def __checkPRDCCFlag(self):
+        """ Check if PRDCC is needed
+        """
+        prdFile = os.path.join(self.__instancePath, self.__prdID + '.cif')
+        if not os.access(prdFile, os.F_OK):
+            return False
+        #
+        prdObj = mmCIFUtil(filePath=prdFile)
+        representType = prdObj.GetSingleValue("pdbx_reference_molecule", "represent_as")
+        chemCompId = prdObj.GetSingleValue("pdbx_reference_molecule", "chem_comp_id")
+        if (str(representType).strip().lower() == "single molecule") and (str(chemCompId).strip() != "") and \
+           (str(chemCompId).strip() != "?") and (str(chemCompId).strip() != "."):
+            return False
+        #
+        return True
 
     def __build_PRDCC(self):
         """ Build PRDCC file
