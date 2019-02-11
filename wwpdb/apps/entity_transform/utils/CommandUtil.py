@@ -21,7 +21,7 @@ __email__     = "zfeng@rcsb.rutgers.edu"
 __license__   = "Creative Commons Attribution 3.0 Unported"
 __version__   = "V0.07"
 
-import os, sys, time
+import datetime, os, signal, subprocess, sys, time, traceback
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
 
@@ -46,14 +46,24 @@ class CommandUtil(object):
     def runAnnotCmd(self, command, inputFile, outputFile, logFile, clogFile, extraOptions):
         """ Run Annot package back-end commands
         """
-        self.__runCmd(command="${BINPATH}/" + command, setting=self.__getAnnotSetting(), inputFile=inputFile, outputFile=outputFile, \
-                      logFile=logFile, clogFile=clogFile, extraOptions=extraOptions)
+        cmd = self.__getCmd(command="${BINPATH}/" + command, setting=self.__getAnnotSetting(), inputFile=inputFile, outputFile=outputFile, \
+                            logFile=logFile, clogFile=clogFile, extraOptions=extraOptions)
+        self.__runCmd(command=cmd)
 
     def runCCToolCmd(self, command, inputFile, outputFile, logFile, clogFile, extraOptions):
         """ Run CC_TOOLS package back-end commands
         """
-        self.__runCmd(command="${CC_TOOLS}/" + command, setting=self.__getCCToolSetting(), inputComand=" -i ", inputFile=inputFile, \
-                      outputComand=" -o ", outputFile=outputFile, logFile=logFile, clogFile=clogFile, extraOptions=extraOptions)
+        cmd = self.__getCmd(command="${CC_TOOLS}/" + command, setting=self.__getCCToolSetting(), inputComand=" -i ", inputFile=inputFile, \
+                            outputComand=" -o ", outputFile=outputFile, logFile=logFile, clogFile=clogFile, extraOptions=extraOptions)
+        self.__runCmd(command=cmd)
+
+    def runCCToolCmdWithTimeOut(self, command, inputFile, outputFile, logFile, clogFile, extraOptions, timeOut=240):
+        """ Run CC_TOOLS package back-end commands
+        """
+        cmd = self.__getCmd(command="${CC_TOOLS}/" + command, setting=self.__getCCToolSetting(), inputComand=" -i ", inputFile=inputFile, \
+                            outputComand=" -o ", outputFile=outputFile, logFile=logFile, clogFile=clogFile, extraOptions=extraOptions)
+        #
+        self.__runCmd_with_Timeout(cmd, timeout=timeOut)
 
     def runAnnotateComp(self, inputFile, outputFile, clogFile):
         """ Run ${CC_TOOLS}/annotateComp command
@@ -61,7 +71,7 @@ class CommandUtil(object):
         extraOptions = " -vv -op 'stereo-cactvs|aro-cactvs|descriptor-oe|descriptor-cactvs|descriptor-inchi|" \
                      + "name-oe|name-acd|xyz-ideal-corina|xyz-model-h-oe|rename|fix' -export_format alt "
         #
-        self.runCCToolCmd("annotateComp", inputFile, outputFile, '', clogFile, extraOptions)
+        self.runCCToolCmd("annotateComp", inputFile, outputFile, "", clogFile, extraOptions)
 
     def getRootFileName(self, prefix):
         """ Generate unique root file name
@@ -76,7 +86,7 @@ class CommandUtil(object):
             return
         #
         os.chdir(self.__sessionPath)
-        for filename in os.listdir('.'):
+        for filename in os.listdir("."):
             if filename.startswith(prefix):
                 self.__removeFile(os.path.join(self.__sessionPath, filename))
             #
@@ -89,9 +99,9 @@ class CommandUtil(object):
         self.__sObj=self.__reqObj.newSessionObj()
         self.__sessionPath=self.__sObj.getPath()
 
-    def __runCmd(self, command="", setting="", inputComand=" -input ", inputFile="", outputComand=" -output ", outputFile="", \
+    def __getCmd(self, command="", setting="", inputComand=" -input ", inputFile="", outputComand=" -output ", outputFile="", \
                  logFile="", clogFile="", extraOptions=""):
-        """ Run general back-end commands
+        """ Get general back-end commands
         """
         if not self.__sessionPath:
             self.__getSession()
@@ -118,8 +128,34 @@ class CommandUtil(object):
             cmd  += " > " + clogFile + " 2>&1"
         #
         cmd += " ; "
-        self.__lfh.write('cmd=%s\n' % cmd)
-        os.system(cmd)
+        self.__lfh.write("cmd=%s\n" % cmd)
+        return cmd
+
+    def __runCmd(self, command=""):
+        """ Run back-end command with os.system
+        """
+        if command:
+            os.system(command)
+        #
+
+    def __runCmd_with_Timeout(self, cmd, timeout=240):
+        """ Run back-end command using subprocess with timeout limitation
+        """
+        start = datetime.datetime.now()
+        try:
+            process = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True, preexec_fn=os.setsid, shell=True)
+            while process.poll() == None:
+                time.sleep(0.1)
+                now = datetime.datetime.now()
+                if (now - start).seconds > timeout:
+                    os.killpg(process.pid, signal.SIGKILL)
+                    os.waitpid(-1, os.WNOHANG)
+                    return
+                #
+            #
+        except:
+            traceback.print_exc(file=self.__lfh)
+        #
 
     def __getAnnotSetting(self):
         """ Get Annot package bash setting

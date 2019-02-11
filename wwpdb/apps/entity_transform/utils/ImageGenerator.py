@@ -93,7 +93,7 @@ class ImageGenerator(object):
             os.rename(source, target)
         #
         rootName = self.__cmdUtil.getRootFileName('comp-report')
-        self.__cmdUtil.runCCToolCmd('makeCompReport', '', '', '', rootName + '.clog', ' -v -i ' + inst_id + '.' + self.__fileExt + \
+        self.__cmdUtil.runCCToolCmdWithTimeOut('makeCompReport', '', '', '', rootName + '.clog', ' -v -i ' + inst_id + '.' + self.__fileExt + \
                                     ' -type html-cctools -path "./" -of report.html -noaromatic ')
         #
         source = os.path.join(instancePath, het_id + '-500.gif')
