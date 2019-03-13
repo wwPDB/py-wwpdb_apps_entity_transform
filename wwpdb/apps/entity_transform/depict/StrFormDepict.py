@@ -65,6 +65,8 @@ class StrFormDepict(DepictBase):
                 template,myD =self.__processSplitPolymer(myD)
             elif self.__submitValue == 'Merge/Split with chopper':
                 template,myD = self.__processMergeSplit(myD)
+            elif self.__submitValue == 'Merge to ligand':
+                template,myD = self.__processMergeLigand(myD)
             #
         #
         if template:
@@ -126,12 +128,12 @@ class StrFormDepict(DepictBase):
             return
         #
         for d in dlist:
-            if not d.has_key('entity_id'):
+            if not 'entity_id' in d:
                 continue
             #
             dic = {}
             for item in ('entity_id', 'pdbx_strand_id', 'name', 'type', 'pdbx_seq_one_letter_code'):
-                if d.has_key(item):
+                if item in d:
                     dic[item] = d[item]
                 #
             #
@@ -140,7 +142,7 @@ class StrFormDepict(DepictBase):
             #
             self.__entity_info[dic['entity_id']] = dic
             #
-            if dic.has_key('pdbx_strand_id'):
+            if 'pdbx_strand_id' in dic:
                 chain_list = dic['pdbx_strand_id'].split(',')
                 self.__entity_chain_mapping[dic['entity_id']] = chain_list
                 for c in chain_list:
@@ -204,6 +206,26 @@ class StrFormDepict(DepictBase):
                       + self._processTemplate('chopper/button_tmplt.html', { 'value' : 'Split to Polymer', 'option' : 'split' } )
         return 'chopper/chopper_tmplt.html',myD
 
+    def __processMergeLigand(self, myD):
+        html_text = '<span style="font-weight:bold; font-size:16px">\n'
+        groups = self.__getGroups()
+        if len(groups) > 1:
+            html_text += 'Merging following user defined groups to ligands:\n'
+            html_text += '</span>\n<br/> <br/>\n'
+            count = 1
+            for group in groups:
+                html_text += '<br/>User Defined Group ' + str(count) + ': <br/>\n'
+                html_text += self.__processMergeGroup(group, str(count), polymer=False)
+                count += 1
+            #
+        else:
+            html_text += 'Merging following user defined group to ligand:<br/>\n'
+            html_text += '</span>\n<br/> <br/>\n'
+            html_text += self.__processMergeGroup(groups[0], '1', polymer=False)
+        #
+        myD['form_data'] = html_text
+        return 'update_form/merge_ligand_tmplt.html',myD
+
     def __getGroups(self):
         dic = {}
         group_id = []
@@ -245,7 +267,7 @@ class StrFormDepict(DepictBase):
         #
 
     def __addToGroup(self, name, value, dic, group_id):
-        if dic.has_key(value):
+        if value in dic:
             for v in dic[value]:
                 if v == name:
                     return
@@ -259,13 +281,14 @@ class StrFormDepict(DepictBase):
             group_id.append(value)
         #
 
-    def __processMergeGroup(self, group, group_id):
+    def __processMergeGroup(self, group, group_id, polymer=True):
         enum = []
         for i in xrange(0, len(group)):
             enum.append(str(i + 1))
         #
         count = 1
         text = ''
+        new_ligand_id = ''
         for v in group:
             list = v.split('_')
             token = list[0]
@@ -274,11 +297,23 @@ class StrFormDepict(DepictBase):
             if token == 'ligand':
                 label = 'residue'
                 value = '_'.join(list[1:])
-            text += '<input type="hidden" name="' + token + '" value="' + value + '" />\n'
-            text += '<input type="hidden" name="group_' + value + '" value="' + group_id  + '" />\n'
-            text += label + ' ' + value + ' &nbsp; ' + self.__selectTag('order_' \
-                  + value,  str(count), enum) + ' &nbsp; &nbsp; &nbsp; \n'
+                if not new_ligand_id:
+                    new_ligand_id = list[2]
+                #
+            #
+            text += '<input type="hidden" name="' + token + '" value="' + value + '" />'
+            text += '<input type="hidden" name="group_' + value + '" value="' + group_id  + '" />'
+            text += label + ' ' + value + ' &nbsp; '
+            if polymer:
+                text += self.__selectTag('order_' + value,  str(count), enum) + ' &nbsp; &nbsp; &nbsp; '
+            else:
+                text += ' &nbsp; <input type="hidden" name="order_' + value + '" value="' + str(count) + '" />'
+            #
             count += 1
+        #
+        if not polymer:
+            text += ' &nbsp; &nbsp; New Residue Name: &nbsp; &nbsp; <input type="text" size="10" name="group_id_' + group_id + '" value="' + new_ligand_id + '" />'
+        #
         text += ' <br/>\n'
         return text
 
@@ -290,7 +325,7 @@ class StrFormDepict(DepictBase):
             for v in self.__entityList:
                 entity_id = str(v)
                 chainids = ''
-                if self.__entity_chain_mapping.has_key(entity_id):
+                if entity_id in self.__entity_chain_mapping:
                     chainids = ','.join(self.__entity_chain_mapping[entity_id])
                     for c in self.__entity_chain_mapping[entity_id]:
                         _included_chainIDs[c] = 'yes' 
@@ -302,15 +337,14 @@ class StrFormDepict(DepictBase):
         if self.__chainList:
             for v in self.__chainList:
                 chain_id = str(v)
-                if _included_chainIDs.has_key(chain_id):
+                if chain_id in _included_chainIDs:
                     continue
                 #
                 _included_chainIDs[chain_id] = 'yes'
-                if not self.__chain_entity_mapping.has_key(chain_id):
+                if not chain_id in self.__chain_entity_mapping:
                     continue
                 #
-                self.__addSplitEntities(entities, self.__chain_entity_mapping[chain_id], \
-                                        chain_id)
+                self.__addSplitEntities(entities, self.__chain_entity_mapping[chain_id], chain_id)
                 #
             #
         #
@@ -325,10 +359,10 @@ class StrFormDepict(DepictBase):
                 #
             #
         #
-        if not self.__entity_info.has_key(entity_id):
+        if not entity_id in self.__entity_info:
             return
         #
-        if not self.__entity_info[entity_id].has_key('pdbx_seq_one_letter_code'):
+        if not 'pdbx_seq_one_letter_code' in self.__entity_info[entity_id]:
             return
         #
         list = []
@@ -337,14 +371,14 @@ class StrFormDepict(DepictBase):
         # list[1]: chain IDs
         list.append(chainids)
         # list[2]: molecule name
-        if self.__entity_info[entity_id].has_key('name'):
+        if 'name' in self.__entity_info[entity_id]:
             list.append(self.__entity_info[entity_id]['name'])
         else:
             list.append('')
         # list[3]: one letter code sequence
         list.append(self.__entity_info[entity_id]['pdbx_seq_one_letter_code'])
         # list[4]: polymer type
-        if self.__entity_info[entity_id].has_key('type'):
+        if 'type' in self.__entity_info[entity_id]:
             list.append(self.__entity_info[entity_id]['type'])
         else:
             list.append('')
