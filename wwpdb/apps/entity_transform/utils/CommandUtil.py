@@ -69,7 +69,7 @@ class CommandUtil(object):
         """ Run ${CC_TOOLS}/annotateComp command
         """
         extraOptions = " -vv -op 'stereo-cactvs|aro-cactvs|descriptor-oe|descriptor-cactvs|descriptor-inchi|" \
-                     + "name-oe|name-acd|xyz-ideal-corina|xyz-model-h-oe|rename|fix' -export_format alt "
+                     + "name-oe|name-acd|xyz-ideal-corina|xyz-model-h-oe|rename|fix' "
         #
         self.runCCToolCmd("annotateComp", inputFile, outputFile, "", clogFile, extraOptions)
 
