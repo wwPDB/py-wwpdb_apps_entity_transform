@@ -93,7 +93,7 @@ class UpdateFile(UpdateBase):
                 error += error1
                 continue
             #
-            if not dic.has_key('fileid'):
+            if not 'fileid' in dic:
                 error += dic['instid'] + ' has no match.\n'
                 continue
             #
@@ -102,7 +102,7 @@ class UpdateFile(UpdateBase):
                 error += dic['instid'] + ' has no match file.\n'
                 continue
             #
-            if dic.has_key('only'):
+            if 'only' in dic:
                 mapfile += ':metadataonly'
             optionlist += ' -mapping ' + mapfile
         #
@@ -115,7 +115,7 @@ class UpdateFile(UpdateBase):
     def __runGraphMatch(self, dic):
         """ Run Graph match and get mapping file
         """
-        if not dic.has_key('inputid'):
+        if not 'inputid' in dic:
             return ''
         #
         compObj = CompUtil(reqObj=self._reqObj, verbose=self._verbose,log=self._lfh)

@@ -66,15 +66,16 @@ class FormPreProcess(object):
         #
         # Check selections
         #
-        if (self.__submitValue == 'Merge to polymer' or \
-            self.__submitValue == 'Merge/Split with chopper') and self.__entityList:
+        if ((self.__submitValue == 'Merge to polymer') or (self.__submitValue == 'Merge/Split with chopper')) and self.__entityList:
             self.__errorMessage = 'For "' + self.__submitValue + '" option, only ' + \
                   'polymer chain ID(s) and/or ligand ID(s) selection are allowed.'
             return
-        elif self.__submitValue == 'Split polymer to polymer(s)/non-polymer(s)' and \
-            (self.__chainList or self.__ligandList or self.__groupList):
-            self.__errorMessage = 'For "Split polymer to polymer(s)/non-polymer(s)" option, only ' \
-                + 'entity ID(s) selection are allowed.'
+        elif (self.__submitValue == 'Split polymer to polymer(s)/non-polymer(s)') and \
+             (self.__chainList or self.__ligandList or self.__groupList):
+            self.__errorMessage = 'For "' + self.__submitValue + '" option, only ' + 'entity ID(s) selection are allowed.'
+            return
+        elif (self.__submitValue == 'Merge to ligand') and (self.__entityList or self.__chainList or self.__groupList):
+            self.__errorMessage = 'For "' + self.__submitValue + '" option, only ligand ID(s) selection are allowed.'
             return
         #
         # Check Group IDs for 'Merge to polymer' and 'Merge/Split with chopper'
@@ -93,16 +94,27 @@ class FormPreProcess(object):
         self.__getUsrDefinedgroup(self.__groupList,  'group_',  group_id, dic)
         #
         if not group_id:
+            if ((self.__submitValue == 'Merge to polymer') or (self.__submitValue == 'Merge to ligand')) and \
+               (len(self.__labelDic) == 1):
+                self.__errorMessage = 'Only one instance "' + self.__labelDic.keys()[0] + '" is selected.'
+            #
             return
         #
-        if len(group_id) > 1 and self.__submitValue == 'Merge/Split with chopper':
+        if (len(group_id) > 1) and (self.__submitValue == 'Merge/Split with chopper'):
             self.__errorMessage = 'Multiple User defind Group IDs are assigned. For "Merge/Split ' \
                 + 'with chopper" option, only one User defind Group can be processed each time.\n'
             return
         #
         for id,label in self.__labelDic.items():
-            if not self.__valueDic.has_key(id):
-                self.__errorMessage += 'No User defind Group ID assigned for ' +  label + '<br/>\n'
+            if not id in self.__valueDic:
+                self.__errorMessage += 'No User defind Group ID assigned for "' +  label + '".<br/>\n'
+            #
+        #
+        if ((self.__submitValue == 'Merge to polymer') or (self.__submitValue == 'Merge to ligand')):
+            for gid in sorted(dic.keys()):
+                if len(dic[gid]) == 1:
+                    self.__errorMessage += 'For "User defind Group ' + gid + '", only one instance "' + dic[gid][0] + '" is selected.<br/>\n'
+                #
             #
         #
 
@@ -140,13 +152,18 @@ class FormPreProcess(object):
             if not value:
                 continue
             #
+            label = v
+            if v in self.__labelDic:
+               label = self.__labelDic[v]
+            #
             self.__valueDic[v] = value
             #
-            if dic.has_key(value):
-                continue
+            if value in dic:
+                dic[value].append(label)
+            else:
+                dic[value] = [ label ]
+                group_id.append(value)
             #
-            dic[value] = 'yes'
-            group_id.append(value)
         #
 
     def getMessage(self):

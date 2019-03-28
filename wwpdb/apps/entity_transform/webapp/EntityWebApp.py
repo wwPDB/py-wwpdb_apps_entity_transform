@@ -40,6 +40,7 @@ from wwpdb.apps.entity_transform.prd.DepictPrd            import DepictPrd
 from wwpdb.apps.entity_transform.prd.UpdatePrd            import UpdatePrd
 from wwpdb.apps.entity_transform.update.ChopperHandler    import ChopperHandler
 from wwpdb.apps.entity_transform.update.MergePolymer      import MergePolymer
+from wwpdb.apps.entity_transform.update.MergeLigand       import MergeLigand
 from wwpdb.apps.entity_transform.update.SplitPolymer      import SplitPolymer
 from wwpdb.apps.entity_transform.update.UpdateFile        import UpdateFile
 from wwpdb.apps.entity_transform.utils.CommandUtil        import CommandUtil
@@ -197,6 +198,7 @@ class EntityWebAppWorker(object):
                          '/service/entity/link_view':                       '_LinkView',
                          '/service/entity/mcs_match_view':                  '_OpenEyeMatchView',
                          '/service/entity/merge_polymer':                   '_mergePolymer',
+                         '/service/entity/merge_ligand':                    '_mergeLigand',
                          '/service/entity/result_view':                     '_resultView',
                          '/service/entity/split_polymer':                   '_splitPolymer',
                          '/service/entity/summary_view':                    '_StructSummaryView',
@@ -250,7 +252,7 @@ class EntityWebAppWorker(object):
         """
         #
         reqPath=self.__reqObj.getRequestPath()
-        if not self.__appPathD.has_key(reqPath):
+        if not reqPath in self.__appPathD:
             # bail out if operation is unknown -
             rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
             rC.setError(errMsg='Unknown operation')
@@ -270,7 +272,7 @@ class EntityWebAppWorker(object):
         #
         try:
             reqPath=self.__reqObj.getRequestPath()
-            if not self.__appPathD.has_key(reqPath):
+            if not reqPath in self.__appPathD:
                 # bail out if operation is unknown -
                 rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
                 rC.setError(errMsg='Unknown operation')
@@ -411,7 +413,7 @@ class EntityWebAppWorker(object):
         if not self.__message:
             self.__updateTitle()
         #
-        return self._getSummaryHtml()
+        return self._getSummaryHtml(iFlag=True)
 
     def __getPrdSearchResult(self):
         # Update WF status database --
@@ -447,7 +449,7 @@ class EntityWebAppWorker(object):
         rC.setHtmlText(self.__processTemplate('summary_view/prd_summary_tmplt.html', myD))
         return rC
         
-    def _getSummaryHtml(self):
+    def _getSummaryHtml(self, iFlag=False):
         if not self.__message:
             if not self.__summaryCifObj:
                 self.__message = 'Can not find search result file.'
@@ -459,7 +461,7 @@ class EntityWebAppWorker(object):
             ofh.write(self.__message + '\n')
         else:
             summaryObj = PrdSummaryDepict(reqObj=self.__reqObj, summaryCifObj=self.__summaryCifObj, verbose=self.__verbose, log=self.__lfh)
-            form_data = summaryObj.DoRenderSummaryPage()
+            form_data = summaryObj.DoRenderSummaryPage(imageFlag=iFlag)
             ofh.write(form_data + '\n')
         #
         ofh.close()
@@ -559,6 +561,29 @@ class EntityWebAppWorker(object):
         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
         #
         mergeObj = MergePolymer(reqObj=self.__reqObj, summaryCifObj=self.__summaryCifObj, verbose=self.__verbose, log=self.__lfh)
+        mergeObj.updateFile()
+        #
+        myD = {}
+        myD['pdbid'] = self.__reqObj.getValue('pdbid')
+        myD['identifier'] = self.__identifier
+        myD['title'] = self.__title
+        myD['data']  = mergeObj.getMessage()
+        rC.setHtmlText(self.__processTemplate('update_form/update_result_tmplt.html',  myD))
+        return rC
+
+    def _mergeLigand(self):
+        """ Launch Merge Ligand interface
+        """
+        if (self.__verbose):
+            self.__lfh.write("+EntityWebAppWorker._mergePolymer() Starting now\n")
+        #
+        self.__getSession()
+        self.__updateFileId()
+        #
+        self.__reqObj.setReturnFormat(return_format="html")        
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        #
+        mergeObj = MergeLigand(reqObj=self.__reqObj, summaryCifObj=self.__summaryCifObj, verbose=self.__verbose, log=self.__lfh)
         mergeObj.updateFile()
         #
         myD = {}
@@ -1099,7 +1124,7 @@ class EntityWebAppWorker(object):
                 cifObj = mmCIFUtil(filePath=uploadFilePath)
                 dList = cifObj.GetValue('database_2') 
                 for d in dList:
-                    if (not d.has_key('database_id')) or (not d['database_id']) or (not d.has_key('database_code')) or (not d['database_code']):
+                    if (not 'database_id' in d) or (not d['database_id']) or (not 'database_code' in d) or (not d['database_code']):
                         continue
                     #
                     dbname = d['database_id'].upper()

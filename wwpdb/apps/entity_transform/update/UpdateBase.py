@@ -43,6 +43,7 @@ class UpdateBase(object):
         self._modelCIFile = self._identifier + '_model_P1.cif'
         #
         self._message = ''
+        self.__groups = []
         #
         self.__getSession()
 
@@ -62,6 +63,19 @@ class UpdateBase(object):
             self._lfh.write("+%s.%s() - creating/joining session %s\n" % ( self.__class__.__name__, sys._getframe().f_code.co_name, self._sObj.getId() ))
             self._lfh.write("+%s.%s() - session path %s\n" % ( self.__class__.__name__, sys._getframe().f_code.co_name, self._sessionPath ))
         #
+
+    def _getMergeOptions(self, ligandFlag=False):
+        """ Get merge options
+        """
+        self.__getGroups(ligandFlag)
+        if self._message or (not self.__groups):
+            return ''
+        #
+        options = ''
+        for group in self.__groups:
+            options += ' -group ' + ','.join(group) + ' '
+        #
+        return options
 
     def _runUpdateScript(self, progName, taskName, logRootName, options):
         """ Run update program
@@ -88,4 +102,119 @@ class UpdateBase(object):
             self._message = 'Entry ' + self._cifObj.getEntryIds() + ' updated.'
         else:
             self._message = 'Entry updated.'
+        #
+
+    def __getGroups(self, ligandFlag):
+        """ Get groups
+        """
+        order_dic = {}
+        group_dic = {}
+        self.__processList('chain', order_dic, group_dic)
+        self.__processList('ligand', order_dic, group_dic)
+        #
+        multiGroupFlag = False
+        if len(group_dic) > 1:
+            multiGroupFlag = True
+        #
+        for id,list in group_dic.items():
+            num = len(list)
+            int_order_dic = {}
+            for v in list:
+                if not v in order_dic:
+                    continue
+                #
+                order = int(order_dic[v])
+                if order in int_order_dic:
+                    int_order_dic[order].append(v)
+                else:
+                    int_order_dic[order] = [ v ]
+                #
+            #
+            # Check unique order numbering
+            #
+            foundError = False
+            order_list = []
+            for k,list2 in int_order_dic.items():
+                order_list.append(k)
+                if len(list2) <= 1:
+                    continue
+                #
+                text = ''
+                for v in list2:
+                    list3 = v.split('_')
+                    if text:
+                        text += ', '
+                        if len(list3) > 1:
+                            text += 'ligand ' + v
+                        else:
+                            text += 'chain ' + v
+                        #
+                    else:
+                        if len(list3) > 1:
+                            text += 'Ligand ' + v
+                        else:
+                            text += 'Chain ' + v
+                        #
+                    #
+                #
+                self._message += text + ' have same order number "' + str(k) + '". <br/>\n'
+                foundError = True
+            #
+            # Check missing order numbering
+            #
+            for i in xrange(0, len(list)):
+                j = i + 1
+                if j in int_order_dic:
+                    continue
+                #
+                if multiGroupFlag:
+                    self._message += 'In group "' + id + '", order number "' + str(j) + '" is missing. <br/>\n' 
+                else:
+                    self._message += 'Order number "' + str(j) + '" is missing. <br/>\n'
+                #
+                foundError = True
+            #
+            if foundError:
+                continue
+            #
+            # Reorder group based on order number
+            #
+            order_list.sort()
+            group = []
+            if ligandFlag:
+                residue_name = str(self._reqObj.getValue('group_id_' + id))
+                if not residue_name:
+                    if multiGroupFlag:
+                        self._message += 'New residue name is missing for group "' + id + '". <br/>\n'
+                    else:
+                        self._message += 'New residue name is missing. <br/>\n'
+                    #
+                    continue
+                #
+                group.append(residue_name)
+            #
+            for i in order_list:
+                group.append(int_order_dic[i][0])
+            #
+            self.__groups.append(group)
+        #
+   
+    def __processList(self, token, order_dic, group_dic):
+        """ Process group list
+        """
+        list = self._reqObj.getValueList(token)
+        if not list:
+            return
+        #
+        for v in list:
+            val = str(v)
+            name = 'order_' + val
+            order_dic[val] = str(self._reqObj.getValue(name))
+            name = 'group_' + val
+            value = str(self._reqObj.getValue(name))
+            if value in group_dic:
+                group_dic[value].append(val)
+            else:
+                group_dic[value] = [ val ]
+            #
         #

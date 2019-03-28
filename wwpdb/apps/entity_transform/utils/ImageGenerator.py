@@ -38,13 +38,20 @@ class ImageGenerator(object):
         self.__sessionPath = None
         self.__cmdUtil = None
 
+    def setSessionPath(self, path):
+        """
+        """
+        self.__sessionPath = path
+
     def run(self, instList):
         """
         """
         if not instList:
             return
         #
-        self.__getSession()
+        if not self.__sessionPath:
+            self.__getSession()
+        #
         self.__cmdUtil = CommandUtil(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         numProc = multiprocessing.cpu_count() / 2
