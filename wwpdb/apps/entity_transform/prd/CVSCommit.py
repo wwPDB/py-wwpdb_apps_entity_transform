@@ -56,7 +56,7 @@ class CVSCommit(object):
         #
         scriptfile = self.__getFileName(self.__sessionPath, 'cvs_commit', 'csh')
         logfile    = self.__getFileName(self.__sessionPath, 'cvs_commit', 'log')
-        script = self.__os.path.join(self.__sessionPath, scriptfile)
+        script = os.path.join(self.__sessionPath, scriptfile)
         f = file(script, 'w')
         f.write('#!/bin/tcsh -f\n')
         f.write('#\n')
