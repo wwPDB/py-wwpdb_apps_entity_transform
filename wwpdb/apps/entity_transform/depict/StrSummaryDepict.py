@@ -124,17 +124,23 @@ class StrSummaryDepict(DepictBase):
             return
         #
         for d in dlist:
-            if (not d.has_key('pdbx_strand_id')) or (not d.has_key('mon_id')) or (not d.has_key('pdb_seq_num')):
+            #if (not d.has_key('pdbx_strand_id')) or (not d.has_key('mon_id')) or (not d.has_key('pdb_seq_num')):
+            if (not d.has_key('mon_id')) or (not d.has_key('pdb_seq_num')):
                 continue
             #
             list = []
             list.append(d['mon_id'])
-            list.append(d['pdbx_strand_id'])
+            if d.has_key('pdbx_strand_id'):
+                list.append(d['pdbx_strand_id'])
+            else:
+                list.append('')
+            #
             list.append(d['pdb_seq_num'])
             if d.has_key('pdb_ins_code'):
                 list.append(d['pdb_ins_code'])
             else:
                 list.append('')
+            #
             self.__ligands.append(list)
         #
 

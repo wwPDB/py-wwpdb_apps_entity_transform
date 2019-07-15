@@ -26,6 +26,7 @@ import os, sys, string, traceback
 from wwpdb.apps.entity_transform.depict.DepictBase     import DepictBase
 from wwpdb.apps.entity_transform.depict.SeqDepict      import SeqDepict
 from wwpdb.apps.entity_transform.update.CombineCoord   import CombineCoord
+from wwpdb.utils.config.ConfigInfo                     import ConfigInfo
 #
 
 class StrFormDepict(DepictBase):
@@ -33,6 +34,9 @@ class StrFormDepict(DepictBase):
     """
     def __init__(self, reqObj=None, summaryCifObj=None, verbose=False, log=sys.stderr):
         super(StrFormDepict, self).__init__(reqObj=reqObj, summaryCifObj=summaryCifObj, verbose=verbose, log=log)
+        #
+        self.__siteId  = str(self._reqObj.getValue("WWPDB_SITE_ID"))
+        self.__cI=ConfigInfo(self.__siteId)
         #
         self.__submitValue = str(self._reqObj.getValue('submit'))
         self.__entityList  = self._reqObj.getValueList('entity')
@@ -90,6 +94,7 @@ class StrFormDepict(DepictBase):
             f.close()
         #
         myD['session_url_prefix'] = os.path.join(self._rltvSessionPath, 'search', myD['instanceid'])
+        myD['processing_site'] = self.__cI.get('SITE_NAME').upper()
         #
         return self._processTemplate('chopper/editor_tmplt.html', myD)
 
@@ -108,6 +113,7 @@ class StrFormDepict(DepictBase):
         myD['instanceid'] = instId
         myD['comp'] = os.path.join(self._rltvSessionPath, instId, instId + '.comp.cif')
         myD['button'] = self._processTemplate('chopper/button_tmplt.html', { 'value' : 'Split', 'option' : 'split_residue' } )
+        myD['processing_site'] = self.__cI.get('SITE_NAME').upper()
         return 'chopper/chopper_tmplt.html',myD
 
     def __getGroupList(self):
@@ -204,6 +210,7 @@ class StrFormDepict(DepictBase):
         myD['comp'] = os.path.join(self._rltvSessionPath, instId, instId + '.comp.cif')
         myD['button'] = self._processTemplate('chopper/button_tmplt.html', { 'value' : 'Merge to Ligand', 'option' : 'merge' } ) \
                       + self._processTemplate('chopper/button_tmplt.html', { 'value' : 'Split to Polymer', 'option' : 'split' } )
+        myD['processing_site'] = self.__cI.get('SITE_NAME').upper()
         return 'chopper/chopper_tmplt.html',myD
 
     def __processMergeLigand(self, myD):
