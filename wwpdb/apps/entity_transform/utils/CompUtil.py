@@ -66,7 +66,7 @@ class CompUtil(object):
             if not dlist:
                 return ''
             #
-            if not dlist[0].has_key('chem_comp_id'):
+            if 'chem_comp_id' not in dlist[0]:
                 return ''
             #
             ccid = dlist[0]['chem_comp_id'].strip().upper()

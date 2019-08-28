@@ -78,7 +78,7 @@ class EntityWebApp(object):
         self.__topPath=self.__cI.get('SITE_WEB_APPS_TOP_PATH')
         #
 
-        if type( parameterDict ) == types.DictType:
+        if isinstance(parameterDict, dict):
             self.__myParameterDict=parameterDict
         else:
             self.__myParameterDict={}
@@ -1077,8 +1077,12 @@ class EntityWebAppWorker(object):
         """ Generic check for the existence of request paramenter "file".
         """ 
         # Gracefully exit if no file is provide in the request object - 
+        try:
+            stringtypes = (unicode, str)
+        except NameError:
+            stringtypes = (str, bytes)
         fs=self.__reqObj.getRawValue(fileTag)
-        if ((fs is None) or (type(fs) == types.StringType) ):
+        if ( (fs is None) or isinstance(fs, stringtypes) ):
             return False
         return True
 

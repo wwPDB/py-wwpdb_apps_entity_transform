@@ -162,7 +162,7 @@ class UpdateBase(object):
             #
             # Check missing order numbering
             #
-            for i in xrange(0, len(list)):
+            for i in range(0, len(list)):
                 j = i + 1
                 if j in int_order_dic:
                     continue

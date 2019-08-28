@@ -92,12 +92,12 @@ class PrdSummaryDepict(DepictBase):
             myD = {}
             myD['id'] = d['id']
             myD['text'] = d['text']
-            if d.has_key('list_text'):
+            if 'list_text' in d:
                 list_text = '<li>\n' + d['list_text'] + '</li>\n'
-                if d.has_key('list'):
+                if 'list' in d:
                     list_text += self.__depictInstanceTable(d['list'])
                 myD['list'] = list_text
-            elif d.has_key('list'):
+            elif 'list' in d:
                 myD['list'] = self.__depiction(d['list'])
             else:
                 myD['list'] = ''
@@ -128,12 +128,12 @@ class PrdSummaryDepict(DepictBase):
                 myD['2d_view'] = '&nbsp;'
             #
             myD['build_prd'] = self._processTemplate('summary_view/build_prd_tmplt.html', myD)
-            if self.__matchResultFlag.has_key(d['id']):
+            if d['id'] in self.__matchResultFlag:
                 text += self._processTemplate('summary_view/row_with_result_tmplt.html', myD) + '\n'
             elif d['linkage_info'] == 'linked':
                 text += self._processTemplate('summary_view/row_tmplt.html', myD) + '\n'
             else:
-                if d.has_key('message'):
+                if 'message' in d:
                     message = d['message'].replace('\n', '<br/>')
                     myD['text'] = '<span class="warninfo">\n<a href="#" title="' + message + '" onclick="return false">\nNot connected</a>\n</span>'
                 else:

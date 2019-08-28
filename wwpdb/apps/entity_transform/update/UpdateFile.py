@@ -51,7 +51,7 @@ class UpdateFile(UpdateBase):
         """ Get selected instance IDs
         """
         count = int(str(self._reqObj.getValue('count')))
-        for i in xrange (0, count):
+        for i in range (0, count):
             id = self._reqObj.getValue('id_' + str(i))
             if not id:
                 continue

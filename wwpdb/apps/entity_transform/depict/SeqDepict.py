@@ -200,7 +200,7 @@ class SeqDepict(object):
             elif s == ')':
                 inP = False
                 r1 = 'X'
-                if SeqDepict._monDict3.has_key(r3):
+                if r3 in SeqDepict._monDict3:
                     r1 = SeqDepict._monDict3[r3]
                 #
                 list = []
@@ -221,16 +221,16 @@ class SeqDepict(object):
 
     def __getThreeLetterCode(self, one_letter_code, polytype):
         if polytype == 'polypeptide(L)':
-            if SeqDepict._monDictL.has_key(one_letter_code):
+            if one_letter_code in SeqDepict._monDictL:
                 return SeqDepict._monDictL[one_letter_code]
         elif polytype == 'polypeptide(D)':
-            if SeqDepict._monDictD.has_key(one_letter_code):
+            if one_letter_code in SeqDepict._monDictD:
                 return SeqDepict._monDictD[one_letter_code]
         elif polytype == 'polydeoxyribonucleotide':
-            if SeqDepict._monDictDNA.has_key(one_letter_code):
+            if one_letter_code in SeqDepict._monDictDNA:
                  return SeqDepict._monDictDNA[one_letter_code]
         elif polytype == 'polyribonucleotide' or polytype == 'polydeoxyribonucleotide/polyribonucleotide hybrid':
-            if SeqDepict._monDictRNA.has_key(one_letter_code):
+            if one_letter_code in SeqDepict._monDictRNA:
                  return SeqDepict._monDictRNA[one_letter_code]
 
         return 'UNK'
@@ -277,8 +277,8 @@ class SeqDepict(object):
         #
         # start empty ul
         text += '<ul class="legend whitebg">\n'
-        for j in xrange(0, blockNumber):
-            for k in xrange(0, resPerBlock):
+        for j in range(0, blockNumber):
+            for k in range(0, resPerBlock):
                 text += '<li> </li>\n'
             #
             # add space between block
@@ -288,7 +288,7 @@ class SeqDepict(object):
         # end empty ul
         text += '</ul>\n'
         #
-        for i in xrange(0, lineNumber):
+        for i in range(0, lineNumber):
             cssClassBg = 'whitebg'
             if i % 2:
                 cssClassBg = 'greybg'
@@ -308,14 +308,14 @@ class SeqDepict(object):
             #
             # start number ul
             text += '<ul class="legend ' + cssClassBg + '">\n'
-            for j in xrange(0, blockNumber):
+            for j in range(0, blockNumber):
                 if j == integerBlock:
                     continue
                 #
                 number = i * resPerLine + j * resPerBlock + resPerBlock
                 snumber = str(number)
                 text_tmp = ''
-                for k in xrange(0, (resPerBlock - len(str(snumber)))):
+                for k in range(0, (resPerBlock - len(str(snumber)))):
                     text_tmp += ' '
                 text_tmp += str(number)
                 for k in text_tmp:
@@ -330,12 +330,12 @@ class SeqDepict(object):
             #
             # start seq ul
             text += '<ul id="seq_' + line_key + '" class="pickable ' + cssClassBg + '">\n'
-            for j in xrange(0, blockNumber):
+            for j in range(0, blockNumber):
                 resNumberinBlock = resPerBlock
                 if j == integerBlock:
                     resNumberinBlock = remainderBlock
                 #
-                for k in xrange(0, resNumberinBlock):
+                for k in range(0, resNumberinBlock):
                     idx = i * resPerLine + j * resPerBlock + k
                     currRes = seqlist[idx][1] + '_' + str(idx + 1)
                     nextRes = ''
@@ -344,7 +344,7 @@ class SeqDepict(object):
                     #
                     if nextRes:
                         currRes += '_' + nextRes
-                    if self.__entityIndices.has_key(entity_key):
+                    if entity_key in self.__entityIndices:
                         self.__entityIndices[entity_key][idx + 1] = currRes
                     else:
                         self.__entityIndices[entity_key] = { idx + 1 : currRes }
@@ -360,12 +360,12 @@ class SeqDepict(object):
             #
             # start empty ul
             text += '<ul class="legend ' + cssClassBg + '">\n'
-            for j in xrange(0, blockNumber):
+            for j in range(0, blockNumber):
                 resNumberinBlock = resPerBlock
                 if j == integerBlock:
                     resNumberinBlock = remainderBlock
                 #
-                for k in xrange(0, resNumberinBlock):
+                for k in range(0, resNumberinBlock):
                     text += '<li> </li>\n'
                 #
                 # add space between block
@@ -408,7 +408,7 @@ class SeqDepict(object):
 
     def __writeToString(self, obj=None, delimiter=','):
         text = ''
-        if type(obj) is types.BooleanType:
+        if type(obj) is bool:
             if obj:
                 text += 'true'
             else:
@@ -427,7 +427,7 @@ class SeqDepict(object):
                 text1 += self.__writeToString(obj=v)
             #
             text += '[' + text1 + ']'
-        elif type(obj) is types.DictType:
+        elif type(obj) is dict:
             text1 = ''
             for k,v in obj.items():
                 if text1:

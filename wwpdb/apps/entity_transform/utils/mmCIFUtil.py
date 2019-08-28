@@ -82,7 +82,7 @@ class mmCIFUtil:
         text = ''
         dlist = self.GetValue(catName)
         if dlist:
-            if dlist[0].has_key(itemName):
+            if itemName in dlist[0]:
                 text = dlist[0][itemName]
         return text
         #
@@ -104,7 +104,7 @@ class mmCIFUtil:
             return
         #
         rowNo = catObj.getRowCount()
-        for row in xrange(0, rowNo):
+        for row in range(0, rowNo):
             catObj.setValue(value, itemName, row)
         #
 

@@ -91,7 +91,7 @@ class DownloadFile(object):
                 continue
             #
             for e in elist:
-                if not e.has_key(d[1]):
+                if d[1] not in e:
                     continue
                 #
                 self.__allInstIds.append(e[d[1]])

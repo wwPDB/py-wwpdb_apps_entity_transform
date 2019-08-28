@@ -78,7 +78,7 @@ class SummaryCifUtil(object):
 
     def getSeq(self, instId):
         self.__getSeqs()
-        if self.__seqs.has_key(instId):
+        if instId in self.__seqs:
             return self.__seqs[instId]
         #
         return ''
@@ -89,21 +89,21 @@ class SummaryCifUtil(object):
 
     def getLabel(self, instId):
         self.__getSeqs()
-        if self.__labels.has_key(instId):
+        if instId in self.__labels:
             return self.__labels[instId]
         #
         return ''
 
     def getLinkageInfo(self, instId):
         self.__getSeqs()
-        if self.__linkage_info.has_key(instId):
+        if instId in self.__linkage_info:
             return self.__linkage_info[instId]
         #
         return ''
 
     def getFocus(self, instId):
         self.__getSeqs()
-        if self.__focus.has_key(instId):
+        if instId in self.__focus:
             return self.__focus[instId]
         #
         return ''
@@ -122,7 +122,7 @@ class SummaryCifUtil(object):
 
     def getMatchResult(self, instId):
         self.__getMatchResults()
-        if self.__matchResults.has_key(instId):
+        if instId in self.__matchResults:
             return self.__matchResults[instId]
         #
         return {}
@@ -144,7 +144,7 @@ class SummaryCifUtil(object):
                 continue
             #
             for e in elist:
-                if (not e.has_key(d[1])) or (not e.has_key(d[2])):
+                if (d[1] not in e) or (d[2] not in e):
                     continue
                 #
                 self.__instIds.append(e[d[1]])
@@ -154,7 +154,7 @@ class SummaryCifUtil(object):
                     self.__seqs[e[d[1]]] = e[d[2]]
                 #
                 if d[0] == 'pdbx_polymer_info':
-                    if e.has_key('pdb_chain_id'):
+                    if 'pdb_chain_id' in e:
                         self.__labels[e[d[1]]] = 'CHAIN_' + e['pdb_chain_id']
                     else:
                         elf.__labels[e[d[1]]] = e[d[1]].upper()
@@ -163,10 +163,10 @@ class SummaryCifUtil(object):
                 elif (d[0] == 'pdbx_group_info') or (d[0] == 'pdbx_merge_polymer_residue_info'):
                     self.__labels[e[d[1]]] = e[d[1]].upper()
                 #
-                if e.has_key(d[3]):
+                if d[3] in e:
                     self.__linkage_info[e[d[1]]] = e[d[3]]
                 #
-                if e.has_key(d[4]):
+                if d[4] in e:
                     self.__focus[e[d[1]]] = e[d[4]]
                 #
             #
@@ -182,26 +182,26 @@ class SummaryCifUtil(object):
             return
         #
         for d in elist:
-            if (not d.has_key('inst_id')) or \
-               (not d.has_key('id')) or \
-               (not d.has_key('type')) or \
-               (not d.has_key('method')):
+            if ('inst_id' not in d) or \
+               ('id' not in d) or \
+               ('type' not in d) or \
+               ('method' not in d):
                 continue
             #
             m_dic = {}
             m_dic['value'] = d['type']
-            if d.has_key('sequence'):
+            if 'sequence' in d:
                 m_dic['sequence'] = d['sequence']
             id = d['id']
             if id[:4] == 'PRD_':
                 m_dic['prdid'] = id
             else:
                 m_dic['ccid'] = id
-                if d.has_key('prd_id'):
+                if 'prd_id' in d:
                     m_dic['prdid'] = d['prd_id']
             #
-            if self.__matchResults.has_key(d['inst_id']):
-                if self.__matchResults[d['inst_id']].has_key(d['method']):
+            if d['inst_id'] in self.__matchResults:
+                if d['method'] in self.__matchResults[d['inst_id']]:
                     self.__matchResults[d['inst_id']][d['method']].append(m_dic)
                 else:
                     list = []

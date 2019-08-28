@@ -93,7 +93,7 @@ class ProcessPrdSummary(object):
         #
         nucleotide = {}
         for d in elist:
-            if (not d.has_key('entity_id')) or (not d.has_key('polymer_type')):
+            if ('entity_id' not in d) or ('polymer_type' not in d):
                 continue
             #
             if (d['polymer_type'].lower() == 'polyribonucleotide') or (d['polymer_type'].lower() == 'polydeoxyribonucleotide'):
@@ -104,14 +104,14 @@ class ProcessPrdSummary(object):
         plist = self.__cifObj.getValueList('pdbx_polymer_info')
         if plist:
             for d in plist:
-                if (not d.has_key('pdb_chain_id')) or (not d.has_key('polymer_id')) or (not d.has_key('linkage_info')):
+                if ('pdb_chain_id' not in d) or ('polymer_id' not in d) or ('linkage_info' not in d):
                     continue
                 #
                 pmap[d['pdb_chain_id']] = d
                 #
                 # Skip generating images for DNA/RNA polymers
                 #
-                if d.has_key('entity_id') and nucleotide.has_key(d['entity_id']):
+                if 'entity_id' in d and d['entity_id'] in nucleotide:
                     continue
                 #
                 if d['linkage_info'] == 'linked':
@@ -122,22 +122,22 @@ class ProcessPrdSummary(object):
         entitylist = []
         for d in elist:
             type = ''
-            if d.has_key('type'):
+            if 'type' in d:
                 type = d['type']
             if type != 'polymer':
                 continue
             #
             entity_id = ''
-            if d.has_key('entity_id'):
+            if 'entity_id' in d:
                 entity_id = d['entity_id']
             #
             properties = {}
             for prolist in self.__propertyList:
-                if (not d.has_key(prolist[1])) or (not d[prolist[1]]):
+                if (prolist[1] not in d) or (not d[prolist[1]]):
                     continue
                 #
                 if prolist[1] == 'polymer_type':
-                    if self.__typeMap.has_key(d[prolist[1]]):
+                    if d[prolist[1]] in self.__typeMap:
                         properties[prolist[0]] = self.__typeMap[d[prolist[1]]] + ' ( ' + d[prolist[1]] + ' )'
                     else:
                         properties[prolist[0]] = d[prolist[1]]
@@ -146,18 +146,18 @@ class ProcessPrdSummary(object):
                     properties[prolist[0]] = d[prolist[1]]
                 #
             #
-            if (not entity_id) or (not properties.has_key('Chain ID(s)')):
+            if (not entity_id) or ('Chain ID(s)' not in properties):
                 continue
             #
             seq = ''
-            if d.has_key('one_letter_seq'):
+            if 'one_letter_seq' in d:
                 seq = '<br/>' + self.__processingOneLetterSeq(d['one_letter_seq'])
-            elif d.has_key('three_letter_seq'):
+            elif 'three_letter_seq' in d:
                 seq = d['three_letter_seq']
             #
             text = ''
             for prolist in self.__propertyList:
-                if not properties.has_key(prolist[0]):
+                if prolist[0] not in properties:
                     continue
                 #
                 if text:
@@ -177,7 +177,7 @@ class ProcessPrdSummary(object):
                 if flag:
                     continue
                 #
-                if not pmap.has_key(c):
+                if c not in pmap:
                     continue
                 #
                 if pmap[c]['linkage_info'] == 'big_polymer':
@@ -187,7 +187,7 @@ class ProcessPrdSummary(object):
                 pdic = {}
                 pdic['id'] =  pmap[c]['polymer_id']
                 pdic['linkage_info'] = pmap[c]['linkage_info']
-                if pmap[c].has_key('message'):
+                if 'message' not in pmap[c]:
                     pdic['message'] = pmap[c]['message']
                 pdic['label'] = 'CHAIN_' + c
                 pdic['focus'] = pmap[c]['focus']
@@ -214,13 +214,13 @@ class ProcessPrdSummary(object):
         #
         nonpolymermap = {}
         for d in elist:
-            if (not d.has_key('instance_id')) or (not d.has_key('residue_id')) or (not d.has_key('linkage_info')):
+            if ('instance_id' not in d) or ('residue_id' not in d) or ('linkage_info' not in d):
                 continue
             #
             if d['linkage_info'] == 'linked':
                 self.__image_data.append( ( d['instance_id'], d['instance_id'] ) )
             #
-            if nonpolymermap.has_key(d['residue_id']):
+            if d['residue_id'] in nonpolymermap:
                 nonpolymermap[d['residue_id']].append(d)
             else:
                 list = []
@@ -258,7 +258,7 @@ class ProcessPrdSummary(object):
                 pdic = {}
                 pdic['id'] = d['instance_id']
                 pdic['linkage_info'] = d['linkage_info']
-                if d.has_key('message'):
+                if 'message' in d:
                     pdic['message'] = d['message']
                 pdic['label'] = d['instance_id']
                 pdic['focus'] = d['focus']
@@ -285,7 +285,7 @@ class ProcessPrdSummary(object):
         #
         grouplist = []
         for d in elist:
-            if (not d.has_key('group_id')) or (not d.has_key('descriptor')) or (not d.has_key('residues')) or (not d.has_key('linkage_info')):
+            if ('group_id' not in d) or ('descriptor' not in d) or ('residues' not in d) or ('linkage_info' not in d):
                 continue
             #
             if d['linkage_info'] == 'linked':
@@ -299,7 +299,7 @@ class ProcessPrdSummary(object):
             pdic = {}
             pdic['id'] = d['group_id']
             pdic['linkage_info'] = d['linkage_info']
-            if d.has_key('message'):
+            if 'message' in d:
                 pdic['message'] = d['message']
             pdic['label'] = d['group_id'].upper()
             pdic['focus'] = d['focus']
@@ -322,7 +322,7 @@ class ProcessPrdSummary(object):
             return
         #
         for d in elist:
-            if not d.has_key('inst_id'):
+            if 'inst_id' not in d:
                 continue
             #
             if d['inst_id'].startswith('merge'):
@@ -330,7 +330,7 @@ class ProcessPrdSummary(object):
             else:
                 self.__matchResultFlag[d['inst_id']] = 'yes'
                 #
-                if d.has_key('method') and d['method'] == 'graph':
+                if 'method' in d and d['method'] == 'graph':
                     self.__graphmatchResultFlag = True
                 #
             #
@@ -341,7 +341,7 @@ class ProcessPrdSummary(object):
         if slist:
             self.__splitPolymerResidueFlag = True
             for d in slist:
-                if (not d.has_key('instance_id')) or (not d.has_key('linkage_info')):
+                if ('instance_id' not in d) or ('linkage_info' not in d):
                     continue
                 #
                 if d['linkage_info'] == 'linked':
@@ -352,7 +352,7 @@ class ProcessPrdSummary(object):
         mlist = self.__cifObj.getValueList('pdbx_merge_polymer_residue_info')
         if mlist:
             for d in mlist:
-                if (not d.has_key('merge_id')) or (not d.has_key('linkage_info')):
+                if ('merge_id' not in d) or ('linkage_info' not in d):
                     continue
                 #
                 if d['linkage_info'] == 'linked':

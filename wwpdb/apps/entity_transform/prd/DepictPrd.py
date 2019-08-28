@@ -141,17 +141,17 @@ class DepictPrd(object):
             for d in elist:
                 if polymer_only:
                     type = ''
-                    if d.has_key('type'):
+                    if 'type' in d:
                         type = d['type']
                     #
                     if (not type) or (type != 'polymer'):
                         continue
                     #
                 #
-                if not d.has_key('ref_entity_id'):
+                if 'ref_entity_id' not in d:
                     continue
                 #
-                if dir.has_key(d['ref_entity_id']):
+                if d['ref_entity_id'] in dir:
                     continue
                 #
                 dir[d['ref_entity_id']] = 'yes'
@@ -309,7 +309,7 @@ class DepictPrd(object):
         #
         for d in polymer:
             observed = ''
-            if d.has_key('observed'):
+            if 'observed' in d:
                 observed = d['observed']
             if observed != 'N':
                 continue
@@ -317,7 +317,7 @@ class DepictPrd(object):
             v_list = []
             for item in item_list:
                 v = ''
-                if d.has_key(item):
+                if item in d:
                     v = d[item]
                 #
                 v_list.append(v)
@@ -337,16 +337,16 @@ class DepictPrd(object):
         #
         for d in dlist:
             ref_id = ''
-            if d.has_key('ref_entity_id'):
+            if 'ref_entity_id' in d:
                  ref_id = d['ref_entity_id']
             #
             if not ref_id:
                 continue
             dir1 = {}
-            if d.has_key('db_name'):
+            if 'db_name' in d:
                  dir1['db_name'] = d['db_name']
             #
-            if d.has_key('db_code'):
+            if 'db_code' in d:
                  dir1['db_code'] = d['db_code']
             #
             if dir1:

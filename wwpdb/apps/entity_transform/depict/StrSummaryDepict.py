@@ -91,12 +91,12 @@ class StrSummaryDepict(DepictBase):
             return
         #
         for d in dlist:
-            if not d.has_key('entity_id'):
+            if 'entity_id' not in d:
                 continue
             #
             dic = {}
             for item in ('entity_id', 'pdbx_strand_id', 'name'):
-                if d.has_key(item):
+                if item in d:
                     dic[item] = d[item]
                 #
             #
@@ -113,7 +113,7 @@ class StrSummaryDepict(DepictBase):
             return
         #
         for d in dlist:
-            if d.has_key('pdb_chain_id'):
+            if 'pdb_chain_id' in d:
                 self.__chain_ids.append(d['pdb_chain_id'])
             #
         #
@@ -125,18 +125,18 @@ class StrSummaryDepict(DepictBase):
         #
         for d in dlist:
             #if (not d.has_key('pdbx_strand_id')) or (not d.has_key('mon_id')) or (not d.has_key('pdb_seq_num')):
-            if (not d.has_key('mon_id')) or (not d.has_key('pdb_seq_num')):
+            if ('mon_id' not in d) or ('pdb_seq_num' not in d):
                 continue
             #
             list = []
             list.append(d['mon_id'])
-            if d.has_key('pdbx_strand_id'):
+            if 'pdbx_strand_id' in d:
                 list.append(d['pdbx_strand_id'])
             else:
                 list.append('')
             #
             list.append(d['pdb_seq_num'])
-            if d.has_key('pdb_ins_code'):
+            if 'pdb_ins_code' in d:
                 list.append(d['pdb_ins_code'])
             else:
                 list.append('')
@@ -150,7 +150,7 @@ class StrSummaryDepict(DepictBase):
             return
         #
         for d in dlist:
-            if d.has_key('component_ids'):
+            if 'component_ids' in d:
                 self.__groups.append(d['component_ids'])
             #
         #
@@ -170,7 +170,7 @@ class StrSummaryDepict(DepictBase):
         for d in self.__entities:
             text += '<tr>\n'
             text += '<td><input type="checkbox" name="entity" value="' + d['entity_id'] + '" /> ' + d['entity_id'] + ' </td>\n'
-            if d.has_key('pdbx_strand_id'):
+            if 'pdbx_strand_id' in d:
                 list = d['pdbx_strand_id'].split(',')
                 text += '<td>\n'
                 for v in list:
@@ -180,7 +180,7 @@ class StrSummaryDepict(DepictBase):
                 #
                 text += '<td>\n'
                 for v in list:
-                    if self.__links.has_key(v):
+                    if v in self.__links:
                         text += '<a class="fltlft" href="/service/entity/link_view?sessionid=' + self._sessionId + '&pdbid=' + self._pdbId + '&identifier=' \
                               + self._identifier + '&id=' + v + '" target="_blank"> ' + 'View Chain ' + v + "'s Link </a> <br/>\n"
                     else:
@@ -192,7 +192,7 @@ class StrSummaryDepict(DepictBase):
                 text += '<td> &nbsp; &nbsp; &nbsp; </td>\n'
                 text += '<td> &nbsp; &nbsp; &nbsp; </td>\n'
             #
-            if d.has_key('name'):
+            if 'name' in d:
                 text += '<td> ' + d['name'] + ' </td>\n'
             else:
                 text += '<td> &nbsp; &nbsp; &nbsp; </td>\n'
@@ -216,7 +216,7 @@ class StrSummaryDepict(DepictBase):
             text += '<tr>\n'
             text += '<td><input type="checkbox" name="chain" value="' + v + '" /> ' + v + ' </td>\n'
             text += '<td><input type="text" name="chain_' + v + '" size="5" value="" /> </td>\n'
-            if self.__links.has_key(v):
+            if v in self.__links:
                 text += '<td><a class="fltlft" href="/service/entity/link_view?sessionid=' + self._sessionId + '&pdbid=' + self._pdbId + '&identifier=' \
                       + self._identifier + '&id=' + v + '" target="_blank"> ' + 'View Link' + ' </a></rd>\n'
             else:
@@ -248,7 +248,7 @@ class StrSummaryDepict(DepictBase):
             for v in list:
                 text += '<td> ' + v + ' </td>\n'
             #
-            if self.__links.has_key(ligand_id):
+            if ligand_id in self.__links:
                 text += '<td><a class="fltlft" href="/service/entity/link_view?sessionid=' + self._sessionId + '&pdbid=' + self._pdbId \
                       + '&identifier=' + self._identifier + '&id=' + ligand_id + '" target="_blank"> ' + 'View Link' + ' </a></rd>\n'
             else:
@@ -288,7 +288,7 @@ class StrSummaryDepict(DepictBase):
                 #
             #
             text += '<td colspan="2">' + label + ' </td>\n'
-            if self.__links.has_key(v):
+            if v in self.__links:
                 text += '<td><a class="fltlft" href="/service/entity/link_view?sessionid=' + self._sessionId + '&pdbid=' + self._pdbId \
                       + '&identifier=' + self._identifier + '&id=' + group + '" target="_blank"> ' + 'View Link' + ' </a></rd>\n'
             else:

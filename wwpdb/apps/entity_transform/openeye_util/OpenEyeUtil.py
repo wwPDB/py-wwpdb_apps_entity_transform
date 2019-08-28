@@ -162,7 +162,7 @@ class OpenEyeUtil(object):
         if not self.__chemAtomList:
             return
         #
-        if self.__chemAtomList[0].has_key('pdbx_residue_numbering'):
+        if 'pdbx_residue_numbering' in self.__chemAtomList[0]:
             return
         #
         # get start index for each subcomponent with different subcomponent ids
@@ -179,17 +179,17 @@ class OpenEyeUtil(object):
         # get start index for each subcomponent within same subcomponent ids
         #
         length = len(i_list)
-        for i in xrange (0, length - 1):
+        for i in range (0, length - 1):
             res  = self.__chemAtomList[i_list[i]]['pdbx_component_comp_id']
             atom = self.__chemAtomList[i_list[i]]['pdbx_component_atom_id']
-            for j in xrange(i_list[i] + 1, i_list[i+1]):
+            for j in range(i_list[i] + 1, i_list[i+1]):
                 if self.__chemAtomList[j]['pdbx_component_comp_id'] == res and \
                    self.__chemAtomList[j]['pdbx_component_atom_id'] == atom:
                     i_list.append(j)
         #
         res  = self.__chemAtomList[i_list[length-1]]['pdbx_component_comp_id']
         atom = self.__chemAtomList[i_list[length-1]]['pdbx_component_atom_id']
-        for j in xrange(i_list[length-1] + 1, count):
+        for j in range(i_list[length-1] + 1, count):
             if self.__chemAtomList[j]['pdbx_component_comp_id'] == res and \
                self.__chemAtomList[j]['pdbx_component_atom_id'] == atom:
                 i_list.append(j)
@@ -201,13 +201,13 @@ class OpenEyeUtil(object):
         # add pdbx_residue_numbering
         #
         cnt = 0
-        for i in xrange (0, len(i_list)-1):
+        for i in range (0, len(i_list)-1):
             cnt += 1
-            for j in xrange(i_list[i], i_list[i+1]):
+            for j in range(i_list[i], i_list[i+1]):
                 self.__chemAtomList[j]['pdbx_residue_numbering'] = str(cnt)
         #
         cnt += 1
-        for j in xrange(i_list[len(i_list)-1], count):
+        for j in range(i_list[len(i_list)-1], count):
             self.__chemAtomList[j]['pdbx_residue_numbering'] = str(cnt)
         #
 
@@ -215,7 +215,7 @@ class OpenEyeUtil(object):
         chemAtomMap = {}
         for d in self.__chemAtomList:
             chemAtomMap[d['atom_id']] = d
-            if self.__ChemCoorMap.has_key(d['atom_id']):
+            if d['atom_id'] in self.__ChemCoorMap:
                 continue
             #
             dic = {}
@@ -235,7 +235,7 @@ class OpenEyeUtil(object):
             dic['td2'] = d['auth_comp_id']
             dic['td3'] = d['auth_seq_id']
             dic['td4'] = d['auth_atom_id']
-            if self.__CoorChemMap.has_key(d['label_atom_id']):
+            if d['label_atom_id'] in self.__CoorChemMap:
                 d1 = chemAtomMap[self.__CoorChemMap[d['label_atom_id']]]
                 dic['td5'] = d1['pdbx_component_comp_id']
                 dic['td6'] = d1['pdbx_residue_numbering']

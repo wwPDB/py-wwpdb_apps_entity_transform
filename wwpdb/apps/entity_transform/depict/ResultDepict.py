@@ -63,7 +63,7 @@ class ResultDepict(DepictBase):
         content = ''
         count = 0
         for id in self.__instIds:
-            if id.startswith('merge') or (not self.__matchResults[id].has_key('graph')):
+            if id.startswith('merge') or ('graph' not in self.__matchResults[id]):
                 continue
             #
             myD = {}
@@ -102,7 +102,7 @@ class ResultDepict(DepictBase):
         form_data = ''
         split_polymer_residue_list = self._cifObj.getValueList('pdbx_split_polymer_residue_info')
         for d in split_polymer_residue_list:
-            if not d.has_key('instance_id'):
+            if 'instance_id' not in d:
                 continue
             #
             form_data += '<tr>'
@@ -150,7 +150,7 @@ class ResultDepict(DepictBase):
             #
             form_data += self._processTemplate('update_form/update_merge_polymer_residue_instance_header_tmplt.html', myD)
             #
-            if self.__matchResults.has_key(instId) and self.__matchResults[instId].has_key('graph'):
+            if instId in self.__matchResults and 'graph' in self.__matchResults[instId]:
                 form_data += self._processTemplate('update_form/update_merge_polymer_residue_match_header_tmplt.html', {})
                 for d in self.__matchResults[instId]['graph']:
                     myD['match_id'] = 'match_id_' + str(count)
@@ -167,15 +167,15 @@ class ResultDepict(DepictBase):
         return form_data
 
     def __processMatch(self, instId):
-        if not self.__matchResults.has_key(instId):
+        if instId not in self.__matchResults:
             return ''
         #
         content = ''
         dic = self.__matchResults[instId]
-        if dic.has_key('graph'):
+        if 'graph' in dic:
             content += self._processTemplate('result_view/graph_match_header.html', {})
             content += self.__processHit(instId, dic['graph'])
-        if dic.has_key('sequence'):
+        if 'sequence' in dic:
             content += self._processTemplate('result_view/sequence_similarity_header.html', {})
             content += self.__processHit(instId, dic['sequence'])
         return content
@@ -189,24 +189,24 @@ class ResultDepict(DepictBase):
             myD['sessionid']  = self._sessionId
             myD['identifier'] = self._identifier
             #
-            if d.has_key('sequence'):
+            if 'sequence' in d:
                 myD['sequence'] = d['sequence']
             else:
                 myD['sequence'] = ''
             #
-            if d.has_key('prdid') and d.has_key('ccid'):
+            if 'prdid' in d and 'ccid' in d:
                 myD['prdid'] = d['prdid']
                 myD['pstatus'] = self.__getStatus(d['prdid'])
                 myD['ccid'] = d['ccid']
                 myD['cstatus'] = self.__getStatus(d['ccid'])
                 myD['compid'] = d['ccid']
                 content += self._processTemplate('result_view/row_with_prdid_ccid_tmplt.html', myD)
-            elif d.has_key('prdid'):
+            elif 'prdid' in d:
                 myD['prdid'] = d['prdid']
                 myD['pstatus'] = self.__getStatus(d['prdid'])
                 myD['compid'] = d['prdid']
                 content += self._processTemplate('result_view/row_with_prdid_tmplt.html', myD)
-            elif d.has_key('ccid'):
+            elif 'ccid' in d:
                 myD['ccid'] = d['ccid']
                 myD['cstatus'] = self.__getStatus(d['ccid'])
                 myD['compid'] = d['ccid']
@@ -224,24 +224,24 @@ class ResultDepict(DepictBase):
             myD['value'] = d['value']
             myD['id'] = 'match_id_' + str(count)
             #
-            if d.has_key('sequence'):
+            if 'sequence' in d:
                 myD['sequence'] = d['sequence']
             else:
                 myD['sequence'] = ''
             #
-            if d.has_key('prdid') and d.has_key('ccid'):
+            if 'prdid' in d and 'ccid' in d:
                 myD['prdid'] = d['prdid']
                 myD['pstatus'] = self.__getStatus(d['prdid'])
                 myD['ccid'] = d['ccid']
                 myD['cstatus'] = self.__getStatus(d['ccid'])
                 myD['selection'] = instId + ',' + d['ccid']
                 content += self._processTemplate('update_form/row_prdid_ccid_tmplt.html', myD)
-            elif d.has_key('prdid'):
+            elif 'prdid' in d:
                 myD['prdid'] = d['prdid']
                 myD['pstatus'] = self.__getStatus(d['prdid'])
                 myD['selection'] = instId + ',' + d['prdid']
                 content += self._processTemplate('update_form/row_prdid_tmplt.html', myD)
-            elif d.has_key('ccid'):
+            elif 'ccid' in d:
                 myD['ccid'] = d['ccid']
                 myD['cstatus'] = self.__getStatus(d['ccid'])
                 myD['selection'] = instId + ',' + d['ccid']

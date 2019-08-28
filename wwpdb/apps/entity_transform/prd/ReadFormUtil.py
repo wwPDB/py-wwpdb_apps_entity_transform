@@ -116,9 +116,9 @@ class ReadFormUtil(object):
             return
         #
         cat = self.__myBlock.getObj('pdbx_reference_entity_list')
-        for row in xrange(0, cat.getRowCount()):
+        for row in range(0, cat.getRowCount()):
             v = cat.getValue('component_id', row)
-            if valMap.has_key(v):
+            if v in valMap:
                 cat.setValue(valMap[v], 'details', row)
             #
         #
@@ -190,7 +190,7 @@ class ReadFormUtil(object):
             cat.setValue(str(row+1), 'ordinal', row)
             for token in ('prd_id', 'entityid_', 'orgsci_', 'taxid_', 'source_', 'sourceid_', \
                           'natname_', 'natcode_'):
-                if dir.has_key(token):
+                if token in dir:
                     cat.setValue(dir[token], map[token], row)
             #
             row += 1
@@ -214,16 +214,16 @@ class ReadFormUtil(object):
         """ Get values based on source ID
         """
         list = []
-        for i in xrange(0, defined_row+1):
+        for i in range(0, defined_row+1):
             dir = {}
             for token in pKey_list:
                 id = token + str(i)
-                if valMap.has_key(id):
+                if id in valMap:
                     dir[token] = valMap[id]
                 #
             #
-            if dir.has_key('orgsci_') or dir.has_key('taxid_') or \
-               dir.has_key('source_') or dir.has_key('sourceid_'):
+            if 'orgsci_' in dir or 'taxid_' in dir or \
+               'source_' in dir or 'sourceid_' in dir:
                 dir['prd_id'] = self.__prdID
                 list.append(dir)
             #
@@ -238,11 +238,11 @@ class ReadFormUtil(object):
             return
         #
         cat = self.__myBlock.getObj('pdbx_reference_entity_poly_seq')
-        for row in xrange(0, cat.getRowCount()):
+        for row in range(0, cat.getRowCount()):
             v1 = cat.getValue('ref_entity_id', row)
             v2 = cat.getValue('num', row)
             key = v1 + '_' + v2
-            if valMap.has_key(key):
+            if key in valMap:
                 cat.setValue(valMap[key], 'parent_mon_id', row)
             #
         #
@@ -251,9 +251,9 @@ class ReadFormUtil(object):
             return
         #
         seqCat = self.__myBlock.getObj('pdbx_reference_entity_sequence')
-        for row in xrange(0, seqCat.getRowCount()):
+        for row in range(0, seqCat.getRowCount()):
             v1 = cat.getValue('ref_entity_id', row)
-            if one_letter_code_map.has_key(v1):
+            if v1 in one_letter_code_map:
                 seqCat.setValue(one_letter_code_map[v1], 'one_letter_codes', row)
             #
         #
@@ -269,7 +269,7 @@ class ReadFormUtil(object):
         one_letter_code_map = {}
         ref_entity_id = ''
         one_letter_code = ''
-        for row in xrange(0, cat.getRowCount()):
+        for row in range(0, cat.getRowCount()):
             ref_id = cat.getValue('ref_entity_id', row)
             value  = cat.getValue('parent_mon_id', row)
             if ref_id != ref_entity_id:
@@ -277,7 +277,7 @@ class ReadFormUtil(object):
                     one_letter_code_map[ref_entity_id] = one_letter_code
                 ref_entity_id = ref_id
                 one_letter_code = ''
-            if aamap.has_key(value):
+            if value in aamap:
                 one_letter_code += aamap[value]
             else:
                 one_letter_code += 'X'
@@ -308,13 +308,13 @@ class ReadFormUtil(object):
         """ update linkage category
         """
         cat = self.__myBlock.getObj(catName)
-        for row in xrange(0, cat.getRowCount()):
+        for row in range(0, cat.getRowCount()):
             v = cat.getValue('link_id', row)
-            if link.has_key(v):
+            if v in link:
                 cat.setValue(link[v], 'value_order', row)
-            if atom1.has_key(v):
+            if v in atom1:
                 cat.setValue(atom1[v], 'atom_id_1', row)
-            if atom2.has_key(v):
+            if v in atom2:
                 cat.setValue(atom2[v], 'atom_id_2', row)
             #
         #
@@ -328,9 +328,9 @@ class ReadFormUtil(object):
             return
         #
         cat = self.__myBlock.getObj('pdbx_reference_entity_poly')
-        for row in xrange(0, cat.getRowCount()):
+        for row in range(0, cat.getRowCount()):
             v = cat.getValue('ref_entity_id', row)
-            if dbname.has_key(v) and dbcode.has_key(v):
+            if v in dbname and v in dbcode:
                 cat.setValue(dbname[v], 'db_name', row)
                 cat.setValue(dbcode[v], 'db_code', row)
             #
@@ -354,7 +354,7 @@ class ReadFormUtil(object):
         #
         if details:
             for k,v in details.items():
-                if uniqueMap.has_key(k):
+                if k in uniqueMap:
                     continue
                 #
                 list.append(int(k))
@@ -365,10 +365,10 @@ class ReadFormUtil(object):
         for i in list:
             id = str(i)
             dir = {}
-            if actiontype.has_key(id):
+            if id in actiontype:
                 dir['action_type'] = actiontype[id]
             #
-            if details.has_key(id):
+            if id in details:
                 dir['details'] = details[id]
             #
             dlist.append(dir)
@@ -396,7 +396,7 @@ class ReadFormUtil(object):
             if not cat:
                 continue
             #
-            for row in xrange(0, cat.getRowCount()):
+            for row in range(0, cat.getRowCount()):
                 cat.setValue(self.__prdID, 'prd_id', row)
             #
         #

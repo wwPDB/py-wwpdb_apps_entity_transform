@@ -64,7 +64,7 @@ class LinkDepict(DepictBase):
             self.__labelId = 'GROUP_' + list[0] 
             id = ','.join(list[1:])
         #
-        if not self.__links.has_key(id):
+        if id not in self.__links:
             return
         #
         for list in self.__links[id]:

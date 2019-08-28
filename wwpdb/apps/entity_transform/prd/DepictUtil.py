@@ -37,7 +37,7 @@ class DepictUtil(object):
         vd = {}
         for list in lists:
             vd[list[0]] = ''
-            if d.has_key(list[1]):
+            if list[1] in d:
                 vd[list[0]] = d[list[1]]
             #
         #
@@ -61,13 +61,13 @@ class DepictUtil(object):
         v_list = []
         for item in item_list:
             v = ''
-            if d.has_key(item):
+            if item in d:
                 v = d[item]
             #
             v_list.append(v)
         #
         idx = '_'.join(v_list)
-        if missing_residue.has_key(idx):
+        if idx in missing_residue:
             return True
         else:
             return False
@@ -122,7 +122,7 @@ class DepictUtil(object):
             for list in lists:
                 vd[list[0]] = ''
             #
-            for i in xrange(count, row): 
+            for i in range(count, row): 
                 tr = self.__getSourceRow(vd, i, entity_list)
                 text += self.__htmlUtil.addTR(tr)
             #
@@ -206,7 +206,7 @@ class DepictUtil(object):
             #
             for item in items:
                 value = ''
-                if d.has_key(item):
+                if item in d:
                     value = d[item]
                 #
                 if flag:
@@ -221,7 +221,7 @@ class DepictUtil(object):
                 #
             #
             value = ''
-            if d.has_key('value_order'):
+            if 'value_order' in d:
                 value = d['value_order']
             text += self.__htmlUtil.addTD(self.__htmlUtil.addSelect(key + '_' + d['link_id'], value, bondorder))
             text += '</tr>\n'
@@ -236,11 +236,11 @@ class DepictUtil(object):
         for d in entityList:
             db_name = ''
             db_code = ''
-            if dbinfo.has_key(d):
-                if dbinfo[d].has_key('db_name'):
+            if d in dbinfo:
+                if 'db_name' in dbinfo[d]:
                     db_name = dbinfo[d]['db_name']
                 #   
-                if dbinfo[d].has_key('db_code'):
+                if 'db_code' in dbinfo[d]:
                     db_code = dbinfo[d]['db_code']
                 #   
             #   

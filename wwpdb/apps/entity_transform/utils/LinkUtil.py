@@ -65,7 +65,7 @@ class LinkUtil(object):
             #
             key1 = '_'.join(link1)
             key2 = '_'.join(link2)
-            if index.has_key(key1) or index.has_key(key2):
+            if key1 in index or key2 in index:
                 continue
             #
             index[key1] = 'yes'
@@ -83,7 +83,7 @@ class LinkUtil(object):
         list = []
         for item in items:
             val = ''
-            if dic.has_key(item):
+            if item in dic:
                 val = dic[item]
                 has_value = True
             #
@@ -96,7 +96,7 @@ class LinkUtil(object):
 
     def __addLink(self, link):
         res_key = '_'.join(link[0:4])
-        if self.__links.has_key(res_key):
+        if res_key in self.__links:
             self.__links[res_key].append(link)
         else:
             list = []
@@ -120,7 +120,7 @@ class LinkUtil(object):
             v_list = []
             for item in items:
                 val = ''
-                if d.has_key(item):
+                if item in d:
                     val = d[item]
                     has_value = True
                 #
@@ -130,7 +130,7 @@ class LinkUtil(object):
                 continue
             #
             res_key = '_'.join(v_list)
-            if not self.__links.has_key(res_key):
+            if res_key not in self.__links:
                 continue
             #
             for link in self.__links[res_key]:
@@ -138,17 +138,17 @@ class LinkUtil(object):
                 key2 = '_'.join(link[6:])
                 #
                 key3 = key1 + '_' + key2
-                if index.has_key(key3):
+                if key3 in index:
                     continue
                 #
                 key4 = key2 + '_' + key1
-                if index.has_key(key4):
+                if key4 in index:
                     continue
                 #
                 index[key3] = 'yes'
                 index[key4] = 'yes'
                 #
-                if self.__links.has_key(v_list[0]):
+                if v_list[0] in self.__links:
                     self.__links[v_list[0]].append(link)
                 else:
                     list = []
@@ -170,7 +170,7 @@ class LinkUtil(object):
         #
         index = {}
         for d in dlist:
-            if not d.has_key('component_ids'):
+            if 'component_ids' not in d:
                 continue
             #
             index = {}
@@ -178,7 +178,7 @@ class LinkUtil(object):
             list = group.split(',')
             link_list = []
             for component in list:
-                if not self.__links.has_key(component):
+                if component not in self.__links:
                     continue
                 #
                 for link in self.__links[component]:
@@ -186,11 +186,11 @@ class LinkUtil(object):
                     key2 = '_'.join(link[6:])
                     #
                     key3 = key1 + '_' + key2
-                    if index.has_key(key3):
+                    if key3 in index:
                         continue
                     #
                     key4 = key2 + '_' + key1
-                    if index.has_key(key4):
+                    if key4 in index:
                         continue
                     #
                     index[key3] = 'yes'
