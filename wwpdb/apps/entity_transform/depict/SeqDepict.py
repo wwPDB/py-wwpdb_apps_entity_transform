@@ -261,7 +261,7 @@ class SeqDepict(object):
     def __depictSequence(self, count, entity_id, seqlist):
         resNumber = len(seqlist)
         resPerLine = 100
-        integerLine = resNumber / resPerLine
+        integerLine = int(resNumber / resPerLine)
         remainderLine = resNumber % resPerLine
         lineNumber = integerLine
         if remainderLine != 0:
@@ -273,7 +273,7 @@ class SeqDepict(object):
         text = '<div id="result_' + entity_key + '" class="result">\n'
         #
         resPerBlock = 10
-        blockNumber = resPerLine / resPerBlock
+        blockNumber = int(resPerLine / resPerBlock)
         #
         # start empty ul
         text += '<ul class="legend whitebg">\n'
@@ -300,7 +300,7 @@ class SeqDepict(object):
             if i == integerLine:
                 resNumberinLine = remainderLine
             #
-            integerBlock = resNumberinLine / resPerBlock
+            integerBlock = int(resNumberinLine / resPerBlock)
             remainderBlock = resNumberinLine % resPerBlock
             blockNumber = integerBlock
             if remainderBlock != 0:
@@ -408,17 +408,25 @@ class SeqDepict(object):
 
     def __writeToString(self, obj=None, delimiter=','):
         text = ''
-        if type(obj) is bool:
+
+        if sys.version_info[0] < 3:
+            numtypes = (int, long, float)
+            stringtypes = (str, unicode)
+        else:
+            numtypes = (int, float)
+            stringtypes = (str, bytes)
+
+        if isinstance(obj, bool):
             if obj:
                 text += 'true'
             else:
                 text += 'false'
             #
-        elif type(obj) in (types.IntType, types.LongType, types.FloatType):
+        elif isinstance(obj, numtypes):
             text += str(obj)
-        elif type(obj) in (types.StringType, types.UnicodeType):
+        elif isinstance(obj, stringtypes):
             text += "'" + str(obj) + "'"
-        elif type(obj) in (types.TupleType, types.ListType):
+        elif isinstance(obj, (list, tuple)):
             text1 = ''
             for v in obj:
                 if text1:
@@ -427,7 +435,7 @@ class SeqDepict(object):
                 text1 += self.__writeToString(obj=v)
             #
             text += '[' + text1 + ']'
-        elif type(obj) is dict:
+        elif isinstance(obj, dict):
             text1 = ''
             for k,v in obj.items():
                 if text1:
