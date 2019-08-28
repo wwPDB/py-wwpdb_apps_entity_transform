@@ -90,7 +90,7 @@ class StrFormDepict(DepictBase):
         myD['annotator'] = ''
         if os.access(os.path.join(self._sessionPath, "annotator_initial"), os.F_OK):
             f = open(os.path.join(self._sessionPath, "annotator_initial"), "rb")
-            myD['annotator'] = f.read()
+            myD['annotator'] = f.read().decode('ascii')
             f.close()
         #
         myD['session_url_prefix'] = os.path.join(self._rltvSessionPath, 'search', myD['instanceid'])
@@ -290,7 +290,7 @@ class StrFormDepict(DepictBase):
 
     def __processMergeGroup(self, group, group_id, polymer=True):
         enum = []
-        for i in xrange(0, len(group)):
+        for i in range(0, len(group)):
             enum.append(str(i + 1))
         #
         count = 1
