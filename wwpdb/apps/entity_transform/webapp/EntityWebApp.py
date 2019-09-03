@@ -331,7 +331,9 @@ class EntityWebAppWorker(object):
         annotator = str(self.__reqObj.getValue("annotator"))
         if annotator:
             f = open(os.path.join(self.__sessionPath, "annotator_initial"), "wb")
-            f.write(annotator.encode('ascii'))
+            if sys.version_info[0] > 2:
+                annotator = annotator.encode('ascii')
+            f.write(annotator)
             f.close()
         #
         # determine if currently operating in Workflow Managed environment

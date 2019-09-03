@@ -90,7 +90,9 @@ class StrFormDepict(DepictBase):
         myD['annotator'] = ''
         if os.access(os.path.join(self._sessionPath, "annotator_initial"), os.F_OK):
             f = open(os.path.join(self._sessionPath, "annotator_initial"), "rb")
-            myD['annotator'] = f.read().decode('ascii')
+            myD['annotator'] = f.read()
+            if sys.version_info[0] > 2:
+                myD['annotator'] = myD['annotator'].decode('ascii')
             f.close()
         #
         myD['session_url_prefix'] = os.path.join(self._rltvSessionPath, 'search', myD['instanceid'])
