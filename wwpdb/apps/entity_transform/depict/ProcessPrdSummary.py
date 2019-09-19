@@ -187,7 +187,7 @@ class ProcessPrdSummary(object):
                 pdic = {}
                 pdic['id'] =  pmap[c]['polymer_id']
                 pdic['linkage_info'] = pmap[c]['linkage_info']
-                if 'message' not in pmap[c]:
+                if 'message' in pmap[c]:
                     pdic['message'] = pmap[c]['message']
                 pdic['label'] = 'CHAIN_' + c
                 pdic['focus'] = pmap[c]['focus']
