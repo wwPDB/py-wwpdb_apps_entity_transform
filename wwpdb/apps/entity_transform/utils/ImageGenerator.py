@@ -54,7 +54,7 @@ class ImageGenerator(object):
         #
         self.__cmdUtil = CommandUtil(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
-        numProc = multiprocessing.cpu_count() / 2
+        numProc = int(multiprocessing.cpu_count() / 2)
         mpu = MultiProcUtil(verbose = True)
         mpu.set(workerObj = self, workerMethod = "runMultiProcess")
         mpu.setWorkingDir(self.__sessionPath)
