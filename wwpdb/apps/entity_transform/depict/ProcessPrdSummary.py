@@ -21,7 +21,7 @@ __email__     = "zfeng@rcsb.rutgers.edu"
 __license__   = "Creative Commons Attribution 3.0 Unported"
 __version__   = "V0.07"
 
-import os, sys, string, traceback
+import copy, os, sys, string, traceback
 
 from wwpdb.apps.entity_transform.depict.DepictBase import DepictBase
 from wwpdb.apps.entity_transform.utils.ImageGenerator import ImageGenerator
@@ -47,6 +47,9 @@ class ProcessPrdSummary(object):
         self.__image_data = []
         #
         self.__data = []
+        self.__action_required_data = []
+        self.__other_data = []
+        #
         self.__matchResultFlag = {}
         self.__graphmatchResultFlag = False
         self.__combResidueFlag = False
@@ -69,6 +72,28 @@ class ProcessPrdSummary(object):
         self.__readSplitMergePolymerResidueResult()
         if imageFlag:
             self.__generateImage()
+        #
+        if self.__action_required_data:
+            dic = {}
+            dic["id"] = "action"
+            dic["arrow"] = "ui-icon-circle-arrow-s"
+            dic["text"] = "Action required:"
+            dic["display"] = "block"
+            dic["list"] = self.__action_required_data
+            self.__data.append(dic)
+            #
+            if self.__other_data:
+#               dic = {}
+#               dic["id"] = "other"
+#               dic["arrow"] = "ui-icon-circle-arrow-e"
+#               dic["text"] = "Other entities:"
+#               dic["display"] = "none"
+#               dic["list"] = self.__other_data
+#               self.__data.append(dic)
+                self.__data.extend(self.__other_data)
+            #
+        else:
+            self.__data = self.__other_data
         #
 
     def getPrdData(self):
@@ -119,7 +144,8 @@ class ProcessPrdSummary(object):
                 #
             #
         #
-        entitylist = []
+        action_entitylist = []
+        other_entitylist = []
         for d in elist:
             type = ''
             if 'type' in d:
@@ -130,6 +156,10 @@ class ProcessPrdSummary(object):
             entity_id = ''
             if 'entity_id' in d:
                 entity_id = d['entity_id']
+            #
+            action_required = ''
+            if 'action_required' in d:
+                action_required = d['action_required']
             #
             properties = {}
             for prolist in self.__propertyList:
@@ -163,7 +193,8 @@ class ProcessPrdSummary(object):
                 if text:
                     text += ', '
                 #
-                text += prolist[0] + ': <span style="color:red;">' + properties[prolist[0]] + '</span>'
+                #text += prolist[0] + ': <span style="color:red;">' + properties[prolist[0]] + '</span>'
+                text += prolist[0] + ': ' + properties[prolist[0]]
             #
             dic = {}
             dic['id'] = 'entity_' + entity_id
@@ -196,16 +227,35 @@ class ProcessPrdSummary(object):
             if polymerlist:
                 dic['list'] = polymerlist
             #
-            entitylist.append(dic)
+            dic["arrow"] = "ui-icon-circle-arrow-e"
+            dic["display"] = "none"
+            other_entitylist.append(dic)
+            #
+            if action_required == "Y":
+                act_dic = copy.deepcopy(dic)
+                act_dic["arrow"] = "ui-icon-circle-arrow-s"
+                act_dic["display"] = "block"
+                action_entitylist.append(act_dic)
+            #
         #
-        if not entitylist:
-            return
+        if action_entitylist:
+            dic = {}
+            dic["id"] = "polymers"
+            dic["arrow"] = "ui-icon-circle-arrow-s"
+            dic["text"] = "Polymers"
+            dic["display"] = "block"
+            dic["list"] = action_entitylist
+            self.__action_required_data.append(dic)
         #
-        dic = {}
-        dic['id'] = 'polymers'
-        dic['text'] = 'Polymers'
-        dic['list'] = entitylist
-        self.__data.append(dic)
+        if other_entitylist:
+            dic = {}
+            dic["id"] = "polymers"
+            dic["arrow"] = "ui-icon-circle-arrow-e"
+            dic["text"] = "Polymers"
+            dic["display"] = "none"
+            dic["list"] = other_entitylist
+            self.__other_data.append(dic)
+        #
 
     def __readNonPolymerData(self):
         elist = self.__cifObj.getValueList('pdbx_non_polymer_info')
@@ -231,13 +281,15 @@ class ProcessPrdSummary(object):
         if not nonpolymermap:
             return
         #
-        list = []
+        keylist = []
         for k,v in nonpolymermap.items():
-            list.append(k)
-        list.sort()
+            keylist.append(k)
         #
-        nonpolymerlist = []
-        for k in list:
+        keylist.sort()
+        #
+        action_nonpolymerlist = []
+        other_nonpolymerlist = []
+        for k in keylist:
             v = nonpolymermap[k]
             count = len(v)
             text = k + ' (' + str(count) + ' '
@@ -252,6 +304,8 @@ class ProcessPrdSummary(object):
             dic = {}
             dic['id'] = k
             dic['text'] = text
+            #
+            action_required = ''
             instlist = []
             for d in v:
                 list_text += ' ' + d['instance_id']
@@ -263,33 +317,63 @@ class ProcessPrdSummary(object):
                 pdic['label'] = d['instance_id']
                 pdic['focus'] = d['focus']
                 instlist.append(pdic)
+                #
+                if ('action_required' in d) and (not action_required):
+                    action_required = d['action_required']
+                #
             #
             dic['list_text'] = list_text
             if instlist:
                 dic['list'] = instlist
-            nonpolymerlist.append(dic)
-        # 
-        if not nonpolymerlist:
-            return
+                dic['list_image_key'] = k
+            #
+            dic["arrow"] = "ui-icon-circle-arrow-e"
+            dic["display"] = "none"
+            other_nonpolymerlist.append(dic)
+            #
+            if action_required == "Y":
+                act_dic = copy.deepcopy(dic)
+                act_dic["arrow"] = "ui-icon-circle-arrow-s"
+                act_dic["display"] = "block"
+                action_nonpolymerlist.append(act_dic)
+            #
         #
-        dic = {}
-        dic['id'] = 'nonpolymers'
-        dic['text'] = 'Non-polymers'
-        dic['list'] = nonpolymerlist
-        self.__data.append(dic)
+        if action_nonpolymerlist:
+            dic = {}
+            dic["id"] = "nonpolymers"
+            dic["arrow"] = "ui-icon-circle-arrow-s"
+            dic["text"] = "Non-polymers"
+            dic["display"] = "block"
+            dic["list"] = action_nonpolymerlist
+            self.__action_required_data.append(dic)
+        #
+        if other_nonpolymerlist:
+            dic = {}
+            dic["id"] = "nonpolymers"
+            dic["arrow"] = "ui-icon-circle-arrow-e"
+            dic["text"] = "Non-polymers"
+            dic["display"] = "none"
+            dic["list"] = other_nonpolymerlist
+            self.__other_data.append(dic)
+        #
 
     def __readGroupData(self):
         elist = self.__cifObj.getValueList('pdbx_group_info')
         if not elist:
             return
         #
-        grouplist = []
+        action_grouplist = []
+        other_grouplist = []
         for d in elist:
             if ('group_id' not in d) or ('descriptor' not in d) or ('residues' not in d) or ('linkage_info' not in d):
                 continue
             #
             if d['linkage_info'] == 'linked':
                 self.__image_data.append( ( d['group_id'], d['group_id'].upper() ) )
+            #
+            action_required = ''
+            if 'action_required' in d:
+                action_required = d['action_required']
             #
             dic = {}
             dic['id'] = 'g_' + d['group_id']
@@ -301,20 +385,41 @@ class ProcessPrdSummary(object):
             pdic['linkage_info'] = d['linkage_info']
             if 'message' in d:
                 pdic['message'] = d['message']
+            #
             pdic['label'] = d['group_id'].upper()
             pdic['focus'] = d['focus']
             instlist.append(pdic)
             dic['list'] = instlist
-            grouplist.append(dic)
+            #
+            dic["arrow"] = "ui-icon-circle-arrow-e"
+            dic["display"] = "none"
+            other_grouplist.append(dic)
+            #
+            if action_required == "Y":
+                act_dic = copy.eepcopy(dic)
+                act_dic["arrow"] = "ui-icon-circle-arrow-s"
+                act_dic["display"] = "block"
+                action_grouplist.append(act_dic)
+            #
         #
-        if not grouplist:
-            return
+        if action_grouplist:
+            dic = {}
+            dic["id"] = "groups"
+            dic["arrow"] = "ui-icon-circle-arrow-s"
+            dic["text"] = "Connected residues(Groups)"
+            dic["display"] = "block"
+            dic["list"] = action_grouplist
+            self.__action_required_data.append(dic)
         #
-        dic = {}
-        dic['id'] = 'groups'
-        dic['text'] = 'Connected residues(Groups)'
-        dic['list'] = grouplist
-        self.__data.append(dic)
+        if other_grouplist:
+            dic = {}
+            dic["id"] = "groups"
+            dic["arrow"] = "ui-icon-circle-arrow-e"
+            dic["text"] = "Connected residues(Groups)"
+            dic["display"] = "none"
+            dic["list"] = other_grouplist
+            self.__other_data.append(dic)
+        #
 
     def __readmatchResult(self):
         elist = self.__cifObj.getValueList('pdbx_match_result')

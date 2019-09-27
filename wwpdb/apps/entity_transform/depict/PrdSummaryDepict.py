@@ -66,7 +66,7 @@ class PrdSummaryDepict(DepictBase):
                   + '&type=merge" target="_blank"> Merge standard amino acid residue + modification to modified amino acid residue in polymer </a></li>\n' 
         #
         if self.__matchResultFlag:
-            text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data + '" target="_blank"> View All Search Result(s) </a></li>\n'
+            text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data + '" target="_blank"> <span style="color:red;">View All Search Result(s)</span> </a></li>\n'
         # 
         if self.__graphmatchResultFlag:
             text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data \
@@ -90,17 +90,27 @@ class PrdSummaryDepict(DepictBase):
         #
         for d in datalist:
             myD = {}
-            myD['id'] = d['id']
-            myD['text'] = d['text']
+            for item in ( "id", "arrow", "text", "display", "image2d" ):
+                if item in d:
+                    myD[item] = d[item]
+                else:
+                    myD[item] = ""
+                #
+            #
             if 'list_text' in d:
                 list_text = '<li>\n' + d['list_text'] + '</li>\n'
                 if 'list' in d:
                     list_text += self.__depictInstanceTable(d['list'])
+                    if 'list_image_key' in d:
+                        myD['image2d'] = self.__depict2DLigandImage(d['list_image_key'], d['list'])
+                    #
+                #
                 myD['list'] = list_text
             elif 'list' in d:
                 myD['list'] = self.__depiction(d['list'])
             else:
                 myD['list'] = ''
+            #
             text += '<li>\n' + self._processTemplate('summary_view/expand_list_tmplt.html', myD) + '</li>\n'
         #
         return text
@@ -140,8 +150,25 @@ class PrdSummaryDepict(DepictBase):
                     myD['text'] = 'Not connected'
                 text += self._processTemplate('summary_view/row_without_2D_view_tmplt.html', myD) + '\n'
         #
-        text += '</table>\n'
+        text += "</table>\n"
         return text
+
+    def __depict2DLigandImage(self, key, datalist):
+        """
+        """
+        if not datalist:
+            return ""
+        #
+        for d in datalist:
+            imagePath = os.path.join(self._sessionPath, "search", d["id"], key + "-200.gif")
+            if not os.access(imagePath, os.F_OK):
+                continue
+            #
+            myD = {}
+            myD["2dpath"] = os.path.join(self._rltvSessionPath, "search", d["id"], key + "-200.gif")
+            return self._processTemplate("summary_view/ligand_2D_view_tmplt.html", myD)
+        #
+        return ""
 
     def __has2D_Image(self, instanceid, label):
         """

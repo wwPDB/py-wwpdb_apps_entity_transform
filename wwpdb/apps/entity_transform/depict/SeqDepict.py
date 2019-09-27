@@ -233,7 +233,7 @@ class SeqDepict(object):
             if one_letter_code in SeqDepict._monDictRNA:
                  return SeqDepict._monDictRNA[one_letter_code]
 
-        return 'UNK'
+        return one_letter_code
 
     def __depictSummaryTable(self, count, entity_id, chain_ids, mol_name, seq_length, n_res, c_res):
         text = '<div id="summery_table_div_' + str(count) + '">\n'

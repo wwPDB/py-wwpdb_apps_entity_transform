@@ -49,40 +49,24 @@ class StrSummaryDepict(DepictBase):
         self.__readLinkData()
 
     def DoRenderSummaryPage(self):
-        text = '<ul>\n'
+        text = "<ul>\n"
         #
         if self.__entities:
-            myD = {}
-            myD['id']   = 'polymer'
-            myD['text'] = 'Polymers'
-            myD['list'] = self.__depictionEntity()
-            text += '<li>\n' + self._processTemplate('summary_view/expand_list_tmplt.html', myD) + '</li>\n'
+            text += self.__depictionList("polymer", "Polymers", self.__depictionEntity())
         elif self.__chain_ids:
-            myD = {}
-            myD['id']   = 'polymer'
-            myD['text'] = 'Polymers'
-            myD['list'] = self.__depictionChain()
-            text += '<li>\n' + self._processTemplate('summary_view/expand_list_tmplt.html', myD) + '</li>\n'
+            text += self.__depictionList("polymer", "Polymers", self.__depictionChain())
         #
         if self.__ligands:
-            myD = {}
-            myD['id']   = 'ligand'
-            myD['text'] = 'Non-polymers'
-            myD['list'] = self.__depictionLigand()
-            text += '<li>\n' + self._processTemplate('summary_view/expand_list_tmplt.html', myD) + '</li>\n'
+            text += self.__depictionList("ligand", "Non-polymers", self.__depictionLigand())
         #
         if self.__groups:
-            myD = {}
-            myD['id']   = 'group'
-            myD['text'] = 'Connected residues(Groups)'
-            myD['list'] = self.__depictionGroup()
-            text += '<li>\n' + self._processTemplate('summary_view/expand_list_tmplt.html', myD) + '</li>\n'
+            text += self.__depictionList("group", "Connected residues(Groups)", self.__depictionGroup())
         #
-        if self._pdbId and self._pdbId != 'unknown':
-            text += '<li><a class="fltlft" href="/service/entity/download_file?struct=yes&sessionid=' + self._sessionId + '&identifier=' \
-                  + self._identifier + '&pdbid=' + self._pdbId + '" target="_blank"> Download Files </a></li>\n'
+        if self._pdbId and self._pdbId != "unknown":
+            text += '<li><a class="fltlft" href="/service/entity/download_file?struct=yes&sessionid=' + self._sessionId + "&identifier=" \
+                  + self._identifier + "&pdbid=" + self._pdbId + '" target="_blank"> Download Files </a></li>\n'
         #
-        text += '</ul>\n'
+        text += "</ul>\n"
         return text
 
     def __readEntityData(self):
@@ -158,6 +142,16 @@ class StrSummaryDepict(DepictBase):
     def __readLinkData(self):
         linkutil = LinkUtil(cifObj=self._cifObj, verbose=self._verbose, log=self._lfh)
         self.__links = linkutil.getLinks()
+
+    def __depictionList(self, listId, listText, listContent):
+        myD = {}
+        myD["id"]   = listId
+        myD["arrow"] = "ui-icon-circle-arrow-e"
+        myD["text"] = listText
+        myD["display"] = "none"
+        myD["image2d"] = ""
+        myD["list"] = listContent
+        return "<li>\n" + self._processTemplate("summary_view/expand_list_tmplt.html", myD) + "</li>\n"
 
     def __depictionEntity(self):
         text = '<table>\n'
