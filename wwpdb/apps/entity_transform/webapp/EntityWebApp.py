@@ -1122,7 +1122,7 @@ class EntityWebAppWorker(object):
                 self.__identifier = list[0][0:idx]
             #
             uploadFilePath = os.path.join(self.__sessionPath, '_upload_' + str(time.strftime("%Y%m%d%H%M%S", time.localtime())))
-            ofh=open(uploadFilePath, 'w')
+            ofh=open(uploadFilePath, 'wb')
             ofh.write(fs.file.read())
             ofh.close()
             #
