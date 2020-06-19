@@ -52,6 +52,7 @@ from wwpdb.apps.entity_transform.utils.WFDataIOUtil       import WFDataIOUtil
 from wwpdb.apps.entity_transform.webapp.FormPreProcess    import FormPreProcess
 from wwpdb.utils.detach.DetachUtils                         import DetachUtils
 from wwpdb.io.file.mmCIFUtil                           import mmCIFUtil
+from wwpdb.io.locator.PathInfo                          import PathInfo
 from wwpdb.utils.dp.RcsbDpUtility                       import RcsbDpUtility
 from wwpdb.utils.session.WebRequest                          import InputRequest,ResponseContent
 #
@@ -304,15 +305,24 @@ class EntityWebAppWorker(object):
         #
         self.__getSession()
         #
-        if (not self.__isFileUpload()) or (not self.__uploadFile()):
-            self.__reqObj.setReturnFormat(return_format="html")        
-            rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
-            if not self.__isFileUpload():
-                rC.setError(errMsg='No file uploaded')            
-            else:
-                rC.setError(errMsg='Upload file failed')
+        self.__reqObj.setReturnFormat(return_format="html")        
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        #
+        depId = str(self.__reqObj.getValue('identifier')).upper().strip()
+        if depId:
+            if not self.__copyArchiveFile(depId):
+                rC.setError(errMsg='Invalid Deposition ID: ' + depId)
+                return rC
             #
+        elif self.__isFileUpload():
+            if not self.__uploadFile():
+                rC.setError(errMsg='Upload file failed')
+                return rC
+            #
+        else:
+            rC.setError(errMsg='No Deposition ID input & file uploaded')
             return rC
+        #
         #
         dU = DetachUtils(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         dU.set(workerObj=self, workerMethod="_runPrdSearch")
@@ -1088,6 +1098,19 @@ class EntityWebAppWorker(object):
             return False
         return True
 
+    def __copyArchiveFile(self, depId):
+        """
+        """
+        pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
+        archiveFilePath = pI.getFilePath(dataSetId=depId, wfInstanceId=None, contentType='model', formatType='pdbx', fileSource="archive")
+        if archiveFilePath and os.access(archiveFilePath, os.R_OK):
+            self.__reqObj.setValue("identifier", depId)
+            self.__getInputFileInfo(archiveFilePath)
+            shutil.copyfile(archiveFilePath, os.path.join(self.__sessionPath, self.__modelfileId))
+            return True
+        #
+        return False
+
     def __uploadFile(self,fileTag='file',fileTypeTag='filetype'):
         #
         #
@@ -1127,28 +1150,8 @@ class EntityWebAppWorker(object):
             ofh.close()
             #
             if os.access(uploadFilePath, os.F_OK):
-                cifObj = mmCIFUtil(filePath=uploadFilePath)
-                dList = cifObj.GetValue('database_2') 
-                for d in dList:
-                    if (not 'database_id' in d) or (not d['database_id']) or (not 'database_code' in d) or (not d['database_code']):
-                        continue
-                    #
-                    dbname = d['database_id'].upper()
-                    dbcode = d['database_code'].upper()
-                    if dbname == 'PDB':
-                        self.__pdbId = dbcode
-                        self.__lfh.write("+EntityWebApp.__uploadFile() pdbId %s\n" % self.__pdbId)
-                    elif dbname == 'WWPDB':
-                        self.__identifier = dbcode
-                        self.__lfh.write("+EntityWebApp.__uploadFile() identifier %s\n" % self.__identifier)
-                    #
-                #
-                self.__title = cifObj.GetSingleValue('struct', 'title')
-                #
-                self.__reqObj.setValue('identifier', self.__identifier)
-                self.__updateFileId()
-                fPathAbs=os.path.join(self.__sessionPath, self.__modelfileId)
-                os.rename(uploadFilePath, fPathAbs)
+                self.__getInputFileInfo(uploadFilePath)
+                os.rename(uploadFilePath, os.path.join(self.__sessionPath, self.__modelfileId))
                 if (self.__verbose):
                     self.__lfh.write("+EntityWebApp.__uploadFile() Uploaded file\n")
                 #
@@ -1161,6 +1164,36 @@ class EntityWebAppWorker(object):
             #
         #
         return False
+
+    def __getInputFileInfo(self, inputFileName):
+        """
+        """
+        try:
+            cifObj = mmCIFUtil(filePath=inputFileName)
+            dList = cifObj.GetValue('database_2') 
+            for d in dList:
+                if (not 'database_id' in d) or (not d['database_id']) or (not 'database_code' in d) or (not d['database_code']):
+                    continue
+                #
+                dbname = d['database_id'].upper().strip()
+                dbcode = d['database_code'].upper().strip()
+                if dbname == 'PDB':
+                    self.__pdbId = dbcode
+                    self.__lfh.write("+EntityWebApp.__getInputFileInfo() pdbId %s\n" % self.__pdbId)
+                elif dbname == 'WWPDB':
+                    self.__identifier = dbcode
+                    self.__lfh.write("+EntityWebApp.__getInputFileInfo() identifier %s\n" % self.__identifier)
+                #
+            #
+            self.__title = cifObj.GetSingleValue('struct', 'title')
+            #
+            self.__reqObj.setValue('identifier', self.__identifier)
+            self.__updateFileId()
+        except:
+            if (self.__verbose):
+                traceback.print_exc(file=self.__lfh)                            
+            #
+        #
 
     def __processTemplate(self,fn,parameterDict={}):
         """ Read the input HTML template data file and perform the key/value substitutions in the

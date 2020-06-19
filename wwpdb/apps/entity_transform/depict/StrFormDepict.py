@@ -67,6 +67,8 @@ class StrFormDepict(DepictBase):
                 template,myD = self.__processMergePolymer(myD)
             elif self.__submitValue == 'Split polymer to polymer(s)/non-polymer(s)':
                 template,myD =self.__processSplitPolymer(myD)
+            elif self.__submitValue == 'Edit polymer sequence(s)':
+                template,myD =self.__processEditPolymerSequence(myD)
             elif self.__submitValue == 'Merge/Split with chopper':
                 template,myD = self.__processMergeSplit(myD)
             elif self.__submitValue == 'Merge to ligand':
@@ -140,7 +142,7 @@ class StrFormDepict(DepictBase):
                 continue
             #
             dic = {}
-            for item in ('entity_id', 'pdbx_strand_id', 'name', 'type', 'pdbx_seq_one_letter_code'):
+            for item in ('entity_id', 'pdbx_strand_id', 'name', 'type', 'pdbx_seq_one_letter_code', 'pdbx_seq_coord_align_label'):
                 if item in d:
                     dic[item] = d[item]
                 #
@@ -180,18 +182,32 @@ class StrFormDepict(DepictBase):
         return 'update_form/merge_polymer_tmplt.html',myD
 
     def __processSplitPolymer(self, myD):
-        entities = self.__getSplitEntities()
+        entities = self.__getSelectedEntitiesInfo()
         #
         jscript = ''
         html_text = 'No entity found.'
         if entities:
-            seqObj = SeqDepict(entityInfo=entities, verbose=self._verbose, log=self._lfh)
+            seqObj = SeqDepict(entityInfo=entities, option="split", verbose=self._verbose, log=self._lfh)
             html_text = seqObj.getHtmlText()
             jscript = seqObj.getScriptText()
         #
         myD['script'] = jscript
         myD['form_data'] = html_text
         return 'update_form/split_polymer_tmplt.html',myD
+
+    def __processEditPolymerSequence(self, myD):
+        entities = self.__getSelectedEntitiesInfo()
+        #
+        jscript = ''
+        html_text = 'No entity found.'
+        if entities:
+            seqObj = SeqDepict(entityInfo=entities, option="edit", verbose=self._verbose, log=self._lfh)
+            html_text = seqObj.getHtmlText()
+            jscript = seqObj.getScriptText()
+        #
+        myD['script'] = jscript
+        myD['form_data'] = html_text
+        return 'update_form/edit_polymer_sequence_tmplt.html',myD
 
     def __processMergeSplit(self, myD):
         instlist = []
@@ -263,8 +279,8 @@ class StrFormDepict(DepictBase):
             if token != 'group_':
                 self.__addToGroup(name, value, dic, group_id)
             else:
-                list = str(v).split(',')
-                for val in list:
+                tlist = str(v).split(',')
+                for val in tlist:
                     list1 = val.split('_')
                     if len(list1) == 1:
                         name = 'chain_' + val
@@ -284,9 +300,9 @@ class StrFormDepict(DepictBase):
             #
             dic[value].append(name)
         else:
-            list = []
-            list.append(name)
-            dic[value] = list
+            tlist = []
+            tlist.append(name)
+            dic[value] = tlist
             group_id.append(value)
         #
 
@@ -299,15 +315,15 @@ class StrFormDepict(DepictBase):
         text = ''
         new_ligand_id = ''
         for v in group:
-            list = v.split('_')
-            token = list[0]
-            value = list[1]
+            tlist = v.split('_')
+            token = tlist[0]
+            value = tlist[1]
             label = token
             if token == 'ligand':
                 label = 'residue'
-                value = '_'.join(list[1:])
+                value = '_'.join(tlist[1:])
                 if not new_ligand_id:
-                    new_ligand_id = list[2]
+                    new_ligand_id = tlist[2]
                 #
             #
             text += '<input type="hidden" name="' + token + '" value="' + value + '" />'
@@ -326,7 +342,7 @@ class StrFormDepict(DepictBase):
         text += ' <br/>\n'
         return text
 
-    def __getSplitEntities(self):
+    def __getSelectedEntitiesInfo(self):
         entities = []
         _included_chainIDs = {}
         #
@@ -340,7 +356,7 @@ class StrFormDepict(DepictBase):
                         _included_chainIDs[c] = 'yes' 
                     #
                 #
-                self.__addSplitEntities(entities, entity_id, chainids)
+                self.__addSelectedEntitiesInfo(entities, entity_id, chainids)
             #
         #
         if self.__chainList:
@@ -353,13 +369,13 @@ class StrFormDepict(DepictBase):
                 if not chain_id in self.__chain_entity_mapping:
                     continue
                 #
-                self.__addSplitEntities(entities, self.__chain_entity_mapping[chain_id], chain_id)
+                self.__addSelectedEntitiesInfo(entities, self.__chain_entity_mapping[chain_id], chain_id)
                 #
             #
         #
         return entities
 
-    def __addSplitEntities(self, entities, entity_id, chainids):
+    def __addSelectedEntitiesInfo(self, entities, entity_id, chainids):
         if entities:
             for e_list in entities:
                 if e_list[0] == entity_id:
@@ -374,25 +390,30 @@ class StrFormDepict(DepictBase):
         if not 'pdbx_seq_one_letter_code' in self.__entity_info[entity_id]:
             return
         #
-        list = []
-        # list[0]: entity ID
-        list.append(entity_id)
-        # list[1]: chain IDs
-        list.append(chainids)
-        # list[2]: molecule name
+        tlist = []
+        # tlist[0]: entity ID
+        tlist.append(entity_id)
+        # tlist[1]: chain IDs
+        tlist.append(chainids)
+        # tlist[2]: molecule name
         if 'name' in self.__entity_info[entity_id]:
-            list.append(self.__entity_info[entity_id]['name'])
+            tlist.append(self.__entity_info[entity_id]['name'])
         else:
-            list.append('')
-        # list[3]: one letter code sequence
-        list.append(self.__entity_info[entity_id]['pdbx_seq_one_letter_code'])
-        # list[4]: polymer type
+            tlist.append('')
+        # tlist[3]: one letter code sequence
+        tlist.append(self.__entity_info[entity_id]['pdbx_seq_one_letter_code'])
+        # tlist[4]: polymer type
         if 'type' in self.__entity_info[entity_id]:
-            list.append(self.__entity_info[entity_id]['type'])
+            tlist.append(self.__entity_info[entity_id]['type'])
         else:
-            list.append('')
+            tlist.append('')
+        # tlist[5]: seq/coords alignment label string: 001111... (0 = no coord aligned, 1 = has coord(s) aligned)
+        if 'pdbx_seq_coord_align_label' in self.__entity_info[entity_id]:
+            tlist.append(self.__entity_info[entity_id]['pdbx_seq_coord_align_label'])
+        else:
+            tlist.append('')
         #
-        entities.append(list)
+        entities.append(tlist)
 
     def __selectTag(self, name, value, enum):
         text = '<select name="' + name + '">\n'

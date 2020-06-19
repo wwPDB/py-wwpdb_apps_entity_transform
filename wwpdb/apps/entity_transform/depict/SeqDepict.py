@@ -21,7 +21,7 @@ __email__     = "zfeng@rcsb.rutgers.edu"
 __license__   = "Creative Commons Attribution 3.0 Unported"
 __version__   = "V0.07"
 
-import os, sys, string, traceback, types
+import copy, os, sys, string, traceback, types
 
 class SeqDepict(object):
     """ Class responsible for generating HTML depiction of spliting polymer(s).
@@ -155,27 +155,44 @@ class SeqDepict(object):
         'V':'DVA'
         }
 
-    def __init__(self, entityInfo=None, verbose=False, log=sys.stderr):
-        self.__verbose=verbose
-        self.__lfh=log
-        self.__entityInfo=entityInfo
+    def __init__(self, entityInfo=None, option="split", verbose=False, log=sys.stderr):
+        self.__entityInfo = entityInfo
+        self.__option = option
+        self.__verbose = verbose
+        self.__lfh = log
         self.__entityLength = {}
         self.__entityIndices = {}
+        self.__entityDeletionIndices = {}
+        self.__reverseEntityDeletionIndices = {}
 
     def getHtmlText(self):
         html_text = ''
         count = 0
-        for list in self.__entityInfo:
-            type = 'polypeptide(L)'
-            if list[4]:
-                type = list[4]
-            seqlist = self.__getSeqList(type, list[3])
-            length = len(seqlist)
-            self.__entityLength[str(count) + '_' + list[0]] = length
+        for infolist in self.__entityInfo:
+            polytype = 'polypeptide(L)'
+            if infolist[4]:
+                polytype = infolist[4]
             #
-            html_text += self.__depictSummaryTable(count, list[0], list[1], list[2], length, seqlist[0][1], seqlist[length-1][1])
-            html_text += self.__depictSequence(count, list[0], seqlist)
-            html_text += self.__depictSplitTable(count, list[0])
+            seqlist = self.__getSeqList(polytype, infolist[3])
+            length = len(seqlist)
+            self.__entityLength[str(count) + '_' + infolist[0]] = length
+            #
+            html_text += self.__depictSummaryTable(count, infolist[0], infolist[1], infolist[2], length, seqlist[0][1], seqlist[length-1][1])
+            if self.__option == "edit":
+                if infolist[5]:
+                    labelList = list(infolist[5])
+                    if len(labelList) != length:
+                        labelList = ["1"] * length
+                    #
+                else:
+                    labelList = ["1"] * length
+                #
+                html_text += self.__depictSequence(count, infolist[0], seqlist, labelList, "")
+                html_text += self.__depictEditTable(count, infolist[0])
+            else:
+                html_text += self.__depictSequence(count, infolist[0], seqlist, [], "dblclick")
+                html_text += self.__depictSplitTable(count, infolist[0])
+            #
             html_text += '<div class="emptyspace"></div>\n'
             html_text += '<div class="emptyspace"></div>\n'
             count += 1
@@ -184,8 +201,14 @@ class SeqDepict(object):
 
     def getScriptText(self):
         #
-        return 'var lengthMap = ' + self.__writeToString(obj=self.__entityLength) + ';\n' + \
-               'var indexMap = ' + self.__writeToString(obj=self.__entityIndices) + ';'
+       
+        scriptText = 'var lengthMap = ' + self.__writeToString(obj=self.__entityLength) + ';\n' \
+                   + 'var indexMap = ' + self.__writeToString(obj=self.__entityIndices) + ';'
+        if self.__option == "edit":
+            scriptText += '\nvar deleteIndexMap = ' + self.__writeToString(obj=self.__entityDeletionIndices) + ';\n' \
+                        + 'var reverseDeleteIndexMap = ' + self.__writeToString(obj=self.__reverseEntityDeletionIndices) + ';'
+        #
+        return scriptText;
 
     def __getSeqList(self, polytype, one_letter_seq):
         seqlist = []
@@ -203,18 +226,18 @@ class SeqDepict(object):
                 if r3 in SeqDepict._monDict3:
                     r1 = SeqDepict._monDict3[r3]
                 #
-                list = []
-                list.append(r1)
-                list.append(r3)
-                seqlist.append(list)
+                tmplist = []
+                tmplist.append(r1)
+                tmplist.append(r3)
+                seqlist.append(tmplist)
             elif inP:
                 r3 += s
             else:
                 r3L = self.__getThreeLetterCode(s, polytype)
-                list = []
-                list.append(s)
-                list.append(r3L)
-                seqlist.append(list)
+                tmplist = []
+                tmplist.append(s)
+                tmplist.append(r3L)
+                seqlist.append(tmplist)
             #
         #
         return seqlist
@@ -258,8 +281,8 @@ class SeqDepict(object):
         text += '<input type="hidden" name="chain_' + entity_id + '" value="' + chain_ids + '" />\n'
         return text
 
-    def __depictSequence(self, count, entity_id, seqlist):
-        resNumber = len(seqlist)
+    def __depictSequence(self, count, entity_id, seqList, labelList, defaultCss):
+        resNumber = len(seqList)
         resPerLine = 100
         integerLine = int(resNumber / resPerLine)
         remainderLine = resNumber % resPerLine
@@ -288,6 +311,7 @@ class SeqDepict(object):
         # end empty ul
         text += '</ul>\n'
         #
+        deletableList = []
         for i in range(0, lineNumber):
             cssClassBg = 'whitebg'
             if i % 2:
@@ -337,19 +361,29 @@ class SeqDepict(object):
                 #
                 for k in range(0, resNumberinBlock):
                     idx = i * resPerLine + j * resPerBlock + k
-                    currRes = seqlist[idx][1] + '_' + str(idx + 1)
+                    currRes = seqList[idx][1] + '_' + str(idx + 1)
                     nextRes = ''
                     if (idx + 1) < resNumber:
-                        nextRes = seqlist[idx+1][1] + '_' + str(idx + 2)
+                        nextRes = seqList[idx+1][1] + '_' + str(idx + 2)
                     #
-                    if nextRes:
+                    if nextRes and (self.__option == "split"):
                         currRes += '_' + nextRes
+                    #
+                    currCss = "viewres"
+                    if defaultCss:
+                        currCss += " " + defaultCss
+                    #
+                    if labelList and (labelList[idx] == "0"):
+                        currCss += " greenbg dblclick"
+                        deletableList.append((idx, currRes))
+                    #
                     if entity_key in self.__entityIndices:
                         self.__entityIndices[entity_key][idx + 1] = currRes
                     else:
                         self.__entityIndices[entity_key] = { idx + 1 : currRes }
                     #
-                    text += '<li id="' + entity_key + '_' + currRes + '" class="dblclick viewres">' + seqlist[idx][0] + '</li>\n'
+                    #text += '<li id="' + entity_key + '_' + currRes + '" class="dblclick viewres">' + seqList[idx][0] + '</li>\n'
+                    text += '<li id="' + entity_key + '_' + currRes + '" class="' + currCss + '">' + seqList[idx][0] + '</li>\n'
                 #
                 # add space between block
                 text += '<li> </li>\n'
@@ -381,7 +415,45 @@ class SeqDepict(object):
         # end result div
         text += '</div>\n'
         text += '<div class="emptyspace"></div>\n'
+        #
+        if deletableList and (self.__option == "edit"):
+            fragmentList = []
+            idx = -5
+            for resTuple in deletableList:
+                if (idx + 1) != resTuple[0]:
+                    self.__insertDeletionIndices(entity_key, fragmentList)
+                    fragmentList = []
+                #
+                idx = resTuple[0]
+                fragmentList.append(resTuple[1])
+            #
+            self.__insertDeletionIndices(entity_key, fragmentList)
+        #
         return text
+
+    def __insertDeletionIndices(self, entity_key, fragmentList):
+        if len(fragmentList) > 1:
+            reverseList = copy.deepcopy(fragmentList)
+            reverseList.reverse()
+            while len(reverseList) > 1:
+                localCopy = copy.deepcopy(reverseList)
+                if entity_key in self.__reverseEntityDeletionIndices:
+                    self.__reverseEntityDeletionIndices[entity_key][localCopy[0]] = localCopy[1:]
+                else:
+                    self.__reverseEntityDeletionIndices[entity_key] = { localCopy[0] : localCopy[1:] }
+                #
+                v = reverseList.pop(0)
+            #
+        #
+        while fragmentList:
+            localCopy = copy.deepcopy(fragmentList)
+            if entity_key in self.__entityDeletionIndices:
+                self.__entityDeletionIndices[entity_key][localCopy[0]] = localCopy
+            else:
+                self.__entityDeletionIndices[entity_key] = { localCopy[0] : localCopy }
+            #
+            v = fragmentList.pop(0)
+        #
 
     def __depictSplitTable(self, count, entity_id):
         entity_key = str(count) + '_' + entity_id
@@ -391,8 +463,8 @@ class SeqDepict(object):
         text += '<th colspan="5">Split Position between Residues</th>\n'
         text += '</tr>\n'
         text += '<tr>\n'
-        text += '<th id="delete_all_' +  entity_key + '" colspan="5" class="displaynone">' \
-              + '<input type="button" id="delete_all_button_' + entity_key + '" value="Delete All" class="deleteallrows action_button" /></th>\n'
+        text += '<th id="delete_all_' +  entity_key + '" colspan="5" class="displaynone"><input type="button" id="delete_all_button_' \
+              + entity_key + '" value="Remove All" class="deleteallrows action_button" /></th>\n'
         text += '</tr>\n'
         text += '<tr>\n'
         text += '<th>1st Residue Name</th>\n'
@@ -401,6 +473,31 @@ class SeqDepict(object):
         text += '<th>2nd Residue Position</th>\n'
         text += '<th>Action</th>\n'
         text += '</tr>\n'
+        text += '</table>\n'
+        text += '</div>\n'
+        text += '<div class="emptyspace"></div>\n'
+        return text
+
+    def __depictEditTable(self, count, entity_id):
+        entity_key = str(count) + '_' + entity_id
+        text = '<div id="edit_table_div_' + str(count) + '">\n'
+        text += '<table id="edit_table_' + entity_key + '">\n'
+        text += '<tr>\n'
+        text += '<th colspan="5">Edit Polymer Sequence</th>\n'
+        text += '</tr>\n'
+        text += '<tr>\n'
+        text += '<th colspan="4"><input type="button" id="insert_sequence_' + entity_key + '" value="Insertion" /></th>' \
+              + '<th><input type="button" id="delete_all_button_' + entity_key + '" value="Remove All" class="displaynone deleteallrows action_button" /></th>\n'
+        text += '</tr>\n'
+        """
+        text += '<tr>\n'
+        text += '<th>1st Residue Name</th>\n'
+        text += '<th>1st Residue Position</th>\n'
+        text += '<th>2nd Residue Name</th>\n'
+        text += '<th>2nd Residue Position</th>\n'
+        text += '<th>Action</th>\n'
+        text += '</tr>\n'
+        """
         text += '</table>\n'
         text += '</div>\n'
         text += '<div class="emptyspace"></div>\n'

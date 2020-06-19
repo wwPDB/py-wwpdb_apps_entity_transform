@@ -70,9 +70,9 @@ class FormPreProcess(object):
             self.__errorMessage = 'For "' + self.__submitValue + '" option, only ' + \
                   'polymer chain ID(s) and/or ligand ID(s) selection are allowed.'
             return
-        elif (self.__submitValue == 'Split polymer to polymer(s)/non-polymer(s)') and \
+        elif ((self.__submitValue == 'Split polymer to polymer(s)/non-polymer(s)') or (self.__submitValue == 'Edit polymer sequence(s)')) and \
              (self.__chainList or self.__ligandList or self.__groupList):
-            self.__errorMessage = 'For "' + self.__submitValue + '" option, only ' + 'entity ID(s) selection are allowed.'
+            self.__errorMessage = 'For "' + self.__submitValue + '" option, only polymer entity ID(s) selection are allowed.'
             return
         elif (self.__submitValue == 'Merge to ligand') and (self.__entityList or self.__chainList or self.__groupList):
             self.__errorMessage = 'For "' + self.__submitValue + '" option, only ligand ID(s) selection are allowed.'

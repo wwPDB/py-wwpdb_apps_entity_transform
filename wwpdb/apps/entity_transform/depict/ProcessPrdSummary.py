@@ -112,149 +112,148 @@ class ProcessPrdSummary(object):
         return self.__splitPolymerResidueFlag
 
     def __readEntityData(self):
-        elist = self.__cifObj.getValueList('pdbx_entity_info')
+        elist = self.__cifObj.getValueList("pdbx_entity_info")
         if not elist:
             return
         #
         nucleotide = {}
         for d in elist:
-            if ('entity_id' not in d) or ('polymer_type' not in d):
+            if ("entity_id" not in d) or ("polymer_type" not in d):
                 continue
             #
-            if (d['polymer_type'].lower() == 'polyribonucleotide') or (d['polymer_type'].lower() == 'polydeoxyribonucleotide'):
-                nucleotide[d['entity_id']] = 'yes'
+            if (d["polymer_type"].lower() == "polyribonucleotide") or (d["polymer_type"].lower() == "polydeoxyribonucleotide"):
+                nucleotide[d["entity_id"]] = "yes"
             #
         #
         pmap = {}
-        plist = self.__cifObj.getValueList('pdbx_polymer_info')
+        plist = self.__cifObj.getValueList("pdbx_polymer_info")
         if plist:
             for d in plist:
-                if ('pdb_chain_id' not in d) or ('polymer_id' not in d) or ('linkage_info' not in d):
+                if ("pdb_chain_id" not in d) or ("polymer_id" not in d) or ("linkage_info" not in d):
                     continue
                 #
-                pmap[d['pdb_chain_id']] = d
+                pmap[d["pdb_chain_id"]] = d
                 #
                 # Skip generating images for DNA/RNA polymers
                 #
-                if 'entity_id' in d and d['entity_id'] in nucleotide:
+                if "entity_id" in d and d["entity_id"] in nucleotide:
                     continue
                 #
-                if d['linkage_info'] == 'linked':
-                    self.__image_data.append( ( d['polymer_id'], 'CHAIN_' + d['pdb_chain_id']) )
+                if d["linkage_info"] == "linked":
+                    self.__image_data.append( ( d["polymer_id"], "CHAIN_" + d["pdb_chain_id"]) )
                 #
             #
         #
-        action_entitylist = []
-        other_entitylist = []
-        for d in elist:
-            type = ''
-            if 'type' in d:
-                type = d['type']
-            if type != 'polymer':
-                continue
-            #
-            entity_id = ''
-            if 'entity_id' in d:
-                entity_id = d['entity_id']
-            #
-            action_required = ''
-            if 'action_required' in d:
-                action_required = d['action_required']
-            #
-            properties = {}
-            for prolist in self.__propertyList:
-                if (prolist[1] not in d) or (not d[prolist[1]]):
+        for polymerTup in ( ( "polymer", "polymers", "Polymers" ), ( "branched", "oligosaccharide", "Oligosaccharides" ) ):
+            action_entitylist = []
+            other_entitylist = []
+            for d in elist:
+                if ("type" not in d ) or (d["type"] != polymerTup[0]):
                     continue
                 #
-                if prolist[1] == 'polymer_type':
-                    if d[prolist[1]] in self.__typeMap:
-                        properties[prolist[0]] = self.__typeMap[d[prolist[1]]] + ' ( ' + d[prolist[1]] + ' )'
+                entity_id = ""
+                if "entity_id" in d:
+                    entity_id = d["entity_id"]
+                #
+                action_required = ""
+                if "action_required" in d:
+                    action_required = d["action_required"]
+                #
+                properties = {}
+                for prolist in self.__propertyList:
+                    if (prolist[1] not in d) or (not d[prolist[1]]):
+                        continue
+                    #
+                    if prolist[1] == "polymer_type":
+                        if d[prolist[1]] in self.__typeMap:
+                            properties[prolist[0]] = self.__typeMap[d[prolist[1]]] + " ( " + d[prolist[1]] + " )"
+                        else:
+                            properties[prolist[0]] = d[prolist[1]]
+                        #
                     else:
                         properties[prolist[0]] = d[prolist[1]]
                     #
-                else:
-                    properties[prolist[0]] = d[prolist[1]]
                 #
-            #
-            if (not entity_id) or ('Chain ID(s)' not in properties):
-                continue
-            #
-            seq = ''
-            if 'one_letter_seq' in d:
-                seq = '<br/>' + self.__processingOneLetterSeq(d['one_letter_seq'])
-            elif 'three_letter_seq' in d:
-                seq = d['three_letter_seq']
-            #
-            text = ''
-            for prolist in self.__propertyList:
-                if prolist[0] not in properties:
+                if (not entity_id) or ("Chain ID(s)" not in properties):
                     continue
                 #
-                if text:
-                    text += ', '
+                seq = ""
+                if "one_letter_seq" in d:
+                    seq = "<br/>" + self.__processingOneLetterSeq(d["one_letter_seq"])
+                elif "three_letter_seq" in d:
+                    seq = d["three_letter_seq"]
                 #
-                #text += prolist[0] + ': <span style="color:red;">' + properties[prolist[0]] + '</span>'
-                text += prolist[0] + ': ' + properties[prolist[0]]
-            #
-            dic = {}
-            dic['id'] = 'entity_' + entity_id
-            dic['text'] = 'Entity ' + entity_id + ' ( ' + text + ' )'
-            dic['list_text'] = 'Residues: ' + seq
-            #
-            polymerlist = []
-            flag = False
-            clist = properties['Chain ID(s)'].split(',')
-            for c in clist:
-                if flag:
-                    continue
+                text = ""
+                for prolist in self.__propertyList:
+                    if prolist[0] not in properties:
+                        continue
+                    #
+                    if text:
+                        text += ", "
+                    #
+                    #text += prolist[0] + ": <span style="color:red;">" + properties[prolist[0]] + "</span>"
+                    text += prolist[0] + ": " + properties[prolist[0]]
                 #
-                if c not in pmap:
-                    continue
+                dic = {}
+                dic["id"] = "entity_" + entity_id
+                dic["text"] = "Entity " + entity_id + " ( " + text + " )"
+                dic["list_text"] = "Residues: " + seq
                 #
-                if pmap[c]['linkage_info'] == 'big_polymer':
-                    flag = True
-                    continue
+                polymerlist = []
+                flag = False
+                clist = properties["Chain ID(s)"].split(",")
+                for c in clist:
+                    if flag:
+                        continue
+                    #
+                    if c not in pmap:
+                        continue
+                    #
+                    if pmap[c]["linkage_info"] == "big_polymer":
+                        flag = True
+                        continue
+                    #
+                    pdic = {}
+                    pdic["id"] =  pmap[c]["polymer_id"]
+                    pdic["linkage_info"] = pmap[c]["linkage_info"]
+                    if "message" in pmap[c]:
+                        pdic["message"] = pmap[c]["message"]
+                    pdic["label"] = "CHAIN_" + c
+                    pdic["focus"] = pmap[c]["focus"]
+                    polymerlist.append(pdic)
                 #
-                pdic = {}
-                pdic['id'] =  pmap[c]['polymer_id']
-                pdic['linkage_info'] = pmap[c]['linkage_info']
-                if 'message' in pmap[c]:
-                    pdic['message'] = pmap[c]['message']
-                pdic['label'] = 'CHAIN_' + c
-                pdic['focus'] = pmap[c]['focus']
-                polymerlist.append(pdic)
+                if polymerlist:
+                    dic["list"] = polymerlist
+                #
+                dic["arrow"] = "ui-icon-circle-arrow-e"
+                dic["display"] = "none"
+                other_entitylist.append(dic)
+                #
+                if action_required == "Y":
+                    act_dic = copy.deepcopy(dic)
+                    act_dic["arrow"] = "ui-icon-circle-arrow-s"
+                    act_dic["display"] = "block"
+                    action_entitylist.append(act_dic)
+                #
             #
-            if polymerlist:
-                dic['list'] = polymerlist
+            if action_entitylist:
+                dic = {}
+                dic["id"] = polymerTup[1]
+                dic["arrow"] = "ui-icon-circle-arrow-s"
+                dic["text"] = polymerTup[2]
+                dic["display"] = "block"
+                dic["list"] = action_entitylist
+                self.__action_required_data.append(dic)
             #
-            dic["arrow"] = "ui-icon-circle-arrow-e"
-            dic["display"] = "none"
-            other_entitylist.append(dic)
+            if other_entitylist:
+                dic = {}
+                dic["id"] = polymerTup[1]
+                dic["arrow"] = "ui-icon-circle-arrow-e"
+                dic["text"] = polymerTup[2]
+                dic["display"] = "none"
+                dic["list"] = other_entitylist
+                self.__other_data.append(dic)
             #
-            if action_required == "Y":
-                act_dic = copy.deepcopy(dic)
-                act_dic["arrow"] = "ui-icon-circle-arrow-s"
-                act_dic["display"] = "block"
-                action_entitylist.append(act_dic)
-            #
-        #
-        if action_entitylist:
-            dic = {}
-            dic["id"] = "polymers"
-            dic["arrow"] = "ui-icon-circle-arrow-s"
-            dic["text"] = "Polymers"
-            dic["display"] = "block"
-            dic["list"] = action_entitylist
-            self.__action_required_data.append(dic)
-        #
-        if other_entitylist:
-            dic = {}
-            dic["id"] = "polymers"
-            dic["arrow"] = "ui-icon-circle-arrow-e"
-            dic["text"] = "Polymers"
-            dic["display"] = "none"
-            dic["list"] = other_entitylist
-            self.__other_data.append(dic)
         #
 
     def __readNonPolymerData(self):
