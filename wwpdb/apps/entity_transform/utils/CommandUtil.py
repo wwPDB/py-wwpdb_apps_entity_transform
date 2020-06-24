@@ -160,7 +160,8 @@ class CommandUtil(object):
     def __getAnnotSetting(self):
         """ Get Annot package bash setting
         """
-        setting = " RCSBROOT=" + self.__cI.get("SITE_ANNOT_TOOLS_PATH") + "; export RCSBROOT; " \
+        setting = " RCSBROOT=" + self.__cI.get("SITE_ANNOT_TOOLS_PATH") + "; export RCSBROOT; PDB2GLYCAN=" \
+                + os.path.join(os.path.abspath(self.__cI.get("SITE_PACKAGES_PATH")), "pdb2glycan", "bin", "PDB2Glycan") + "; export PDB2GLYCAN; " \
                 + " COMP_PATH=" + self.__cI.get("SITE_CC_CVS_PATH") + "; export COMP_PATH; " \
                 + " PRD_PATH=" + self.__cI.get("SITE_PRD_CVS_PATH") + "; export PRD_PATH; " \
                 + " BINPATH=${RCSBROOT}/bin; export BINPATH; "
