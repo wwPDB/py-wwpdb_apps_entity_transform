@@ -210,6 +210,9 @@ class BuildPrd(object):
         #
         self.__parseLogFile(rootName + '.log')
         self.__parseLogFile(rootName + '.clog')
+        #
+        os.rename(prdccFile, os.path.join(self.__instancePath, self.__prdccID + '.cif.save'))
+        os.rename(os.path.join(self.__instancePath, self.__prdID + '.comp.cif'), prdccFile)
 
     def __copyFile(self, src, dst):
         """ Copy file
