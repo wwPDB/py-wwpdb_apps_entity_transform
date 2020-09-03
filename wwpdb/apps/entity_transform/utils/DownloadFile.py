@@ -23,27 +23,25 @@ __version__   = "V0.07"
 
 import os, sys, string, traceback
 
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
+
 class DownloadFile(object):
     """ Class responsible for download files.
     """
-    def __init__(self, reqObj=None, summaryCifObj=None, verbose=False, log=sys.stderr):
+    def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
         self.__verbose=verbose
         self.__lfh=log
         self.__reqObj=reqObj
-        self.__cifObj = summaryCifObj
         self.__sObj=None
         self.__sessionId=None
         self.__sessionPath=None
         self.__rltvSessionPath=None
-        self.__siteId  = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
+        self.__siteId=str(self.__reqObj.getValue("WWPDB_SITE_ID"))
+        self.__cI=ConfigInfo(self.__siteId)
         #
         self.__getSession()
         #
-        self.__allInstIds = []
-        #self.__getAllInstIds()
-        #
-        self.__fileId = str(self.__reqObj.getValue('identifier')) + '_model_P1.cif'
-        #
+        self.__fileId = str(self.__reqObj.getValue("identifier")) + "_model_P1.cif"
         self.__PrdIds = []
 
     def __getSession(self):
@@ -58,6 +56,7 @@ class DownloadFile(object):
             self.__lfh.write("------------------------------------------------------\n")                    
             self.__lfh.write("+DownloadFile.__getSession() - creating/joining session %s\n" % self.__sessionId)
             self.__lfh.write("+DownloadFile.__getSession() - session path %s\n" % self.__sessionPath)            
+        #
 
     def __processTemplate(self,fn,parameterDict={}):
         """ Read the input HTML template data file and perform the key/value substitutions in the
@@ -73,105 +72,76 @@ class DownloadFile(object):
         """
         tPath =self.__reqObj.getValue("TemplatePath")
         fPath=os.path.join(tPath,fn)
-        ifh=open(fPath,'r')
+        ifh=open(fPath,"r")
         sIn=ifh.read()
         ifh.close()
         return (  sIn % parameterDict )
 
-    def __getAllInstIds(self):
-        if not self.__cifObj:
-            return
-        #
-        category_item = [ [ 'pdbx_polymer_info',     'polymer_id'  ], \
-                          [ 'pdbx_non_polymer_info', 'instance_id' ], \
-                          [ 'pdbx_group_info',       'group_id'    ] ]
-        for d in category_item:
-            elist = self.__cifObj.getValueList(d[0])
-            if not elist:
-                continue
-            #
-            for e in elist:
-                if d[1] not in e:
-                    continue
-                #
-                self.__allInstIds.append(e[d[1]])
-            #
-        #
-
-    def __findFiles(self, instId):
-        list = []
-        path = os.path.join(self.__sessionPath, 'search', instId)
-        if not os.access(path, os.F_OK):
-            return list
-        #
-        os.chdir(path)
-        #
-        for files in os.listdir('.'):
-            if files.endswith('.cif') and \
-               (files[:4] == 'PRD_' or files[:6] == 'PRDCC_'):
-                list1 = files.split('.')
-                if len(list1) > 2:
-                    continue
-                list.append(files)
-            #
-        #
-        return list
-
     def __findPRDFiles(self):
-        list = []
+        fileList = []
         os.chdir(self.__sessionPath)
         #
-        for files in os.listdir('.'):
-            if files.endswith('.cif') and (files.startswith('PRD_') or files.startswith('PRDCC_')):
-                list1 = files.split('.')
+        for files in os.listdir("."):
+            if files.endswith(".cif") and (files.startswith("PRD_") or files.startswith("PRDCC_")):
+                list1 = files.split(".")
                 if len(list1) > 2:
                     continue
-                list.append(files)
-                if list1[0].startswith('PRD_'):
+                fileList.append(files)
+                if list1[0].startswith("PRD_"):
                     self.__PrdIds.append(list1[0])
             #
         #
-        return list
+        return fileList
+
+    def __updatePrdCcChemName(self):
+        setting = " RCSBROOT=" + self.__cI.get("SITE_ANNOT_TOOLS_PATH") + "; export RCSBROOT; "
+        #
+        for prdid in self.__PrdIds:
+            prdfile =  os.path.join(self.__sessionPath, prdid + ".cif")
+            if not os.access(prdfile, os.F_OK):
+                continue
+            #
+            prdccid = prdid.replace("PRD", "PRDCC")
+            prdccfile = os.path.join(self.__sessionPath, prdccid + ".cif")
+            if not os.access(prdccfile, os.F_OK):
+                continue
+            #
+            cmd = setting + "${RCSBROOT}/bin/UpdatePrdCcName -prd " + prdfile + " -prdcc " + prdccfile + " -log " \
+                + os.path.join(self.__sessionPath, prdccid + "-name-update.log") + "  > " \
+                + os.path.join(self.__sessionPath, prdccid + "-name-update.clog") + " 2>&1; "
+            os.system(cmd)
+        #
 
     def ListFiles(self):
         myD = {}
-        myD['sessionid'] = self.__sessionId
-        myD['instanceid'] = ''
-        myD['fileid'] = self.__fileId
-        content = self.__processTemplate('download/one_file_tmplt.html', myD) + '\n'
-        #
-        #for instId in self.__allInstIds:
-        #    filelist = self.__findFiles(instId)
-        #    if not filelist:
-        #        continue
-        #    #
-        #    for f in filelist:
-        #        myD['instanceid'] = instId
-        #        myD['fileid'] = f
-        #        content += self.__processTemplate('download/one_file_tmplt.html', myD) + '\n'
-        #    #
+        myD["sessionid"] = self.__sessionId
+        myD["instanceid"] = ""
+        myD["fileid"] = self.__fileId
+        content = self.__processTemplate("download/one_file_tmplt.html", myD) + "\n"
         #
         filelist = self.__findPRDFiles()
         if filelist:
             for f in filelist:
-                myD['instanceid'] = ''
-                myD['fileid'] = f
-                content += self.__processTemplate('download/one_file_tmplt.html', myD) + '\n'
+                myD["instanceid"] = ""
+                myD["fileid"] = f
+                content += self.__processTemplate("download/one_file_tmplt.html", myD) + "\n"
             #
         #
         return content
 
     def ListPrds(self):
         if not self.__PrdIds:
-            return ''
+            return ""
         #
-        content = ''
+        self.__updatePrdCcChemName()
+        #
+        content = ""
         for prd_id in self.__PrdIds:
             myd = {}
-            myd['prd_id'] = prd_id
-            content += self.__processTemplate('download/one_prd_tmplt.html', myd) + '\n'
+            myd["prd_id"] = prd_id
+            content += self.__processTemplate("download/one_prd_tmplt.html", myd) + "\n"
         #
         myD = {}
-        myD['sessionid'] = self.__sessionId
-        myD['form_data'] = content
-        return self.__processTemplate('download/prd_cvs_tmplt.html', myD)
+        myD["sessionid"] = self.__sessionId
+        myD["form_data"] = content
+        return self.__processTemplate("download/prd_cvs_tmplt.html", myD)

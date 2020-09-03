@@ -62,16 +62,22 @@ class UpdateFile(UpdateBase):
             if len(list) == 2:
                 dic['only'] = list[1]
             #
+            has_value = False
             match_id = self._reqObj.getValue('match_id_' + str(i))
             if match_id:
                 list = match_id.split(',')
                 dic['hitid'] = list[1]
                 dic['fileid'] = list[1]
+                has_value = True
             #
             user_defined_id = self._reqObj.getValue('user_defined_id_' + str(i))
             if user_defined_id:
                 dic['inputid'] = user_defined_id.upper()
-            self.__selectedInstIds.append(dic)
+                has_value = True
+            #
+            if has_value:
+                self.__selectedInstIds.append(dic)
+            #
         #
 
     def __getOptions(self):
@@ -118,14 +124,18 @@ class UpdateFile(UpdateBase):
         if not 'inputid' in dic:
             return ''
         #
-        compObj = CompUtil(reqObj=self._reqObj, verbose=self._verbose,log=self._lfh)
-        error = compObj.checkInputId(dic['inputid'])
-        if error:
-            return error
-        #
-        templateFile = compObj.getTemplateFile(dic['inputid'])
-        if not templateFile:
-            return 'Can not find chemical component file for ID ' + dic['inputid'] + '\n'
+        if dic['inputid'] == 'PRD_XXXXXX':
+            templateFile = '/net/users/zfeng/prd/PRDCC_XXXXXX.cif'
+        else:
+            compObj = CompUtil(reqObj=self._reqObj, verbose=self._verbose,log=self._lfh)
+            error = compObj.checkInputId(dic['inputid'])
+            if error:
+                return error
+            #
+            templateFile = compObj.getTemplateFile(dic['inputid'])
+            if not templateFile:
+                return 'Can not find chemical component file for ID ' + dic['inputid'] + '\n'
+            #
         #
         instancePath = os.path.join(self._sessionPath, 'search', dic['instid'])
         option = ' -template ' + templateFile + ' -cif ' + os.path.join(instancePath, dic['instid'] + '.orig.cif') \

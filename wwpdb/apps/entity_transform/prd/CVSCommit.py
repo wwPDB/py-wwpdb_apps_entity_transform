@@ -39,10 +39,10 @@ class CVSCommit(object):
         self.__sessionId=None
         self.__sessionPath=None
         self.__rltvSessionPath=None
-        self.__siteId  = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
+        self.__siteId=str(self.__reqObj.getValue("WWPDB_SITE_ID"))
         self.__cI=ConfigInfo(self.__siteId)
-        self.__prdRoot = self.__cI.get('SITE_PRD_CVS_PATH')
-        self.__prdccRoot = self.__cI.get('SITE_PRDCC_CVS_PATH')
+        self.__prdRoot=self.__cI.get("SITE_PRD_CVS_PATH")
+        self.__prdccRoot=self.__cI.get("SITE_PRDCC_CVS_PATH")
         #
         self.__getSession()
         #
@@ -50,30 +50,31 @@ class CVSCommit(object):
     def checkin(self):
         """ Check in new PRD/PRDCC to CVS archive
         """
-        self.__PrdIDList = self.__reqObj.getValueList('prd_id')
+        #
+        self.__PrdIDList = self.__reqObj.getValueList("prd_id")
         if not self.__PrdIDList:
-            return 'No PRD entry selected'
+            return "No PRD entry selected"
         #
-        scriptfile = self.__getFileName(self.__sessionPath, 'cvs_commit', 'csh')
-        logfile    = self.__getFileName(self.__sessionPath, 'cvs_commit', 'log')
+        scriptfile = self.__getFileName(self.__sessionPath, "cvs_commit", "csh")
+        logfile    = self.__getFileName(self.__sessionPath, "cvs_commit", "log")
         script = os.path.join(self.__sessionPath, scriptfile)
-        f = file(script, 'w')
-        f.write('#!/bin/tcsh -f\n')
-        f.write('#\n')
+        f = file(script, "w")
+        f.write("#!/bin/tcsh -f\n")
+        f.write("#\n")
         f.write('setenv CVSROOT ":pserver:liganon3:lig1234@rcsb-cvs-1.rutgers.edu:/cvs-ligands"\n')
-        f.write('#\n')
+        f.write("#\n")
         #
-        self.__returnError = ''
+        self.__returnError = ""
         for prdid in self.__PrdIDList:
-            prdfile =  os.path.join(self.__sessionPath, prdid + '.cif')
+            prdfile =  os.path.join(self.__sessionPath, prdid + ".cif")
             if not os.access(prdfile, os.F_OK):
-                self.__returnError += 'No ' + prdid + '.cif found!\n'
+                self.__returnError += "No " + prdid + ".cif found!\n"
                 continue
             #
             self.__writeCVSScript(f, prdid, self.__prdRoot)
             #
-            prdccid = prdid.replace('PRD', 'PRDCC')
-            prdccfile = os.path.join(self.__sessionPath, prdccid + '.cif')
+            prdccid = prdid.replace("PRD", "PRDCC")
+            prdccfile = os.path.join(self.__sessionPath, prdccid + ".cif")
             if os.access(prdccfile, os.F_OK):
                 self.__writeCVSScript(f, prdccid, self.__prdccRoot)
             #
@@ -92,20 +93,20 @@ class CVSCommit(object):
         """
         count = 1
         while True:
-            filename = root + '_' + str(count) + '.' + ext
+            filename = root + "_" + str(count) + "." + ext
             fullname = os.path.join(path, filename)
             if not os.access(fullname, os.F_OK):
                 return filename
             #
             count += 1
         #
-        return root + '_1.' + ext
+        return root + "_1." + ext
 
     def __RunScript(self, path, script, log):
         """Run script command
         """
-        cmd = 'cd ' + path + '; chmod 755 ' + script \
-            + '; ./' + script + ' >& ' + log
+        cmd = "cd " + path + "; chmod 755 " + script \
+            + "; ./" + script + " >& " + log
         os.system(cmd)
 
     
@@ -122,23 +123,23 @@ class CVSCommit(object):
             self.__lfh.write("+CVSCommit.__getSession() - creating/joining session %s\n" % self.__sessionId)
             self.__lfh.write("+CVSCommit.__getSession() - session path %s\n" % self.__sessionPath)            
 
-    def __writeCVSScript(self, f, id, cvspath):
+    def __writeCVSScript(self, f, Id, cvspath):
         """ Write CVS checkin script
         """
-        sourceFile = os.path.join(self.__sessionPath, id + '.cif')
-        hash = id[len(id) - 1]
-        hashPath = os.path.join(cvspath, hash)
-        targetFile = os.path.join(hashPath, id + '.cif')
+        sourceFile = os.path.join(self.__sessionPath, Id + ".cif")
+        hashId = Id[len(Id) - 1]
+        hashPath = os.path.join(cvspath, hashId)
+        targetFile = os.path.join(hashPath, Id + ".cif")
         is_new = True
-        comment = 'initial version'
+        comment = "initial version"
         if os.access(targetFile, os.F_OK):
             is_new = False
-            comment = 'updated ' + id
+            comment = "updated " + Id
         #
-        f.write('cd ' + hashPath + '\n')
-        f.write('cp ' + sourceFile + ' .\n')
-        f.write('chmod 644 ' + id + '.cif\n')
+        f.write("cd " + hashPath + "\n")
+        f.write("cp " + sourceFile + " .\n")
+        f.write("chmod 644 " + Id + ".cif\n")
         if is_new:
-            f.write('cvs -d${CVSROOT} add ' + id + '.cif\n')
-        f.write('cvs -d${CVSROOT} commit -m "' + comment + '" ' + id + '.cif\n')
-        f.write('#\n')
+            f.write("cvs -d${CVSROOT} add " + Id + ".cif\n")
+        f.write('cvs -d${CVSROOT} commit -m "' + comment + '" ' + Id + ".cif\n")
+        f.write("#\n")

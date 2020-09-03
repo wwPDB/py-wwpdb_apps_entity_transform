@@ -162,8 +162,6 @@ class SeqDepict(object):
         self.__lfh = log
         self.__entityLength = {}
         self.__entityIndices = {}
-        self.__entityDeletionIndices = {}
-        self.__reverseEntityDeletionIndices = {}
 
     def getHtmlText(self):
         html_text = ''
@@ -178,19 +176,18 @@ class SeqDepict(object):
             self.__entityLength[str(count) + '_' + infolist[0]] = length
             #
             html_text += self.__depictSummaryTable(count, infolist[0], infolist[1], infolist[2], length, seqlist[0][1], seqlist[length-1][1])
-            if self.__option == "edit":
-                if infolist[5]:
-                    labelList = list(infolist[5])
-                    if len(labelList) != length:
-                        labelList = ["1"] * length
-                    #
-                else:
+            if infolist[5]:
+                labelList = list(infolist[5])
+                if len(labelList) != length:
                     labelList = ["1"] * length
                 #
-                html_text += self.__depictSequence(count, infolist[0], seqlist, labelList, "")
+            else:
+                labelList = ["1"] * length
+            #
+            html_text += self.__depictSequence(count, infolist[0], seqlist, labelList)
+            if self.__option == "edit":
                 html_text += self.__depictEditTable(count, infolist[0])
             else:
-                html_text += self.__depictSequence(count, infolist[0], seqlist, [], "dblclick")
                 html_text += self.__depictSplitTable(count, infolist[0])
             #
             html_text += '<div class="emptyspace"></div>\n'
@@ -204,10 +201,6 @@ class SeqDepict(object):
        
         scriptText = 'var lengthMap = ' + self.__writeToString(obj=self.__entityLength) + ';\n' \
                    + 'var indexMap = ' + self.__writeToString(obj=self.__entityIndices) + ';'
-        if self.__option == "edit":
-            scriptText += '\nvar deleteIndexMap = ' + self.__writeToString(obj=self.__entityDeletionIndices) + ';\n' \
-                        + 'var reverseDeleteIndexMap = ' + self.__writeToString(obj=self.__reverseEntityDeletionIndices) + ';'
-        #
         return scriptText;
 
     def __getSeqList(self, polytype, one_letter_seq):
@@ -281,7 +274,7 @@ class SeqDepict(object):
         text += '<input type="hidden" name="chain_' + entity_id + '" value="' + chain_ids + '" />\n'
         return text
 
-    def __depictSequence(self, count, entity_id, seqList, labelList, defaultCss):
+    def __depictSequence(self, count, entity_id, seqList, labelList):
         resNumber = len(seqList)
         resPerLine = 100
         integerLine = int(resNumber / resPerLine)
@@ -311,7 +304,6 @@ class SeqDepict(object):
         # end empty ul
         text += '</ul>\n'
         #
-        deletableList = []
         for i in range(0, lineNumber):
             cssClassBg = 'whitebg'
             if i % 2:
@@ -369,13 +361,9 @@ class SeqDepict(object):
                     if nextRes and (self.__option == "split"):
                         currRes += '_' + nextRes
                     #
-                    currCss = "viewres"
-                    if defaultCss:
-                        currCss += " " + defaultCss
-                    #
-                    if labelList and (labelList[idx] == "0"):
-                        currCss += " greenbg dblclick"
-                        deletableList.append((idx, currRes))
+                    currCss = "viewres dblclick"
+                    if labelList and (labelList[idx] == "1"):
+                        currCss += " greenbg"
                     #
                     if entity_key in self.__entityIndices:
                         self.__entityIndices[entity_key][idx + 1] = currRes
@@ -416,44 +404,7 @@ class SeqDepict(object):
         text += '</div>\n'
         text += '<div class="emptyspace"></div>\n'
         #
-        if deletableList and (self.__option == "edit"):
-            fragmentList = []
-            idx = -5
-            for resTuple in deletableList:
-                if (idx + 1) != resTuple[0]:
-                    self.__insertDeletionIndices(entity_key, fragmentList)
-                    fragmentList = []
-                #
-                idx = resTuple[0]
-                fragmentList.append(resTuple[1])
-            #
-            self.__insertDeletionIndices(entity_key, fragmentList)
-        #
         return text
-
-    def __insertDeletionIndices(self, entity_key, fragmentList):
-        if len(fragmentList) > 1:
-            reverseList = copy.deepcopy(fragmentList)
-            reverseList.reverse()
-            while len(reverseList) > 1:
-                localCopy = copy.deepcopy(reverseList)
-                if entity_key in self.__reverseEntityDeletionIndices:
-                    self.__reverseEntityDeletionIndices[entity_key][localCopy[0]] = localCopy[1:]
-                else:
-                    self.__reverseEntityDeletionIndices[entity_key] = { localCopy[0] : localCopy[1:] }
-                #
-                v = reverseList.pop(0)
-            #
-        #
-        while fragmentList:
-            localCopy = copy.deepcopy(fragmentList)
-            if entity_key in self.__entityDeletionIndices:
-                self.__entityDeletionIndices[entity_key][localCopy[0]] = localCopy
-            else:
-                self.__entityDeletionIndices[entity_key] = { localCopy[0] : localCopy }
-            #
-            v = fragmentList.pop(0)
-        #
 
     def __depictSplitTable(self, count, entity_id):
         entity_key = str(count) + '_' + entity_id
@@ -483,21 +434,17 @@ class SeqDepict(object):
         text = '<div id="edit_table_div_' + str(count) + '">\n'
         text += '<table id="edit_table_' + entity_key + '">\n'
         text += '<tr>\n'
-        text += '<th colspan="5">Edit Polymer Sequence</th>\n'
+        text += '<th colspan="3">Remove Residue(s)</th>\n'
         text += '</tr>\n'
         text += '<tr>\n'
-        text += '<th colspan="4"><input type="button" id="insert_sequence_' + entity_key + '" value="Insertion" /></th>' \
-              + '<th><input type="button" id="delete_all_button_' + entity_key + '" value="Remove All" class="displaynone deleteallrows action_button" /></th>\n'
+        text += '<th id="delete_all_' +  entity_key + '"colspan="3" class="displaynone"><input type="button" id="delete_all_button_' \
+              + entity_key + '" value="Delete All" class="deleteallrows action_button" /></th>\n'
         text += '</tr>\n'
-        """
         text += '<tr>\n'
-        text += '<th>1st Residue Name</th>\n'
-        text += '<th>1st Residue Position</th>\n'
-        text += '<th>2nd Residue Name</th>\n'
-        text += '<th>2nd Residue Position</th>\n'
+        text += '<th>Residue Name</th>\n'
+        text += '<th>Residue Position</th>\n'
         text += '<th>Action</th>\n'
         text += '</tr>\n'
-        """
         text += '</table>\n'
         text += '</div>\n'
         text += '<div class="emptyspace"></div>\n'

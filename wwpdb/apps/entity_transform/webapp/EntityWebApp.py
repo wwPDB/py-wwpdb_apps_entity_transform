@@ -42,6 +42,7 @@ from wwpdb.apps.entity_transform.update.ChopperHandler    import ChopperHandler
 from wwpdb.apps.entity_transform.update.MergePolymer      import MergePolymer
 from wwpdb.apps.entity_transform.update.MergeLigand       import MergeLigand
 from wwpdb.apps.entity_transform.update.SplitPolymer      import SplitPolymer
+from wwpdb.apps.entity_transform.update.EditPolymer       import EditPolymer
 from wwpdb.apps.entity_transform.update.UpdateFile        import UpdateFile
 from wwpdb.apps.entity_transform.utils.CommandUtil        import CommandUtil
 from wwpdb.apps.entity_transform.utils.DownloadFile       import DownloadFile
@@ -50,11 +51,11 @@ from wwpdb.apps.entity_transform.utils.SummaryCifUtil     import SummaryCifUtil
 from wwpdb.apps.entity_transform.utils.RemoveEmptyCategories import RemoveEmptyCategories
 from wwpdb.apps.entity_transform.utils.WFDataIOUtil       import WFDataIOUtil
 from wwpdb.apps.entity_transform.webapp.FormPreProcess    import FormPreProcess
-from wwpdb.utils.detach.DetachUtils                         import DetachUtils
-from wwpdb.io.file.mmCIFUtil                           import mmCIFUtil
-from wwpdb.io.locator.PathInfo                          import PathInfo
-from wwpdb.utils.dp.RcsbDpUtility                       import RcsbDpUtility
-from wwpdb.utils.session.WebRequest                          import InputRequest,ResponseContent
+from wwpdb.utils.detach.DetachUtils                       import DetachUtils
+from wwpdb.io.file.mmCIFUtil                              import mmCIFUtil
+from wwpdb.io.locator.PathInfo                            import PathInfo
+from wwpdb.utils.dp.RcsbDpUtility                         import RcsbDpUtility
+from wwpdb.utils.session.WebRequest                       import InputRequest,ResponseContent
 #
 
 class EntityWebApp(object):
@@ -202,6 +203,7 @@ class EntityWebAppWorker(object):
                          '/service/entity/merge_ligand':                    '_mergeLigand',
                          '/service/entity/result_view':                     '_resultView',
                          '/service/entity/split_polymer':                   '_splitPolymer',
+                         '/service/entity/edit_polymer':                    '_editPolymer',
                          '/service/entity/summary_view':                    '_StructSummaryView',
                          '/service/entity/update_file':                     '_updateFile',
                          '/service/entity/exit_finished':                   '_exit_Finished'
@@ -893,7 +895,7 @@ class EntityWebAppWorker(object):
             self.__reqObj.setReturnFormat(return_format="html")
             rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
             #
-            downloadObj = DownloadFile(reqObj=self.__reqObj, summaryCifObj=self.__summaryCifObj, verbose=self.__verbose, log=self.__lfh)
+            downloadObj = DownloadFile(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
             myD = {}
             myD['pdbid'] = self.__reqObj.getValue('pdbid')
             myD['identifier'] = self.__identifier
@@ -986,6 +988,29 @@ class EntityWebAppWorker(object):
         myD['identifier'] = self.__identifier
         myD['title'] = self.__title
         myD['data']  = splitObj.getMessage()
+        rC.setHtmlText(self.__processTemplate('update_form/update_result_tmplt.html',  myD))
+        return rC
+
+    def _editPolymer(self):
+        """ Launch Edit Polymer interface
+        """
+        if (self.__verbose):
+            self.__lfh.write("+EntityWebAppWorker._editPolymer() Starting now\n")
+        #
+        self.__getSession()
+        self.__updateFileId()
+        #
+        self.__reqObj.setReturnFormat(return_format="html")        
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        #
+        editObj = EditPolymer(reqObj=self.__reqObj, summaryCifObj=self.__summaryCifObj, verbose=self.__verbose, log=self.__lfh)
+        editObj.updateFile()
+        #
+        myD = {}
+        myD['pdbid'] = self.__reqObj.getValue('pdbid')
+        myD['identifier'] = self.__identifier
+        myD['title'] = self.__title
+        myD['data']  = editObj.getMessage()
         rC.setHtmlText(self.__processTemplate('update_form/update_result_tmplt.html',  myD))
         return rC
 

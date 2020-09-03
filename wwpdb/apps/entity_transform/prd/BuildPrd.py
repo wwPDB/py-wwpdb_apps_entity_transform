@@ -24,9 +24,7 @@ __version__   = "V0.07"
 import os, shutil, string, sys, traceback
 
 from wwpdb.utils.config.ConfigInfo                   import ConfigInfo
-from wwpdb.apps.entity_transform.utils.CommandUtil   import CommandUtil
-from wwpdb.apps.entity_transform.utils.GetLogMessage import GetLogMessage
-from wwpdb.io.file.mmCIFUtil                         import mmCIFUtil
+from wwpdb.apps.entity_transform.prd.BuildPrdUtil    import BuildPrdUtil
 #
 
 class BuildPrd(object):
@@ -40,37 +38,45 @@ class BuildPrd(object):
         self.__summaryFile=summaryFile
         self.__sObj=None
         self.__sessionPath=None
-        self.__instanceId = str(self.__reqObj.getValue("instanceid"));
+        self.__instanceId = str(self.__reqObj.getValue("instanceid"))
         self.__siteId  = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
         self.__cI=ConfigInfo(self.__siteId)
         #
         self.__getSession()
-        self.__instancePath = os.path.join(self.__sessionPath, 'search', self.__instanceId)
+        self.__instancePath = os.path.join(self.__sessionPath, "search", self.__instanceId)
         #
-        self.__prdID = 'PRD_XXXXXX'
-        self.__prdccID = 'PRDCC_XXXXXX'
-        self.__prdccFlag = True
-        self.__message = ''
+        self.__prdID = "PRD_XXXXXX"
+        self.__prdccID = "PRDCC_XXXXXX"
+        self.__message = ""
         #
-        self.__cmdUtil = CommandUtil(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
-        self.__cmdUtil.setSessionPath(self.__instancePath)
 
     def build(self):
         """ Build PRD and PRDCC files
         """
         # Build with default fake IDs
-        self.__build_prd()
+        buildUtil = BuildPrdUtil(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
+        buildUtil.setInstancePath(self.__instancePath)
+        buildUtil.setPrdId(self.__prdID)
+        buildUtil.setPrdCcId(self.__prdccID)
+        buildUtil.setSummaryFile(self.__summaryFile)
+        self.__message = buildUtil.build()
         if self.__message:
             return self.__message
         #
+        builtPrdPath = os.path.join(self.__instancePath, self.__prdID + ".cif")
+        if not os.access(builtPrdPath, os.F_OK):
+            self.__attachErrorMessage("Build PRD failed.")
+            return self.__message
+        #
+        builtPrdCcPath = os.path.join(self.__instancePath, self.__prdccID + ".cif")
+        #
+        # Replace with real IDs
         self.__getNewPrdID()
+        self.__replacePrdIDs(builtPrdPath, builtPrdCcPath)
         #
-        # Build with real IDs
-        self.__build_prd()
-        #
-        self.__copyFile(os.path.join(self.__instancePath, self.__prdID + '.cif'), os.path.join(self.__sessionPath, self.__prdID + '.cif'))
-        if os.access(os.path.join(self.__instancePath, self.__prdccID + '.cif'), os.F_OK):
-            self.__copyFile(os.path.join(self.__instancePath, self.__prdccID + '.cif'), os.path.join(self.__sessionPath, self.__prdccID + '.cif'))
+        self.__copyFile(os.path.join(self.__instancePath, self.__prdID + ".cif"), os.path.join(self.__sessionPath, self.__prdID + ".cif"))
+        if os.access(os.path.join(self.__instancePath, self.__prdccID + ".cif"), os.F_OK):
+            self.__copyFile(os.path.join(self.__instancePath, self.__prdccID + ".cif"), os.path.join(self.__sessionPath, self.__prdccID + ".cif"))
         #
         return self.__message
 
@@ -89,130 +95,63 @@ class BuildPrd(object):
             self.__lfh.write("------------------------------------------------------\n")                    
             self.__lfh.write("+BuildPrd.__getSession() - session path %s\n" % self.__sessionPath)            
 
-    def __build_prd(self):
-        """ Run PRD & PRDCC build procedure
+    def __getNewPrdID(self):
+        """ Get new PRDID from unusedPrdId.lst file
         """
-        for existFile in ( self.__prdID + '.cif', self.__prdID + '.support.cif', self.__prdID + '.comp.cif', self.__prdccID + '.cif'):
-            filePath = os.path.join(self.__instancePath, existFile)
+        filePath = os.path.join(self.__cI.get("SITE_DEPLOY_PATH"), "reference", "id_codes", "unusedPrdId.lst")
+        f = file(filePath, "r")
+        data = f.read()
+        f.close()
+        #
+        idlist = data.split("\n")
+        idx = 0
+        for prdid in idlist:
+            idx += 1
+            prdfile = os.path.join(self.__cI.get("SITE_PRD_CVS_PATH"), prdid[len(prdid)-1], prdid+".cif")
+            if not os.access(prdfile, os.F_OK):
+                self.__prdID = prdid
+                self.__prdccID = self.__prdID.replace("PRD", "PRDCC")
+                break
+            #
+        #
+        data = "\n".join(idlist[idx:])
+        f = file(filePath, "w")
+        f.write(data)
+        f.close()
+
+    def __replacePrdIDs(self, builtPrdPath, builtPrdCcPath):
+        """ Replace fake IDs with real IDs
+        """
+        if (self.__prdID == "PRD_XXXXXX") or (self.__prdccID == "PRDCC_XXXXXX"):
+             return
+        #
+        realPrdPath = os.path.join(self.__instancePath, self.__prdID + ".cif")
+        realPrdCcPath = os.path.join(self.__instancePath, self.__prdccID + ".cif")
+        #
+        for filePath in ( realPrdPath, realPrdCcPath ):
             if os.access(filePath, os.F_OK):
                 os.remove(filePath)
             #
         #
-        self.__build_PRD()
-        if self.__message:
+        setting = " RCSBROOT=" + self.__cI.get("SITE_ANNOT_TOOLS_PATH") + "; export RCSBROOT; "
+        #
+        cmd = setting + "${RCSBROOT}/bin/UpdatePrdId -input " + builtPrdPath + " -prd_id " + self.__prdID + " -output " + realPrdPath + " -log " \
+            + os.path.join(self.__instancePath, "update_prd.log") + " > " + os.path.join(self.__instancePath, "update_prd.clog") + " 2>&1; "
+        os.system(cmd)
+        if not os.access(realPrdPath, os.F_OK):
+            self.__attachErrorMessage("Build " + realPrdPath + " failed.")
             return
         #
-        self.__prdccFlag = self.__checkPRDCCFlag()
-        if not self.__prdccFlag:
+        if not os.access(builtPrdCcPath, os.F_OK):
             return
         #
-        self.__build_PRDCC()
-        if self.__message:
-            return
+        cmd = setting + "${RCSBROOT}/bin/UpdatePrdId -input " + builtPrdCcPath + " -prd_id " + self.__prdID + " -output " + realPrdCcPath + " -log " \
+            + os.path.join(self.__instancePath, "update_prdcc.log") + " > " + os.path.join(self.__instancePath, "update_prdcc.clog") + " 2>&1; "
+        os.system(cmd)
         #
-        self.__annotate_PRDCC()
-        self.__update_PRD_PRDCC()
-
-    def __getNewPrdID(self):
-        """ Get new PRDID from unusedPrdId.lst file
-        """
-        filePath = os.path.join(self.__cI.get('SITE_DEPLOY_PATH'), 'reference', 'id_codes', 'unusedPrdId.lst')
-        f = file(filePath, 'r')
-        data = f.read()
-        f.close()
+        if not os.access(realPrdCcPath, os.F_OK):
+            self.__attachErrorMessage("Build " + realPrdCcPath + " failed.")
         #
-        idlist = data.split('\n')
-        idx = 0
-        for id in idlist:
-            idx += 1
-            prdfile = os.path.join(self.__cI.get('SITE_PRD_CVS_PATH'), id[len(id)-1], id+'.cif')
-            if not os.access(prdfile, os.F_OK):
-                self.__prdID = id
-                self.__prdccID = self.__prdID.replace('PRD', 'PRDCC')
-                break
-            #
-        #
-        data = '\n'.join(idlist[idx:])
-        f = file(filePath, 'w')
-        f.write(data)
-        f.close()
-
-    def __build_PRD(self):
-        """ Build PRD file
-        """
-        origFile = os.path.join(self.__instancePath, self.__instanceId + '.orig.cif')
-        if not os.access(origFile, os.F_OK):
-            return
-        #
-        rootName = self.__cmdUtil.getRootFileName('build-prd')
-        extraOptions = ' -summary ' + self.__summaryFile + ' -instfile ' + self.__instanceId + '.orig.cif -instid ' + self.__instanceId \
-                     + ' -prdfile ' + self.__prdID + '.cif -prdid ' + self.__prdID + ' -support ' + self.__prdID + '.support.cif '
-        #
-        self.__cmdUtil.runAnnotCmd('GenPrdEntry', '', '', rootName + '.log', rootName + '.clog', extraOptions)
-        #
-        self.__parseLogFile(rootName + '.log')
-        self.__parseLogFile(rootName + '.clog')
-
-    def __checkPRDCCFlag(self):
-        """ Check if PRDCC is needed
-        """
-        prdFile = os.path.join(self.__instancePath, self.__prdID + '.cif')
-        if not os.access(prdFile, os.F_OK):
-            return False
-        #
-        prdObj = mmCIFUtil(filePath=prdFile)
-        representType = prdObj.GetSingleValue("pdbx_reference_molecule", "represent_as")
-        chemCompId = prdObj.GetSingleValue("pdbx_reference_molecule", "chem_comp_id")
-        if (str(representType).strip().lower() == "single molecule") and (str(chemCompId).strip() != "") and \
-           (str(chemCompId).strip() != "?") and (str(chemCompId).strip() != "."):
-            return False
-        #
-        return True
-
-    def __build_PRDCC(self):
-        """ Build PRDCC file
-        """
-        prdFile = os.path.join(self.__instancePath, self.__prdID + '.cif')
-        supportFile = os.path.join(self.__instancePath, self.__prdID + '.support.cif')
-        if (not os.access(prdFile, os.F_OK)) or (not os.access(supportFile, os.F_OK)):
-            return
-        #
-        rootName = self.__cmdUtil.getRootFileName('build-prdcc')
-        extraOptions = ' -instfile ' + self.__instanceId + '.orig.cif -prdfile ' + self.__prdID + '.cif -prdid ' + self.__prdID \
-                     + ' -compfile ' + self.__prdID + '.comp.cif -support ' + self.__prdID + '.support.cif '
-        #
-        self.__cmdUtil.runAnnotCmd('GenPrdCCEntry', '', '', rootName + '.log', rootName + '.clog', extraOptions)
-        #
-        self.__parseLogFile(rootName + '.log')
-        self.__parseLogFile(rootName + '.clog')
-
-    def __annotate_PRDCC(self):
-        """ Annotate PRDCC file
-        """
-        prdccFile = os.path.join(self.__instancePath, self.__prdID + '.comp.cif')
-        if not os.access(prdccFile, os.F_OK):
-            return
-        #
-        rootName = self.__cmdUtil.getRootFileName('annotate-prdcc')
-        self.__cmdUtil.runAnnotateComp(self.__prdID + '.comp.cif', self.__prdccID + '.cif', rootName + '.clog')
-        self.__cmdUtil.removeSelectedFiles('__' + self.__prdID + '__')
-
-    def __update_PRD_PRDCC(self):
-        """ Update PRD & PRDCC files
-        """
-        prdccFile = os.path.join(self.__instancePath, self.__prdccID + '.cif')
-        if not os.access(prdccFile, os.F_OK):
-            return
-        #
-        rootName = self.__cmdUtil.getRootFileName('update')
-        extraOptions = ' -prd ' + self.__prdID + '.cif -comp ' + self.__prdID + '.comp.cif -annotatecomp ' +  self.__prdccID + '.cif '
-        self.__cmdUtil.runAnnotCmd('MergeCompWithPrd', '', '', rootName + '.log', rootName + '.clog', extraOptions)
-        #
-        self.__parseLogFile(rootName + '.log')
-        self.__parseLogFile(rootName + '.clog')
-        #
-        os.rename(prdccFile, os.path.join(self.__instancePath, self.__prdccID + '.cif.save'))
-        os.rename(os.path.join(self.__instancePath, self.__prdID + '.comp.cif'), prdccFile)
 
     def __copyFile(self, src, dst):
         """ Copy file
@@ -221,14 +160,10 @@ class BuildPrd(object):
             shutil.copyfile(src, dst)
         #
 
-    def __parseLogFile(self, fileName):
-        """ Read error message from log file
+    def __attachErrorMessage(self, error):
+        """ Attach error message to self.__message
         """
-        error = GetLogMessage(os.path.join(self.__instancePath, fileName))
-        if not error:
-            return
-        #
         if self.__message:
-            self.__message += '\n'
+            self.__message += "\n"
         #
         self.__message += error

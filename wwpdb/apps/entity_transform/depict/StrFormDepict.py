@@ -67,7 +67,7 @@ class StrFormDepict(DepictBase):
                 template,myD = self.__processMergePolymer(myD)
             elif self.__submitValue == 'Split polymer to polymer(s)/non-polymer(s)':
                 template,myD =self.__processSplitPolymer(myD)
-            elif self.__submitValue == 'Edit polymer sequence(s)':
+            elif self.__submitValue == 'Remove residue(s) from polymer sequence(s)':
                 template,myD =self.__processEditPolymerSequence(myD)
             elif self.__submitValue == 'Merge/Split with chopper':
                 template,myD = self.__processMergeSplit(myD)
