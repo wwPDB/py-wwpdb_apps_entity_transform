@@ -99,7 +99,7 @@ class UpdateFile(UpdateBase):
                 error += error1
                 continue
             #
-            if not 'fileid' in dic:
+            if 'fileid' not in dic:
                 error += dic['instid'] + ' has no match.\n'
                 continue
             #
@@ -121,21 +121,17 @@ class UpdateFile(UpdateBase):
     def __runGraphMatch(self, dic):
         """ Run Graph match and get mapping file
         """
-        if not 'inputid' in dic:
+        if 'inputid' not in dic:
             return ''
         #
-        if dic['inputid'] == 'PRD_XXXXXX':
-            templateFile = '/net/users/zfeng/prd/PRDCC_XXXXXX.cif'
-        else:
-            compObj = CompUtil(reqObj=self._reqObj, verbose=self._verbose,log=self._lfh)
-            error = compObj.checkInputId(dic['inputid'])
-            if error:
-                return error
-            #
-            templateFile = compObj.getTemplateFile(dic['inputid'])
-            if not templateFile:
-                return 'Can not find chemical component file for ID ' + dic['inputid'] + '\n'
-            #
+        compObj = CompUtil(reqObj=self._reqObj, verbose=self._verbose,log=self._lfh)
+        error = compObj.checkInputId(dic['inputid'])
+        if error:
+            return error
+        #
+        templateFile = compObj.getTemplateFile(dic['inputid'])
+        if not templateFile:
+            return 'Can not find chemical component file for ID ' + dic['inputid'] + '\n'
         #
         instancePath = os.path.join(self._sessionPath, 'search', dic['instid'])
         option = ' -template ' + templateFile + ' -cif ' + os.path.join(instancePath, dic['instid'] + '.orig.cif') \

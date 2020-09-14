@@ -49,6 +49,14 @@ class CompUtil(object):
         #
         if not os.access(filePath, os.F_OK):
             return id + ' is not a valid Component or PRD ID.\n'
+        #
+        if id[:4] == 'PRD_':
+            cf = mmCIFUtil(filePath=filePath)
+            status = cf.GetSingleValue('pdbx_reference_molecule', 'release_status')
+            if status.strip().upper() == "WAIT":
+                return id + ' has status "WAIT".\n'
+            #
+        #
         return ''
 
     def getTemplateFile(self, id):
@@ -73,10 +81,12 @@ class CompUtil(object):
             filePath1 = os.path.join(self.__ccPath, ccid[0], ccid, ccid + '.cif')
             if os.access(filePath1, os.F_OK):
                 return filePath1
+            #
         else:
             filePath = os.path.join(self.__ccPath, id[0], id, id + '.cif')
             if os.access(filePath, os.F_OK):
                 return filePath
+            #
         #
         return ''
 
