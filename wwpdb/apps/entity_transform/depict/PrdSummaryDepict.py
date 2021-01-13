@@ -58,15 +58,16 @@ class PrdSummaryDepict(DepictBase):
         text += '<li><a class="fltlft" href="/service/entity/summary_view?' + input_data + '" target="_blank"> Access to split or merge </a></li>\n'
         #
         if self.__splitPolymerResidueFlag:
-            text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data \
-                  + '&type=split" target="_blank"> Split modified amino acid residue to standard amino acid residue + modification in polymer </a></li>\n'
+            text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data + '&type=split" target="_blank"> ' \
+                  + '<span style="color:red;">Split modified amino acid residue to standard amino acid residue + modification in polymer</span> </a></li>\n'
         #
         if self.__combResidueFlag:
-            text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data \
-                  + '&type=merge" target="_blank"> Merge standard amino acid residue + modification to modified amino acid residue in polymer </a></li>\n' 
+            text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data + '&type=merge" target="_blank"> ' \
+                  + '<span style="color:red;">Merge standard amino acid residue + modification to modified amino acid residue in polymer</span> </a></li>\n' 
         #
         if self.__matchResultFlag:
-            text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data + '" target="_blank"> <span style="color:red;">View All Search Result(s)</span> </a></li>\n'
+            text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data \
+                  + '" target="_blank"> <span style="color:red;">View All Search Result(s)</span> </a></li>\n'
         # 
         if self.__graphmatchResultFlag:
             text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data \

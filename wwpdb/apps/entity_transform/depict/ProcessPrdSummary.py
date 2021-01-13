@@ -178,10 +178,20 @@ class ProcessPrdSummary(object):
                     continue
                 #
                 seq = ""
+                colorResMap = {}
+                if ("color_res_list" in d) and d["color_res_list"]:
+                    colorSplitList = d["color_res_list"].replace("\n", "").replace(" ", "").replace("\t", "").split("|")
+                    for colorList in colorSplitList:
+                        colonSplitList = colorList.split(":")
+                        if len(colonSplitList) == 2:
+                            colorResMap[colonSplitList[0]] = colonSplitList[1].split(",")
+                        #
+                    #
+                #
                 if "one_letter_seq" in d:
-                    seq = "<br/>" + self.__processingOneLetterSeq(d["one_letter_seq"])
+                    seq = "<br/>" + self.__processingOneLetterSeq(d["one_letter_seq"], colorResMap)
                 elif "three_letter_seq" in d:
-                    seq = d["three_letter_seq"]
+                    seq = self.__processingThreeLetterSeq(d["three_letter_seq"], colorResMap)
                 #
                 text = ""
                 for prolist in self.__propertyList:
@@ -262,9 +272,15 @@ class ProcessPrdSummary(object):
             return
         #
         nonpolymermap = {}
+        colorList = []
         for d in elist:
             if ('instance_id' not in d) or ('residue_id' not in d) or ('linkage_info' not in d):
                 continue
+            #
+            if ("highlight_with_color" in d) and (d["highlight_with_color"] == "Y"):
+                if d['residue_id'] not in colorList:
+                    colorList.append(d['residue_id'])
+                #
             #
             if d['linkage_info'] == 'linked':
                 self.__image_data.append( ( d['instance_id'], d['instance_id'] ) )
@@ -291,7 +307,11 @@ class ProcessPrdSummary(object):
         for k in keylist:
             v = nonpolymermap[k]
             count = len(v)
-            text = k + ' (' + str(count) + ' '
+            if k in colorList:
+                text = '<span style="color:red;">' + k + "</span> (" + str(count) + " "
+            else:
+                text = k + ' (' + str(count) + ' '
+            #
             list_text = ''
             if count > 1:
                 text += 'residues)'
@@ -475,7 +495,7 @@ class ProcessPrdSummary(object):
         #
         iGenerator.run(self.__image_data)
 
-    def __processingOneLetterSeq(self, input_seq):
+    def __processingOneLetterSeq(self, input_seq, colorResMap):
         seq = input_seq.replace('\n', '').replace(' ', '').replace('\t', '')
         output_seq = ''
         count = 0
@@ -493,4 +513,19 @@ class ProcessPrdSummary(object):
                 count = 0
             #
         #
-        return output_seq.replace('(', '<span style="color:red;">(').replace(')', ')</span>')
+        #return output_seq.replace('(', '<span style="color:red;">(').replace(')', ')</span>')
+        for color,colorResList in colorResMap.items():
+            for res in colorResList:
+                output_seq = output_seq.replace("(" + res + ")", '<span style="color:' + color + ';">(' + res + ")</span>")
+            #
+        #
+        return output_seq
+
+    def __processingThreeLetterSeq(self, input_seq, colorResMap):
+        output_seq = input_seq
+        for color,colorResList in colorResMap.items():
+            for res in colorResList:
+                output_seq = output_seq.replace(res, '<span style="color:' + color + ';">' + res + "</span>")
+            #
+        #
+        return output_seq
