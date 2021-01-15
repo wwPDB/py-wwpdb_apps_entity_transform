@@ -75,7 +75,7 @@ class ChopperHandler(object):
         """
         cif = str(self.__reqObj.getValue('cif'))
         filePath = os.path.join(self.__instancePath, 'chopper_output.cif')
-        f = file(filePath, 'w')
+        f = open(filePath, 'w')
         f.write(cif + '\n')
         f.close()
         #
@@ -114,7 +114,7 @@ class ChopperHandler(object):
         if not os.access(filename, os.F_OK):
             return
         #
-        f = file(filename, 'r')
+        f = open(filename, 'r')
         data = f.read()
         f.close()
         list = data.split('\n')

@@ -289,7 +289,7 @@ class DepictPrd(object):
         if not os.access(filepath, os.F_OK):
             return enumList
         #
-        f = file(filepath, 'r')
+        f = open(filepath, 'r')
         data = f.read()
         f.close()
         #

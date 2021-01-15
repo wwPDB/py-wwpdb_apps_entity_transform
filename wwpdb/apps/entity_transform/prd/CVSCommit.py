@@ -58,7 +58,7 @@ class CVSCommit(object):
         scriptfile = self.__getFileName(self.__sessionPath, "cvs_commit", "csh")
         logfile    = self.__getFileName(self.__sessionPath, "cvs_commit", "log")
         script = os.path.join(self.__sessionPath, scriptfile)
-        f = file(script, "w")
+        f = open(script, "w")
         f.write("#!/bin/tcsh -f\n")
         f.write("#\n")
         f.write('setenv CVSROOT ":pserver:liganon3:lig1234@rcsb-cvs-1.rutgers.edu:/cvs-ligands"\n')

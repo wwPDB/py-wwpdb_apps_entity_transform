@@ -99,7 +99,7 @@ class BuildPrd(object):
         """ Get new PRDID from unusedPrdId.lst file
         """
         filePath = os.path.join(self.__cI.get("SITE_DEPLOY_PATH"), "reference", "id_codes", "unusedPrdId.lst")
-        f = file(filePath, "r")
+        f = open(filePath, "r")
         data = f.read()
         f.close()
         #
@@ -115,7 +115,7 @@ class BuildPrd(object):
             #
         #
         data = "\n".join(idlist[idx:])
-        f = file(filePath, "w")
+        f = open(filePath, "w")
         f.write(data)
         f.close()
 
