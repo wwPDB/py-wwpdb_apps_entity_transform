@@ -21,13 +21,15 @@ __email__     = "zfeng@rcsb.rutgers.edu"
 __license__   = "Creative Commons Attribution 3.0 Unported"
 __version__   = "V0.07"
 
-import os, sys, string, traceback
+import os
+import sys
 
 from wwpdb.utils.config.ConfigInfo                   import ConfigInfo
 from wwpdb.apps.entity_transform.prd.DepictUtil    import DepictUtil
 from wwpdb.apps.entity_transform.prd.HtmlUtil      import HtmlUtil
 from wwpdb.apps.entity_transform.utils.CommandUtil import CommandUtil
 from wwpdb.io.file.mmCIFUtil                    import mmCIFUtil
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 #
 
 class DepictPrd(object):
@@ -46,8 +48,9 @@ class DepictPrd(object):
         self.__rltvSessionPath=None
         self.__siteId  = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
         self.__cI=ConfigInfo(self.__siteId)
-        self.__dictRoot = self.__cI.get('SITE_PDBX_DICT_PATH')
-        self.__dictionary_v5 = self.__cI.get('SITE_PDBX_DICT_NAME') + '.odb'
+        self.__cICommon = ConfigInfoAppCommon(self.__siteId)
+        self.__dictRoot = self.__cICommon.get_mmcif_dict_path()
+        self.__dictionary_v5 = self.__cICommon.get_mmcif_archive_next_dict_filename() + '.odb'
         #
         self.__getSession()
         #
