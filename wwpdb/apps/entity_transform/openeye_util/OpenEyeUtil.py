@@ -21,13 +21,15 @@ __email__     = "zfeng@rcsb.rutgers.edu"
 __license__   = "Creative Commons Attribution 3.0 Unported"
 __version__   = "V0.07"
 
-import os, sys, string, traceback
+import os
+import sys
+import traceback
 
 from wwpdb.utils.cc_dict_util.persist.PdbxChemCompPersist         import PdbxChemCompIt,PdbxChemCompAtomIt,PdbxChemCompBondIt
 from wwpdb.utils.oe_util.oedepict.OeAlignDepict                   import OeDepictMCSAlign
 from wwpdb.apps.entity_transform.utils.CompUtil       import CompUtil
 from wwpdb.io.file.mmCIFUtil                       import mmCIFUtil
-from wwpdb.utils.config.ConfigInfo                      import ConfigInfo
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 #
 
 class OpenEyeUtil(object):
@@ -43,10 +45,10 @@ class OpenEyeUtil(object):
         self.__sessionPath=None
         self.__rltvSessionPath=None
         self.__siteId  = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
-        self.__cI=ConfigInfo(self.__siteId)
+        self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         #
-        self.__ccPath = self.__cI.get('SITE_CC_CVS_PATH')
-        self.__prdccPath = self.__cI.get('SITE_PRDCC_CVS_PATH')
+        self.__ccPath = self.__cICommon.get_site_cc_cvs_path()
+        self.__prdccPath = self.__cICommon.get_site_prdcc_cvs_path()
         #
         self.__getSession()
         #
