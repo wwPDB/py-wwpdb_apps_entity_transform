@@ -24,6 +24,7 @@ __version__   = "V0.07"
 import datetime, os, signal, subprocess, sys, time, traceback
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 
 class CommandUtil(object):
     """ Class for running back-end commands
@@ -36,6 +37,7 @@ class CommandUtil(object):
         self.__sessionPath=None
         self.__siteId  = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
         self.__cI=ConfigInfo(self.__siteId)
+        self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         #
 
     def setSessionPath(self, sessionPath):
@@ -161,9 +163,9 @@ class CommandUtil(object):
         """ Get Annot package bash setting
         """
         setting = " RCSBROOT=" + self.__cI.get("SITE_ANNOT_TOOLS_PATH") + "; export RCSBROOT; PDB2GLYCAN=" \
-                + os.path.join(os.path.abspath(self.__cI.get("SITE_PACKAGES_PATH")), "pdb2glycan", "bin", "PDB2Glycan") + "; export PDB2GLYCAN; " \
-                + " COMP_PATH=" + self.__cI.get("SITE_CC_CVS_PATH") + "; export COMP_PATH; " \
-                + " PRD_PATH=" + self.__cI.get("SITE_PRD_CVS_PATH") + "; export PRD_PATH; " \
+                + os.path.join(os.path.abspath(self.__cICommon.get_site_packages_path()), "pdb2glycan", "bin", "PDB2Glycan") + "; export PDB2GLYCAN; " \
+                + " COMP_PATH=" + self.__cICommon.get_site_cc_cvs_path() + "; export COMP_PATH; " \
+                + " PRD_PATH=" + self.__cICommon.get_site_prd_cvs_path() + "; export PRD_PATH; " \
                 + " BINPATH=${RCSBROOT}/bin; export BINPATH; "
         #
         return setting
@@ -172,8 +174,8 @@ class CommandUtil(object):
         """ Get CC_TOOLS package bash setting
         """
         setting = " CC_TOOLS=" + self.__cI.get("SITE_CC_APPS_PATH") + "/bin; export CC_TOOLS; " \
-                + " OE_DIR=" + self.__cI.get("SITE_CC_OE_DIR") + "; export OE_DIR; " \
-                + " OE_LICENSE=" + self.__cI.get("SITE_CC_OE_LICENSE") + "; export OE_LICENSE; " \
+                + " OE_DIR=" + self.__cICommon.get_site_cc_oe_dir() + "; export OE_DIR; " \
+                + " OE_LICENSE=" + self.__cICommon.get_site_cc_oe_licence() + "; export OE_LICENSE; " \
                 + " ACD_DIR=" + self.__cI.get("SITE_CC_ACD_DIR") + "; export ACD_DIR; " \
                 + " CACTVS_DIR=" + self.__cI.get("SITE_CC_CACTVS_DIR") + "; export CACTVS_DIR; " \
                 + " CORINA_DIR=" + self.__cI.get("SITE_CC_CORINA_DIR") + "/bin; export CORINA_DIR; " \
