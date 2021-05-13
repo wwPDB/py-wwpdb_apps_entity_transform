@@ -24,6 +24,7 @@ __version__   = "V0.07"
 import os, sys, string, traceback
 
 from wwpdb.utils.config.ConfigInfo                   import ConfigInfo
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.io.file.mmCIFUtil                    import mmCIFUtil
 from wwpdb.apps.entity_transform.depict.DepictBase import DepictBase
 #
@@ -36,6 +37,7 @@ class ResultDepict(DepictBase):
         #
         self.__siteId  = str(self._reqObj.getValue("WWPDB_SITE_ID"))
         self.__cI=ConfigInfo(self.__siteId)
+        self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         #
         self.__instIds = self._cifObj.getMatchInstIds()
         self.__matchResults = self._cifObj.getMatchResults()
@@ -256,11 +258,11 @@ class ResultDepict(DepictBase):
         category = ''
         item = ''
         if id[:4] == 'PRD_':
-            sourcefile = os.path.join(self.__cI.get('SITE_PRD_CVS_PATH'),id[len(id)-1],id+'.cif')
+            sourcefile = os.path.join(self.__cICommon.get_site_prd_cvs_path(),id[len(id)-1],id+'.cif')
             category = 'pdbx_reference_molecule'
             item = 'release_status'
         else:
-            sourcefile = os.path.join(self.__cI.get('SITE_CC_CVS_PATH'),id[0],id,id+'.cif')
+            sourcefile = os.path.join(self.__cICommon.get_site_cc_cvs_path(),id[0],id,id+'.cif')
             category = 'chem_comp'
             item = 'pdbx_release_status'
         #
