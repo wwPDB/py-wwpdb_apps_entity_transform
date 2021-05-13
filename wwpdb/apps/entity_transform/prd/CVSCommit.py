@@ -21,9 +21,10 @@ __email__     = "zfeng@rcsb.rutgers.edu"
 __license__   = "Creative Commons Attribution 3.0 Unported"
 __version__   = "V0.07"
 
-import os, sys, string, traceback
+import os
+import sys
 
-from wwpdb.utils.config.ConfigInfo                     import ConfigInfo
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.apps.entity_transform.utils.GetLogMessage import GetLogMessage
 #
 
@@ -40,9 +41,9 @@ class CVSCommit(object):
         self.__sessionPath=None
         self.__rltvSessionPath=None
         self.__siteId=str(self.__reqObj.getValue("WWPDB_SITE_ID"))
-        self.__cI=ConfigInfo(self.__siteId)
-        self.__prdRoot=self.__cI.get("SITE_PRD_CVS_PATH")
-        self.__prdccRoot=self.__cI.get("SITE_PRDCC_CVS_PATH")
+        self.__cICommon = ConfigInfoAppCommon(self.__siteId)
+        self.__prdRoot=self.__cICommon.get_site_prd_cvs_path()
+        self.__prdccRoot=self.__cICommon.get_site_prdcc_cvs_path()
         #
         self.__getSession()
         #
