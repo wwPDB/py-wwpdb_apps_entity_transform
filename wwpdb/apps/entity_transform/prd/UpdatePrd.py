@@ -21,10 +21,11 @@ __email__     = "zfeng@rcsb.rutgers.edu"
 __license__   = "Creative Commons Attribution 3.0 Unported"
 __version__   = "V0.07"
 
-import os, sys, string, traceback
+import os
+import sys
 
-from wwpdb.utils.config.ConfigInfo                     import ConfigInfo
-from wwpdb.apps.entity_transform.prd.ReadFormUtil    import ReadFormUtil
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
+from wwpdb.apps.entity_transform.prd.ReadFormUtil import ReadFormUtil
 #
 
 class UpdatePrd(object):
@@ -40,7 +41,7 @@ class UpdatePrd(object):
         self.__sessionPath=None
         self.__rltvSessionPath=None
         self.__siteId  = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
-        self.__cI=ConfigInfo(self.__siteId)
+        self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         #
         self.__getSession()
         #
@@ -84,7 +85,7 @@ class UpdatePrd(object):
         """
         """
         self.__inputData = {}
-        for key in ( 'prd_id', 'mol_name_flag', 'class_flag', 'type_flag', 'status_flag', \
+        for key in ( 'prd_id', 'mol_name_flag', 'class_flag', 'type_flag', 'status_flag',
                      'comp_detail_flag', 'description_flag'):
             self.__inputData[key] = str(self.__reqObj.getValue(key))
         #
@@ -96,7 +97,7 @@ class UpdatePrd(object):
     def __getNewPrdID(self):
         """
         """
-        filePath = os.path.join(self.__cI.get('SITE_DEPLOY_PATH'), 'reference', 'id_codes', 'unusedPrdId.lst')
+        filePath = self.__cICommon.get_unused_prd_file()
         f = open(filePath, 'r')
         data = f.read()
         f.close()
@@ -106,7 +107,7 @@ class UpdatePrd(object):
         idx = 0
         for id in idlist:
             idx += 1
-            prdfile = os.path.join(self.__cI.get('SITE_PRD_CVS_PATH'), id[len(id)-1], id+'.cif')
+            prdfile = os.path.join(self.__cICommon.get_site_prd_cvs_path(), id[len(id)-1], id+'.cif')
             if not os.access(prdfile, os.F_OK):
                 newId = id
                 break
@@ -129,7 +130,7 @@ class UpdatePrd(object):
         """
         """
         filePath = os.path.join(self.__sessionPath, self.__inputData['prd_id'] + '.cif')
-        formUtil = ReadFormUtil(reqObj=self.__reqObj, prdID=self.__inputData['prd_id'], outputFile=filePath, \
+        formUtil = ReadFormUtil(reqObj=self.__reqObj, prdID=self.__inputData['prd_id'], outputFile=filePath,
                                 verbose=self.__verbose, log=self.__lfh)
         status = formUtil.processForm()
         if not status:

@@ -100,7 +100,7 @@ class BuildPrd(object):
     def __getNewPrdID(self):
         """ Get new PRDID from unusedPrdId.lst file
         """
-        filePath = os.path.join(self.__cICommon.get_unused_prd_file())
+        filePath = self.__cICommon.get_unused_prd_file()
         f = open(filePath, "r")
         data = f.read()
         f.close()
