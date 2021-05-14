@@ -23,7 +23,6 @@ __version__   = "V0.07"
 
 import datetime, os, signal, subprocess, sys, time, traceback
 
-from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 
 class CommandUtil(object):
@@ -36,7 +35,6 @@ class CommandUtil(object):
         self.__sObj=None
         self.__sessionPath=None
         self.__siteId  = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
-        self.__cI=ConfigInfo(self.__siteId)
         self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         #
 
@@ -48,21 +46,21 @@ class CommandUtil(object):
     def runAnnotCmd(self, command, inputFile, outputFile, logFile, clogFile, extraOptions):
         """ Run Annot package back-end commands
         """
-        cmd = self.__getCmd(command="${BINPATH}/" + command, setting=self.__getAnnotSetting(), inputFile=inputFile, outputFile=outputFile, \
+        cmd = self.__getCmd(command="${BINPATH}/" + command, setting=self.__getAnnotSetting(), inputFile=inputFile, outputFile=outputFile,
                             logFile=logFile, clogFile=clogFile, extraOptions=extraOptions)
         self.__runCmd(command=cmd)
 
     def runCCToolCmd(self, command, inputFile, outputFile, logFile, clogFile, extraOptions):
         """ Run CC_TOOLS package back-end commands
         """
-        cmd = self.__getCmd(command="${CC_TOOLS}/" + command, setting=self.__getCCToolSetting(), inputComand=" -i ", inputFile=inputFile, \
+        cmd = self.__getCmd(command="${CC_TOOLS}/" + command, setting=self.__getCCToolSetting(), inputComand=" -i ", inputFile=inputFile,
                             outputComand=" -o ", outputFile=outputFile, logFile=logFile, clogFile=clogFile, extraOptions=extraOptions)
         self.__runCmd(command=cmd)
 
     def runCCToolCmdWithTimeOut(self, command, inputFile, outputFile, logFile, clogFile, extraOptions, timeOut=240):
         """ Run CC_TOOLS package back-end commands
         """
-        cmd = self.__getCmd(command="${CC_TOOLS}/" + command, setting=self.__getCCToolSetting(), inputComand=" -i ", inputFile=inputFile, \
+        cmd = self.__getCmd(command="${CC_TOOLS}/" + command, setting=self.__getCCToolSetting(), inputComand=" -i ", inputFile=inputFile,
                             outputComand=" -o ", outputFile=outputFile, logFile=logFile, clogFile=clogFile, extraOptions=extraOptions)
         #
         self.__runCmd_with_Timeout(cmd, timeout=timeOut)
@@ -101,7 +99,7 @@ class CommandUtil(object):
         self.__sObj=self.__reqObj.newSessionObj()
         self.__sessionPath=self.__sObj.getPath()
 
-    def __getCmd(self, command="", setting="", inputComand=" -input ", inputFile="", outputComand=" -output ", outputFile="", \
+    def __getCmd(self, command="", setting="", inputComand=" -input ", inputFile="", outputComand=" -output ", outputFile="",
                  logFile="", clogFile="", extraOptions=""):
         """ Get general back-end commands
         """
@@ -162,7 +160,7 @@ class CommandUtil(object):
     def __getAnnotSetting(self):
         """ Get Annot package bash setting
         """
-        setting = " RCSBROOT=" + self.__cI.get("SITE_ANNOT_TOOLS_PATH") + "; export RCSBROOT; PDB2GLYCAN=" \
+        setting = " RCSBROOT=" + self.__cICommon.get_site_annot_tools_path() + "; export RCSBROOT; PDB2GLYCAN=" \
                 + os.path.join(os.path.abspath(self.__cICommon.get_site_packages_path()), "pdb2glycan", "bin", "PDB2Glycan") + "; export PDB2GLYCAN; " \
                 + " COMP_PATH=" + self.__cICommon.get_site_cc_cvs_path() + "; export COMP_PATH; " \
                 + " PRD_PATH=" + self.__cICommon.get_site_prd_cvs_path() + "; export PRD_PATH; " \
@@ -173,16 +171,16 @@ class CommandUtil(object):
     def __getCCToolSetting(self):
         """ Get CC_TOOLS package bash setting
         """
-        setting = " CC_TOOLS=" + self.__cI.get("SITE_CC_APPS_PATH") + "/bin; export CC_TOOLS; " \
+        setting = " CC_TOOLS=" + self.__cICommon.get_site_cc_apps_path() + "/bin; export CC_TOOLS; " \
                 + " OE_DIR=" + self.__cICommon.get_site_cc_oe_dir() + "; export OE_DIR; " \
                 + " OE_LICENSE=" + self.__cICommon.get_site_cc_oe_licence() + "; export OE_LICENSE; " \
-                + " ACD_DIR=" + self.__cI.get("SITE_CC_ACD_DIR") + "; export ACD_DIR; " \
-                + " CACTVS_DIR=" + self.__cI.get("SITE_CC_CACTVS_DIR") + "; export CACTVS_DIR; " \
-                + " CORINA_DIR=" + self.__cI.get("SITE_CC_CORINA_DIR") + "/bin; export CORINA_DIR; " \
-                + " BABEL_DIR="  + self.__cI.get("SITE_CC_BABEL_DIR") + "; export BABEL_DIR; " \
-                + " BABEL_DATADIR=" + self.__cI.get("SITE_CC_BABEL_DATADIR") + "; export BABEL_DATADIR; " \
-                + " LD_LIBRARY_PATH=" + self.__cI.get("SITE_CC_BABEL_LIB") + ":" \
-                + os.path.join(self.__cI.get("SITE_LOCAL_APPS_PATH"), "lib") + "; export LD_LIBRARY_PATH; "
+                + " ACD_DIR=" + self.__cICommon.get_site_cc_acd_dir() + "; export ACD_DIR; " \
+                + " CACTVS_DIR=" + self.__cICommon.get_site_cc_cactvs_dir() + "; export CACTVS_DIR; " \
+                + " CORINA_DIR=" + self.__cICommon.get_site_cc_corina_dir() + "/bin; export CORINA_DIR; " \
+                + " BABEL_DIR="  + self.__cICommon.get_site_cc_babel_dir() + "; export BABEL_DIR; " \
+                + " BABEL_DATADIR=" + self.__cICommon.get_site_cc_babel_datadir() + "; export BABEL_DATADIR; " \
+                + " LD_LIBRARY_PATH=" + self.__cICommon.get_site_cc_babel_lib() + ":" \
+                + os.path.join(self.__cICommon.get_site_local_apps_path(), "lib") + "; export LD_LIBRARY_PATH; "
         #
         return setting
 
