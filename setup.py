@@ -43,7 +43,7 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     #
-    install_requires=['wwpdb.utils.config>=0.22.2', 'wwpdb.apps.editormodule',
+    install_requires=['wwpdb.utils.config ~= 0.24', 'wwpdb.apps.editormodule',
                       'wwpdb.io', 'wwpdb.utils.dp', 'wwpdb.utils.detach',
                       'wwpdb.utils.session', 'wwpdb.utils.wf',
                       'wwpdb.utils.cc_dict_util',
