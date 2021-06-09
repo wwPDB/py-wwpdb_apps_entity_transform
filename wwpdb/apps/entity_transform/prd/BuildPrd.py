@@ -21,10 +21,12 @@ __email__     = "zfeng@rcsb.rutgers.edu"
 __license__   = "Creative Commons Attribution 3.0 Unported"
 __version__   = "V0.07"
 
-import os, shutil, string, sys, traceback
+import os
+import shutil
+import sys
 
-from wwpdb.utils.config.ConfigInfo                   import ConfigInfo
-from wwpdb.apps.entity_transform.prd.BuildPrdUtil    import BuildPrdUtil
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
+from wwpdb.apps.entity_transform.prd.BuildPrdUtil import BuildPrdUtil
 #
 
 class BuildPrd(object):
@@ -40,7 +42,7 @@ class BuildPrd(object):
         self.__sessionPath=None
         self.__instanceId = str(self.__reqObj.getValue("instanceid"))
         self.__siteId  = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
-        self.__cI=ConfigInfo(self.__siteId)
+        self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         #
         self.__getSession()
         self.__instancePath = os.path.join(self.__sessionPath, "search", self.__instanceId)
@@ -98,7 +100,7 @@ class BuildPrd(object):
     def __getNewPrdID(self):
         """ Get new PRDID from unusedPrdId.lst file
         """
-        filePath = os.path.join(self.__cI.get("SITE_DEPLOY_PATH"), "reference", "id_codes", "unusedPrdId.lst")
+        filePath = self.__cICommon.get_unused_prd_file()
         f = open(filePath, "r")
         data = f.read()
         f.close()
@@ -107,7 +109,7 @@ class BuildPrd(object):
         idx = 0
         for prdid in idlist:
             idx += 1
-            prdfile = os.path.join(self.__cI.get("SITE_PRD_CVS_PATH"), prdid[len(prdid)-1], prdid+".cif")
+            prdfile = os.path.join(self.__cICommon.get_site_prd_cvs_path(), prdid[len(prdid)-1], prdid+".cif")
             if not os.access(prdfile, os.F_OK):
                 self.__prdID = prdid
                 self.__prdccID = self.__prdID.replace("PRD", "PRDCC")
@@ -133,7 +135,7 @@ class BuildPrd(object):
                 os.remove(filePath)
             #
         #
-        setting = " RCSBROOT=" + self.__cI.get("SITE_ANNOT_TOOLS_PATH") + "; export RCSBROOT; "
+        setting = " RCSBROOT=" + self.__cICommon.get_site_annot_tools_path() + "; export RCSBROOT; "
         #
         cmd = setting + "${RCSBROOT}/bin/UpdatePrdId -input " + builtPrdPath + " -prd_id " + self.__prdID + " -output " + realPrdPath + " -log " \
             + os.path.join(self.__instancePath, "update_prd.log") + " > " + os.path.join(self.__instancePath, "update_prd.clog") + " 2>&1; "

@@ -21,10 +21,12 @@ __email__     = "zfeng@rcsb.rutgers.edu"
 __license__   = "Creative Commons Attribution 3.0 Unported"
 __version__   = "V0.07"
 
-import os, sys, string, traceback
+import os
+import sys
 
-from wwpdb.io.file.mmCIFUtil                     import mmCIFUtil
-from wwpdb.utils.config.ConfigInfo                    import ConfigInfo
+from wwpdb.io.file.mmCIFUtil import mmCIFUtil
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
+
 #
 
 class CompUtil(object):
@@ -35,11 +37,11 @@ class CompUtil(object):
         self.__lfh=log
         self.__reqObj=reqObj
         self.__siteId  = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
-        self.__cI=ConfigInfo(self.__siteId)
+        self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         #
-        self.__ccPath = self.__cI.get('SITE_CC_CVS_PATH')
-        self.__prdPath = self.__cI.get('SITE_PRD_CVS_PATH')
-        self.__prdccPath = self.__cI.get('SITE_PRDCC_CVS_PATH')
+        self.__ccPath = self.__cICommon.get_site_cc_cvs_path()
+        self.__prdPath = self.__cICommon.get_site_prd_cvs_path()
+        self.__prdccPath = self.__cICommon.get_site_prdcc_cvs_path()
         #
 
     def checkInputId(self, id):
