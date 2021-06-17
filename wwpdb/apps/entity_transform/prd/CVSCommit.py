@@ -16,34 +16,40 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 import os
 import sys
 
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
+
 from wwpdb.apps.entity_transform.utils.GetLogMessage import GetLogMessage
+
+
 #
 
 class CVSCommit(object):
     """ Class responsible for CVS commit PRD definition.
 
     """
+
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
-        self.__verbose=verbose
-        self.__lfh=log
-        self.__reqObj=reqObj
-        self.__sObj=None
-        self.__sessionId=None
-        self.__sessionPath=None
-        self.__rltvSessionPath=None
-        self.__siteId=str(self.__reqObj.getValue("WWPDB_SITE_ID"))
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__reqObj = reqObj
+        self.__sObj = None
+        self.__sessionId = None
+        self.__sessionPath = None
+        self.__rltvSessionPath = None
+        self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
+        self.__cI = ConfigInfo(self.__siteId)
         self.__cICommon = ConfigInfoAppCommon(self.__siteId)
-        self.__prdRoot=self.__cICommon.get_site_prd_cvs_path()
-        self.__prdccRoot=self.__cICommon.get_site_prdcc_cvs_path()
+        self.__prdRoot = self.__cICommon.get_site_prd_cvs_path()
+        self.__prdccRoot = self.__cICommon.get_site_prdcc_cvs_path()
         #
         self.__getSession()
         #
@@ -57,17 +63,21 @@ class CVSCommit(object):
             return "No PRD entry selected"
         #
         scriptfile = self.__getFileName(self.__sessionPath, "cvs_commit", "csh")
-        logfile    = self.__getFileName(self.__sessionPath, "cvs_commit", "log")
+        logfile = self.__getFileName(self.__sessionPath, "cvs_commit", "log")
         script = os.path.join(self.__sessionPath, scriptfile)
+        cvs_username = self.__cI.get("SITE_REFDATA_CVS_USER")
+        cvs_password = self.__cI.get("SITE_REFDATA_CVS_PASSWORD")
+        cvs_host = self.__cI.get("SITE_REFDATA_CVS_HOST")
+        cvs_path = self.__cI.get("SITE_REFDATA_CVS_PATH")
         f = open(script, "w")
         f.write("#!/bin/tcsh -f\n")
         f.write("#\n")
-        f.write('setenv CVSROOT ":pserver:liganon3:lig1234@rcsb-cvs-1.rutgers.edu:/cvs-ligands"\n')
+        f.write('setenv CVSROOT ":pserver:{}:{}@{}:{}"\n'.format(cvs_username, cvs_password, cvs_host, cvs_path))
         f.write("#\n")
         #
         self.__returnError = ""
         for prdid in self.__PrdIDList:
-            prdfile =  os.path.join(self.__sessionPath, prdid + ".cif")
+            prdfile = os.path.join(self.__sessionPath, prdid + ".cif")
             if not os.access(prdfile, os.F_OK):
                 self.__returnError += "No " + prdid + ".cif found!\n"
                 continue
@@ -107,22 +117,21 @@ class CVSCommit(object):
         """Run script command
         """
         cmd = "cd " + path + "; chmod 755 " + script \
-            + "; ./" + script + " >& " + log
+              + "; ./" + script + " >& " + log
         os.system(cmd)
 
-    
     def __getSession(self):
         """ Join existing session or create new session as required.
         """
         #
-        self.__sObj=self.__reqObj.newSessionObj()
-        self.__sessionId=self.__sObj.getId()
-        self.__sessionPath=self.__sObj.getPath()
-        self.__rltvSessionPath=self.__sObj.getRelativePath()
+        self.__sObj = self.__reqObj.newSessionObj()
+        self.__sessionId = self.__sObj.getId()
+        self.__sessionPath = self.__sObj.getPath()
+        self.__rltvSessionPath = self.__sObj.getRelativePath()
         if (self.__verbose):
-            self.__lfh.write("------------------------------------------------------\n")                    
+            self.__lfh.write("------------------------------------------------------\n")
             self.__lfh.write("+CVSCommit.__getSession() - creating/joining session %s\n" % self.__sessionId)
-            self.__lfh.write("+CVSCommit.__getSession() - session path %s\n" % self.__sessionPath)            
+            self.__lfh.write("+CVSCommit.__getSession() - session path %s\n" % self.__sessionPath)
 
     def __writeCVSScript(self, f, Id, cvspath):
         """ Write CVS checkin script
