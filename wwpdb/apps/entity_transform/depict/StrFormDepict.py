@@ -106,7 +106,7 @@ class StrFormDepict(DepictBase):
         ciffile = self._identifier + '_model_P1.cif'
         combObj = CombineCoord(reqObj=self._reqObj, instList=[str(self._reqObj.getValue('split_polymer_residue'))], cifFile=ciffile, \
                                verbose=self._verbose, log=self._lfh)
-        combObj.processWithCombine()
+        combObj.processWithCopy()
         message = combObj.getMessage()
         #
         if message:

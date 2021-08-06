@@ -87,8 +87,8 @@ class ChopperHandler(object):
         if option == 'split_residue':
             option = 'split'
         #
-        extraOptions = ' -merge_cif ' + self.__instId + '.merge.cif -comp_cif ' + self.__instId + '.comp.cif -chopper_cif ' \
-                     + os.path.join(self.__instancePath, 'chopper_output.cif') + ' -option ' + option + ' '
+        extraOptions = ' -orig_cif ' + self.__instId + '.orig.cif  -merge_cif ' + self.__instId + '.merge.cif -comp_cif ' + self.__instId \
+                     + '.comp.cif -chopper_cif ' + os.path.join(self.__instancePath, 'chopper_output.cif') + ' -option ' + option + ' '
         self.__cmdUtil.setSessionPath(self.__instancePath)
         self.__cmdUtil.runAnnotCmd('GenMappingFile', '', self.__instId + '.mapping.cif', 'generate-mapping.log', 'generate-mapping.clog', extraOptions)
         #

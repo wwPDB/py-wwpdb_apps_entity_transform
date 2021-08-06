@@ -59,7 +59,8 @@ class CombineCoord(object):
 
     def processWithCopy(self):
         #
-        self.__runCopyScript()
+        if not self.__runCopyScript():
+            self.__runCombineScript()
         #
         if self.__message:
             return
@@ -109,20 +110,17 @@ class CombineCoord(object):
 
     def __runCopyScript(self):
         if not self.__instList or not self.__instList[0]:
-            self.__message = 'No instance found.'
-            return
+            return False
         #
         for ext in ( '.orig.cif', '.merge.cif', '.comp.cif'):
             source = os.path.join(self.__sessionPath, 'search', self.__instList[0], self.__instList[0] + ext)
             if not os.access(source, os.F_OK):
-                self.__message += 'No ' + source + ' file found. <br/>\n'
-                continue
+                return False
             #
-            if self.__message:
-                continue
             #
             shutil.copyfile(source, os.path.join(self.__instancePath, self.__instId + ext))
         #
+        return True
 
     def __runUpdateScript(self):
         """
