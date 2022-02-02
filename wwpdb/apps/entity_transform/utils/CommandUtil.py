@@ -85,8 +85,7 @@ class CommandUtil(object):
         if not self.__sessionPath:
             return
         #
-        os.chdir(self.__sessionPath)
-        for filename in os.listdir("."):
+        for filename in os.listdir(self.__sessionPath):
             if filename.startswith(prefix):
                 self.__removeFile(os.path.join(self.__sessionPath, filename))
             #

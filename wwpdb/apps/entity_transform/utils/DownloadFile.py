@@ -79,9 +79,8 @@ class DownloadFile(object):
 
     def __findPRDFiles(self):
         fileList = []
-        os.chdir(self.__sessionPath)
         #
-        for files in os.listdir("."):
+        for files in os.listdir(self.__sessionPath):
             if files.endswith(".cif") and (files.startswith("PRD_") or files.startswith("PRDCC_")):
                 list1 = files.split(".")
                 if len(list1) > 2:
