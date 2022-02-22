@@ -16,34 +16,34 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import os, sys, string, traceback
-
+import sys
 #
+
 
 class FormPreProcess(object):
     """ Class responsible for checking the input value(s)
 
     """
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
-        self.__verbose=verbose
-        self.__lfh=log
-        self.__reqObj=reqObj
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__reqObj = reqObj
         #
         self.__submitValue = str(self.__reqObj.getValue('submit'))
-        self.__entityList  = self.__reqObj.getValueList('entity')
-        self.__chainList   = self.__reqObj.getValueList('chain')
-        self.__ligandList  = self.__reqObj.getValueList('ligand')
-        self.__groupList   = self.__reqObj.getValueList('group')
+        self.__entityList = self.__reqObj.getValueList('entity')
+        self.__chainList = self.__reqObj.getValueList('chain')
+        self.__ligandList = self.__reqObj.getValueList('ligand')
+        self.__groupList = self.__reqObj.getValueList('group')
         self.__splitPolymerResidue = str(self.__reqObj.getValue('split_polymer_residue'))
         #
         self.__errorMessage = ''
         #
-        self.__labelDic = {}  
+        self.__labelDic = {}
         self.__valueDic = {}
         self.__preProcessForm()
         #
@@ -68,10 +68,10 @@ class FormPreProcess(object):
         #
         if ((self.__submitValue == 'Merge to polymer') or (self.__submitValue == 'Merge/Split with chopper')) and self.__entityList:
             self.__errorMessage = 'For "' + self.__submitValue + '" option, only ' + \
-                  'polymer chain ID(s) and/or ligand ID(s) selection are allowed.'
+                'polymer chain ID(s) and/or ligand ID(s) selection are allowed.'
             return
-        elif ((self.__submitValue == 'Split polymer to polymer(s)/non-polymer(s)') or (self.__submitValue == 'Remove residue(s) from polymer sequence(s)')) \
-               and (self.__chainList or self.__ligandList or self.__groupList):
+        elif ((self.__submitValue == 'Split polymer to polymer(s)/non-polymer(s)') or (self.__submitValue == 'Remove residue(s) from polymer sequence(s)')) and \
+             (self.__chainList or self.__ligandList or self.__groupList):
             self.__errorMessage = 'For "' + self.__submitValue + '" option, only polymer entity ID(s) selection are allowed.'
             return
         elif (self.__submitValue == 'Merge to ligand') and (self.__entityList or self.__chainList or self.__groupList):
@@ -83,15 +83,15 @@ class FormPreProcess(object):
         if self.__submitValue == 'Split polymer to polymer(s)/non-polymer(s)':
             return
         #
-        self.__chainList  = self.__getLabelDic(self.__chainList,  'Chain ')
+        self.__chainList = self.__getLabelDic(self.__chainList, 'Chain ')
         self.__ligandList = self.__getLabelDic(self.__ligandList, 'Residue ')
-        self.__groupList  = self.__getLabelDic(self.__groupList,  'GROUP_')
+        self.__groupList = self.__getLabelDic(self.__groupList, 'GROUP_')
         #
         dic = {}
         group_id = []
-        self.__getUsrDefinedgroup(self.__chainList,  'chain_',  group_id, dic)
+        self.__getUsrDefinedgroup(self.__chainList, 'chain_', group_id, dic)
         self.__getUsrDefinedgroup(self.__ligandList, 'ligand_', group_id, dic)
-        self.__getUsrDefinedgroup(self.__groupList,  'group_',  group_id, dic)
+        self.__getUsrDefinedgroup(self.__groupList, 'group_', group_id, dic)
         #
         if not group_id:
             if ((self.__submitValue == 'Merge to polymer') or (self.__submitValue == 'Merge to ligand')) and \
@@ -105,9 +105,9 @@ class FormPreProcess(object):
                 + 'with chopper" option, only one User defind Group can be processed each time.\n'
             return
         #
-        for id,label in self.__labelDic.items():
-            if not id in self.__valueDic:
-                self.__errorMessage += 'No User defind Group ID assigned for "' +  label + '".<br/>\n'
+        for id, label in self.__labelDic.items():
+            if id not in self.__valueDic:
+                self.__errorMessage += 'No User defind Group ID assigned for "' + label + '".<br/>\n'
             #
         #
         if ((self.__submitValue == 'Merge to polymer') or (self.__submitValue == 'Merge to ligand')):
@@ -145,7 +145,7 @@ class FormPreProcess(object):
     def __getUsrDefinedgroup(self, instList, key_prefix, group_id, dic):
         if not instList:
             return
-        # 
+        #
         for v in instList:
             name = key_prefix + str(v)
             value = str(self.__reqObj.getValue(name))
@@ -154,14 +154,14 @@ class FormPreProcess(object):
             #
             label = v
             if v in self.__labelDic:
-               label = self.__labelDic[v]
+                label = self.__labelDic[v]
             #
             self.__valueDic[v] = value
             #
             if value in dic:
                 dic[value].append(label)
             else:
-                dic[value] = [ label ]
+                dic[value] = [label]
                 group_id.append(value)
             #
         #

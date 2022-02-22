@@ -16,22 +16,23 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import os, sys, string, traceback
+import sys
 
 from wwpdb.io.file.mmCIFUtil import mmCIFUtil
 #
+
 
 class SummaryCifUtil(object):
     """ Class responsible for handling search summary cif file.
     """
     def __init__(self, summaryFile=None, verbose=False, log=sys.stderr):
-        self.__verbose=verbose
-        self.__lfh=log
+        self.__verbose = verbose
+        self.__lfh = log
         self.__cifObj = mmCIFUtil(filePath=summaryFile)
         #
         self.__seqs = {}
@@ -133,10 +134,12 @@ class SummaryCifUtil(object):
         #
         self.__getSeqsFlag = True
         #
-        category_item = [ [ 'pdbx_polymer_info',      'polymer_id',  'three_letter_seq', 'linkage_info', 'focus' ], \
-                          [ 'pdbx_non_polymer_info',  'instance_id', 'residue_id',       'linkage_info', 'focus' ], \
-                          [ 'pdbx_group_info',        'group_id',    'residues',         'linkage_info', 'focus' ], \
-                          [ 'pdbx_merge_polymer_residue_info', 'merge_id', 'residues',   'linkage_info', 'focus' ] ]
+        # fmt:off
+        category_item = [['pdbx_polymer_info',      'polymer_id',  'three_letter_seq', 'linkage_info', 'focus'],  # noqa: E202,E241
+                         ['pdbx_non_polymer_info',  'instance_id', 'residue_id',       'linkage_info', 'focus'],  # noqa: E202,E241
+                         ['pdbx_group_info',        'group_id',    'residues',         'linkage_info', 'focus'],  # noqa: E202,E241
+                         ['pdbx_merge_polymer_residue_info', 'merge_id', 'residues',   'linkage_info', 'focus']]  # noqa: E202,E241
+        # fmt:on
         #
         for d in category_item:
             elist = self.__cifObj.GetValue(d[0])
@@ -157,7 +160,7 @@ class SummaryCifUtil(object):
                     if 'pdb_chain_id' in e:
                         self.__labels[e[d[1]]] = 'CHAIN_' + e['pdb_chain_id']
                     else:
-                        elf.__labels[e[d[1]]] = e[d[1]].upper()
+                        self.__labels[e[d[1]]] = e[d[1]].upper()
                 elif d[0] == 'pdbx_non_polymer_info':
                     self.__labels[e[d[1]]] = e[d[1]]
                 elif (d[0] == 'pdbx_group_info') or (d[0] == 'pdbx_merge_polymer_residue_info'):

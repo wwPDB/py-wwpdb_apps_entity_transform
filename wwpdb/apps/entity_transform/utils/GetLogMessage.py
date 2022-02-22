@@ -6,11 +6,12 @@ Version: 001  Initial version
 
 """
 
-__author__  = "Zukang Feng"
-__email__   = "zfeng@rcsb.rutgers.edu"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
 __version__ = "V0.001"
 
-import sys, os, string
+import os
+
 
 def GetLogMessage(logfile):
     if not os.access(logfile, os.F_OK):
@@ -36,4 +37,3 @@ def GetLogMessage(logfile):
         error += line + '\n'
     #
     return error
-

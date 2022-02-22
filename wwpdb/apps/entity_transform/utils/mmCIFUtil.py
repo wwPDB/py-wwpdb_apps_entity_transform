@@ -6,26 +6,27 @@ Version: 001  Initial version
 
 """
 
-__author__  = "Zukang Feng"
-__email__   = "zfeng@rcsb.rutgers.edu"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
 __version__ = "V0.001"
 
 import sys
 
-from mmcif.api.PdbxContainers     import *
-from mmcif.io.PdbxReader         import PdbxReader
-from mmcif.io.PdbxWriter         import PdbxWriter
+# from mmcif.api.PdbxContainers import *
+from mmcif.io.PdbxReader import PdbxReader
+from mmcif.io.PdbxWriter import PdbxWriter
+
 
 class mmCIFUtil:
     """Using pdbx mmCIF utility to parse mmCIF file
     """
     def __init__(self, verbose=False, log=sys.stderr, filePath=None):
-        self.__verbose   = verbose
-        self.__lfh       = log
-        self.__filePath  = filePath
-        self.__dataList  = []
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__filePath = filePath
+        self.__dataList = []
         self.__container = None
-        self.__blockID   = None
+        self.__blockID = None
         self.__read()
         #
 
@@ -38,7 +39,7 @@ class mmCIFUtil:
             if self.__dataList:
                 self.__container = self.__dataList[0]
                 self.__blockID = self.__container.getName()
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             self.__lfh.write("Read %s failed.\n" % self.__filePath)
         #
 
@@ -50,7 +51,7 @@ class mmCIFUtil:
         """Get category values based on category name 'catName'. The results are stored
            in a list of dictionaries with item name as key
         """
-        dList = [] 
+        dList = []
         if not self.__container:
             return dList
         #
@@ -89,7 +90,7 @@ class mmCIFUtil:
 
     def UpdateSingleRowValue(self, catName, itemName, row, value):
         """Update value in single row
-        """  
+        """
         catObj = self.__container.getObj(catName)
         if not catObj:
             return
@@ -98,7 +99,7 @@ class mmCIFUtil:
 
     def UpdateMultipleRowsValue(self, catName, itemName, value):
         """Update value in multiple rows
-        """  
+        """
         catObj = self.__container.getObj(catName)
         if not catObj:
             return

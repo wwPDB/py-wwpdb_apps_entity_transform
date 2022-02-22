@@ -16,18 +16,20 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import os, sys, string, traceback
+import os
+import sys
 
-from wwpdb.apps.entity_transform.depict.DepictBase     import DepictBase
-from wwpdb.apps.entity_transform.depict.SeqDepict      import SeqDepict
-from wwpdb.apps.entity_transform.update.CombineCoord   import CombineCoord
-from wwpdb.utils.config.ConfigInfo                     import ConfigInfo
+from wwpdb.apps.entity_transform.depict.DepictBase import DepictBase
+from wwpdb.apps.entity_transform.depict.SeqDepict import SeqDepict
+from wwpdb.apps.entity_transform.update.CombineCoord import CombineCoord
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
 #
+
 
 class StrFormDepict(DepictBase):
     """ Class responsible for generating HTML depiction of various merge/split scenarios.
@@ -35,13 +37,13 @@ class StrFormDepict(DepictBase):
     def __init__(self, reqObj=None, summaryCifObj=None, verbose=False, log=sys.stderr):
         super(StrFormDepict, self).__init__(reqObj=reqObj, summaryCifObj=summaryCifObj, verbose=verbose, log=log)
         #
-        self.__siteId  = str(self._reqObj.getValue("WWPDB_SITE_ID"))
-        self.__cI=ConfigInfo(self.__siteId)
+        self.__siteId = str(self._reqObj.getValue("WWPDB_SITE_ID"))
+        self.__cI = ConfigInfo(self.__siteId)
         #
         self.__submitValue = str(self._reqObj.getValue('submit'))
-        self.__entityList  = self._reqObj.getValueList('entity')
-        self.__chainList   = self._reqObj.getValueList('chain')
-        self.__ligandList  = self._reqObj.getValueList('ligand')
+        self.__entityList = self._reqObj.getValueList('entity')
+        self.__chainList = self._reqObj.getValueList('chain')
+        self.__ligandList = self._reqObj.getValueList('ligand')
         self.__groupList = []
         self.__entity_info = {}
         self.__entity_chain_mapping = {}
@@ -58,21 +60,21 @@ class StrFormDepict(DepictBase):
             myD['title'] = self._cifObj.getTitle()
         #
         if self.__submitValue == 'Split with chopper':
-            template,myD = self.__processSplitWithChopper(myD)
+            template, myD = self.__processSplitWithChopper(myD)
         else:
             self.__getGroupList()
             self.__readEntityData()
             #
             if self.__submitValue == 'Merge to polymer':
-                template,myD = self.__processMergePolymer(myD)
+                template, myD = self.__processMergePolymer(myD)
             elif self.__submitValue == 'Split polymer to polymer(s)/non-polymer(s)':
-                template,myD =self.__processSplitPolymer(myD)
+                template, myD = self.__processSplitPolymer(myD)
             elif self.__submitValue == 'Remove residue(s) from polymer sequence(s)':
-                template,myD =self.__processEditPolymerSequence(myD)
+                template, myD = self.__processEditPolymerSequence(myD)
             elif self.__submitValue == 'Merge/Split with chopper':
-                template,myD = self.__processMergeSplit(myD)
+                template, myD = self.__processMergeSplit(myD)
             elif self.__submitValue == 'Merge to ligand':
-                template,myD = self.__processMergeLigand(myD)
+                template, myD = self.__processMergeLigand(myD)
             #
         #
         if template:
@@ -104,21 +106,21 @@ class StrFormDepict(DepictBase):
 
     def __processSplitWithChopper(self, myD):
         ciffile = self._identifier + '_model_P1.cif'
-        combObj = CombineCoord(reqObj=self._reqObj, instList=[str(self._reqObj.getValue('split_polymer_residue'))], cifFile=ciffile, \
+        combObj = CombineCoord(reqObj=self._reqObj, instList=[str(self._reqObj.getValue('split_polymer_residue'))], cifFile=ciffile,
                                verbose=self._verbose, log=self._lfh)
         combObj.processWithCopy()
         message = combObj.getMessage()
         #
         if message:
             myD['data'] = message
-            return 'update_form/update_result_tmplt.html',myD
+            return 'update_form/update_result_tmplt.html', myD
         #
         instId = combObj.getInstId()
         myD['instanceid'] = instId
         myD['comp'] = os.path.join(self._rltvSessionPath, instId, instId + '.comp.cif')
-        myD['button'] = self._processTemplate('chopper/button_tmplt.html', { 'value' : 'Split', 'option' : 'split_residue' } )
+        myD['button'] = self._processTemplate('chopper/button_tmplt.html', {'value' : 'Split', 'option' : 'split_residue'})
         myD['processing_site'] = self.__cI.get('SITE_NAME').upper()
-        return 'chopper/chopper_tmplt.html',myD
+        return 'chopper/chopper_tmplt.html', myD
 
     def __getGroupList(self):
         group_list = self._reqObj.getValueList('group')
@@ -138,7 +140,7 @@ class StrFormDepict(DepictBase):
             return
         #
         for d in dlist:
-            if not 'entity_id' in d:
+            if 'entity_id' not in d:
                 continue
             #
             dic = {}
@@ -179,7 +181,7 @@ class StrFormDepict(DepictBase):
             html_text += self.__processMergeGroup(groups[0], '1')
         #
         myD['form_data'] = html_text
-        return 'update_form/merge_polymer_tmplt.html',myD
+        return 'update_form/merge_polymer_tmplt.html', myD
 
     def __processSplitPolymer(self, myD):
         entities = self.__getSelectedEntitiesInfo()
@@ -193,7 +195,7 @@ class StrFormDepict(DepictBase):
         #
         myD['script'] = jscript
         myD['form_data'] = html_text
-        return 'update_form/split_polymer_tmplt.html',myD
+        return 'update_form/split_polymer_tmplt.html', myD
 
     def __processEditPolymerSequence(self, myD):
         entities = self.__getSelectedEntitiesInfo()
@@ -207,7 +209,7 @@ class StrFormDepict(DepictBase):
         #
         myD['script'] = jscript
         myD['form_data'] = html_text
-        return 'update_form/edit_polymer_sequence_tmplt.html',myD
+        return 'update_form/edit_polymer_sequence_tmplt.html', myD
 
     def __processMergeSplit(self, myD):
         instlist = []
@@ -221,15 +223,15 @@ class StrFormDepict(DepictBase):
         #
         if message:
             myD['data'] = message
-            return 'update_form/update_result_tmplt.html',myD
+            return 'update_form/update_result_tmplt.html', myD
         #
         instId = combObj.getInstId()
         myD['instanceid'] = instId
         myD['comp'] = os.path.join(self._rltvSessionPath, instId, instId + '.comp.cif')
-        myD['button'] = self._processTemplate('chopper/button_tmplt.html', { 'value' : 'Merge to Ligand', 'option' : 'merge' } ) \
-                      + self._processTemplate('chopper/button_tmplt.html', { 'value' : 'Split to Polymer', 'option' : 'split' } )
+        myD['button'] = self._processTemplate('chopper/button_tmplt.html', {'value' : 'Merge to Ligand', 'option' : 'merge'}) \
+            + self._processTemplate('chopper/button_tmplt.html', {'value' : 'Split to Polymer', 'option' : 'split'})
         myD['processing_site'] = self.__cI.get('SITE_NAME').upper()
-        return 'chopper/chopper_tmplt.html',myD
+        return 'chopper/chopper_tmplt.html', myD
 
     def __processMergeLigand(self, myD):
         html_text = '<span style="font-weight:bold; font-size:16px">\n'
@@ -249,7 +251,7 @@ class StrFormDepict(DepictBase):
             html_text += self.__processMergeGroup(groups[0], '1', polymer=False)
         #
         myD['form_data'] = html_text
-        return 'update_form/merge_ligand_tmplt.html',myD
+        return 'update_form/merge_ligand_tmplt.html', myD
 
     def __getGroups(self):
         dic = {}
@@ -269,7 +271,7 @@ class StrFormDepict(DepictBase):
     def __processGroup(self, token, valueList, dic, group_id):
         if not valueList:
             return
-        # 
+        #
         for v in valueList:
             name = token + str(v)
             value = str(self._reqObj.getValue(name))
@@ -327,10 +329,10 @@ class StrFormDepict(DepictBase):
                 #
             #
             text += '<input type="hidden" name="' + token + '" value="' + value + '" />'
-            text += '<input type="hidden" name="group_' + value + '" value="' + group_id  + '" />'
+            text += '<input type="hidden" name="group_' + value + '" value="' + group_id + '" />'
             text += label + ' ' + value + ' &nbsp; '
             if polymer:
-                text += self.__selectTag('order_' + value,  str(count), enum) + ' &nbsp; &nbsp; &nbsp; '
+                text += self.__selectTag('order_' + value, str(count), enum) + ' &nbsp; &nbsp; &nbsp; '
             else:
                 text += ' &nbsp; <input type="hidden" name="order_' + value + '" value="' + str(count) + '" />'
             #
@@ -353,7 +355,7 @@ class StrFormDepict(DepictBase):
                 if entity_id in self.__entity_chain_mapping:
                     chainids = ','.join(self.__entity_chain_mapping[entity_id])
                     for c in self.__entity_chain_mapping[entity_id]:
-                        _included_chainIDs[c] = 'yes' 
+                        _included_chainIDs[c] = 'yes'
                     #
                 #
                 self.__addSelectedEntitiesInfo(entities, entity_id, chainids)
@@ -366,7 +368,7 @@ class StrFormDepict(DepictBase):
                     continue
                 #
                 _included_chainIDs[chain_id] = 'yes'
-                if not chain_id in self.__chain_entity_mapping:
+                if chain_id not in self.__chain_entity_mapping:
                     continue
                 #
                 self.__addSelectedEntitiesInfo(entities, self.__chain_entity_mapping[chain_id], chain_id)
@@ -379,15 +381,15 @@ class StrFormDepict(DepictBase):
         if entities:
             for e_list in entities:
                 if e_list[0] == entity_id:
-                     e_list[1] = e_list[1] + ',' + chainids
-                     return
+                    e_list[1] = e_list[1] + ',' + chainids
+                    return
                 #
             #
         #
-        if not entity_id in self.__entity_info:
+        if entity_id not in self.__entity_info:
             return
         #
-        if not 'pdbx_seq_one_letter_code' in self.__entity_info[entity_id]:
+        if 'pdbx_seq_one_letter_code' not in self.__entity_info[entity_id]:
             return
         #
         tlist = []
@@ -421,7 +423,7 @@ class StrFormDepict(DepictBase):
             text += '<option value="' + v + '" '
             if v == value:
                 text += 'selected'
-            #text += '> <span style="font-size:20px;font-weight:bold">' + v + '</span> \n'
+            # text += '> <span style="font-size:20px;font-weight:bold">' + v + '</span> \n'
             text += '> ' + v + '\n'
             #
         text += '</select>\n'
@@ -430,7 +432,7 @@ class StrFormDepict(DepictBase):
     def __getList(self, valueList, groups):
         if not valueList:
             return
-        # 
+        #
         for v in valueList:
             val = str(v)
             list1 = val.split(',')

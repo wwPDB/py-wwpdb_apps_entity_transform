@@ -16,19 +16,21 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import os, sys, string, traceback
-from datetime import date
+import os
+import sys
+import string
+import traceback
 
-from mmcif.io.PdbxReader                          import PdbxReader
-from mmcif.api.PdbxContainers                      import *
-from mmcif.io.PdbxWriter                          import PdbxWriter
-from wwpdb.utils.config.ConfigInfo                     import ConfigInfo
+from mmcif.io.PdbxReader import PdbxReader
+from mmcif.api.PdbxContainers import DataCategory
+from mmcif.io.PdbxWriter import PdbxWriter
 #
+
 
 class ReadFormUtil(object):
     """ Class responsible for updating PRD definition.
@@ -37,12 +39,12 @@ class ReadFormUtil(object):
     def __init__(self, reqObj=None, prdID=None, outputFile=None, verbose=False, log=sys.stderr):
         """
         """
-        self.__verbose=verbose
-        self.__lfh=log
-        self.__reqObj=reqObj
-        self.__prdID=prdID
-        self.__inputFile=str(self.__reqObj.getValue('prdfile'))
-        self.__outputFile=outputFile
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__reqObj = reqObj
+        self.__prdID = prdID
+        self.__inputFile = str(self.__reqObj.getValue('prdfile'))
+        self.__outputFile = outputFile
         #
         self.__readCif()
 
@@ -54,13 +56,13 @@ class ReadFormUtil(object):
             return
         #
         try:
-            myDataList=[]
+            myDataList = []
             ifh = open(self.__inputFile, 'r')
-            pRd=PdbxReader(ifh)
+            pRd = PdbxReader(ifh)
             pRd.read(myDataList)
             ifh.close()
             self.__myBlock = myDataList[0]
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             traceback.print_exc(file=self.__lfh)
         #
 
@@ -133,7 +135,7 @@ class ReadFormUtil(object):
         if not valMap:
             return map
         #
-        for key,val in valMap.items():
+        for key, val in valMap.items():
             list1 = key.split('_')
             if num == 2:
                 idx = list1[1] + '_' + list1[2]
@@ -143,11 +145,11 @@ class ReadFormUtil(object):
             #
         #
         return map
- 
+
     def __updateSourceInfo(self):
         """ Update pdbx_reference_entity_src_nat category
         """
-        pKey_list = [ 'entityid_', 'orgsci_', 'taxid_', 'source_', 'sourceid_', 'natname_', 'natcode_' ]
+        pKey_list = ['entityid_', 'orgsci_', 'taxid_', 'source_', 'sourceid_', 'natname_', 'natcode_']
         valMap = self.__reqObj.getValueMap(pKey_list)
         if not valMap:
             return
@@ -185,10 +187,10 @@ class ReadFormUtil(object):
         map['natcode_'] = 'db_code'
         map['natname_'] = 'db_name'
         #
-        row = 0 
+        row = 0
         for dir in vlist:
-            cat.setValue(str(row+1), 'ordinal', row)
-            for token in ('prd_id', 'entityid_', 'orgsci_', 'taxid_', 'source_', 'sourceid_', \
+            cat.setValue(str(row + 1), 'ordinal', row)
+            for token in ('prd_id', 'entityid_', 'orgsci_', 'taxid_', 'source_', 'sourceid_',
                           'natname_', 'natcode_'):
                 if token in dir:
                     cat.setValue(dir[token], map[token], row)
@@ -201,7 +203,7 @@ class ReadFormUtil(object):
         """ Get maximum source ID
         """
         defined_row = -1
-        for key,val in valMap.items():
+        for key, val in valMap.items():
             list = key.split('_')
             n = string.atoi(list[1])
             if n > defined_row:
@@ -214,7 +216,7 @@ class ReadFormUtil(object):
         """ Get values based on source ID
         """
         list = []
-        for i in range(0, defined_row+1):
+        for i in range(0, defined_row + 1):
             dir = {}
             for token in pKey_list:
                 id = token + str(i)
@@ -261,17 +263,17 @@ class ReadFormUtil(object):
     def __getOneLetterCodeMap(self, cat):
         """ Get one letter code sequence
         """
-        aamap = { "ALA":"A", "ARG":"R", "ASN":"N", "ASP":"D", "CYS":"C", \
-                  "GLN":"Q", "GLU":"E", "GLY":"G", "HIS":"H", "ILE":"I", \
-                  "LEU":"L", "LYS":"K", "MET":"M", "PHE":"F", "PRO":"P", \
-                  "SER":"S", "THR":"T", "TRP":"W", "TYR":"Y", "VAL":"V" }
+        aamap = {"ALA": "A", "ARG": "R", "ASN": "N", "ASP": "D", "CYS": "C",
+                 "GLN": "Q", "GLU": "E", "GLY": "G", "HIS": "H", "ILE": "I",
+                 "LEU": "L", "LYS": "K", "MET": "M", "PHE": "F", "PRO": "P",
+                 "SER": "S", "THR": "T", "TRP": "W", "TYR": "Y", "VAL": "V"}
         #
         one_letter_code_map = {}
         ref_entity_id = ''
         one_letter_code = ''
         for row in range(0, cat.getRowCount()):
             ref_id = cat.getValue('ref_entity_id', row)
-            value  = cat.getValue('parent_mon_id', row)
+            value = cat.getValue('parent_mon_id', row)
             if ref_id != ref_entity_id:
                 if ref_entity_id and one_letter_code:
                     one_letter_code_map[ref_entity_id] = one_letter_code
@@ -339,21 +341,21 @@ class ReadFormUtil(object):
     def __updateAuditInfo(self):
         """ Update pdbx_prd_audit category
         """
-        actiontype =  self.__getFormValue('actiontype_', 1)
+        actiontype = self.__getFormValue('actiontype_', 1)
         details = self.__getFormValue('auditdetails_', 1)
         if (not actiontype) and (not details):
             return
-        # 
+        #
         list = []
         uniqueMap = {}
         if actiontype:
-            for k,v in actiontype.items():
+            for k, v in actiontype.items():
                 uniqueMap[k] = 'yes'
                 list.append(int(k))
             #
         #
         if details:
-            for k,v in details.items():
+            for k, v in details.items():
                 if k in uniqueMap:
                     continue
                 #
@@ -386,10 +388,10 @@ class ReadFormUtil(object):
     def __updatePrdID(self):
         """ Update PRD ID
         """
-        cat_list = [ 'pdbx_reference_molecule', 'pdbx_reference_entity_list', 'pdbx_reference_entity_nonpoly',
-                     'pdbx_reference_entity_link', 'pdbx_reference_entity_poly_link', 'pdbx_reference_entity_poly',
-                     'pdbx_reference_entity_sequence', 'pdbx_reference_entity_poly_seq', 'pdbx_reference_entity_src_nat',
-                     'pdbx_prd_audit' ]
+        cat_list = ['pdbx_reference_molecule', 'pdbx_reference_entity_list', 'pdbx_reference_entity_nonpoly',
+                    'pdbx_reference_entity_link', 'pdbx_reference_entity_poly_link', 'pdbx_reference_entity_poly',
+                    'pdbx_reference_entity_sequence', 'pdbx_reference_entity_poly_seq', 'pdbx_reference_entity_src_nat',
+                    'pdbx_prd_audit']
         #
         for category in cat_list:
             cat = self.__myBlock.getObj(category)
@@ -406,13 +408,13 @@ class ReadFormUtil(object):
         """ Write out PRD file
         """
         try:
-            myDataList=[]
+            myDataList = []
             ofh = open(self.__outputFile, 'w')
             myDataList.append(self.__myBlock)
-            pdbxW=PdbxWriter(ofh)
+            pdbxW = PdbxWriter(ofh)
             pdbxW.write(myDataList)
             ofh.close()
-        except:
+        except:  # noqa: E722 pynlint: disable=bare-except
             traceback.print_exc(file=self.__lfh)
             self.__status = False
         #

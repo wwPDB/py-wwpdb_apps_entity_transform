@@ -16,10 +16,10 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 import os
 import shutil
@@ -29,19 +29,20 @@ from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.apps.entity_transform.prd.BuildPrdUtil import BuildPrdUtil
 #
 
+
 class BuildPrd(object):
     """ Class responsible for building PRD definition based on instance.
 
     """
     def __init__(self, reqObj=None, summaryFile=None, verbose=False, log=sys.stderr):
-        self.__verbose=verbose
-        self.__lfh=log
-        self.__reqObj=reqObj
-        self.__summaryFile=summaryFile
-        self.__sObj=None
-        self.__sessionPath=None
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__reqObj = reqObj
+        self.__summaryFile = summaryFile
+        self.__sObj = None
+        self.__sessionPath = None
         self.__instanceId = str(self.__reqObj.getValue("instanceid"))
-        self.__siteId  = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
+        self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
         self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         #
         self.__getSession()
@@ -91,11 +92,11 @@ class BuildPrd(object):
         """ Join existing session or create new session as required.
         """
         #
-        self.__sObj=self.__reqObj.newSessionObj()
-        self.__sessionPath=self.__sObj.getPath()
+        self.__sObj = self.__reqObj.newSessionObj()
+        self.__sessionPath = self.__sObj.getPath()
         if (self.__verbose):
-            self.__lfh.write("------------------------------------------------------\n")                    
-            self.__lfh.write("+BuildPrd.__getSession() - session path %s\n" % self.__sessionPath)            
+            self.__lfh.write("------------------------------------------------------\n")
+            self.__lfh.write("+BuildPrd.__getSession() - session path %s\n" % self.__sessionPath)
 
     def __getNewPrdID(self):
         """ Get new PRDID from unusedPrdId.lst file
@@ -109,7 +110,7 @@ class BuildPrd(object):
         idx = 0
         for prdid in idlist:
             idx += 1
-            prdfile = os.path.join(self.__cICommon.get_site_prd_cvs_path(), prdid[len(prdid)-1], prdid+".cif")
+            prdfile = os.path.join(self.__cICommon.get_site_prd_cvs_path(), prdid[len(prdid) - 1], prdid + ".cif")
             if not os.access(prdfile, os.F_OK):
                 self.__prdID = prdid
                 self.__prdccID = self.__prdID.replace("PRD", "PRDCC")
@@ -125,12 +126,12 @@ class BuildPrd(object):
         """ Replace fake IDs with real IDs
         """
         if (self.__prdID == "PRD_XXXXXX") or (self.__prdccID == "PRDCC_XXXXXX"):
-             return
+            return
         #
         realPrdPath = os.path.join(self.__instancePath, self.__prdID + ".cif")
         realPrdCcPath = os.path.join(self.__instancePath, self.__prdccID + ".cif")
         #
-        for filePath in ( realPrdPath, realPrdCcPath ):
+        for filePath in (realPrdPath, realPrdCcPath):
             if os.access(filePath, os.F_OK):
                 os.remove(filePath)
             #

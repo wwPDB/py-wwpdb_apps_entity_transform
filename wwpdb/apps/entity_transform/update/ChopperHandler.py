@@ -16,26 +16,28 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import os, sys, string, traceback
+import os
+import sys
 
-from wwpdb.apps.entity_transform.utils.CommandUtil   import CommandUtil
+from wwpdb.apps.entity_transform.utils.CommandUtil import CommandUtil
 from wwpdb.apps.entity_transform.utils.GetLogMessage import GetLogMessage
+
 
 class ChopperHandler(object):
     """ Class responsible for handling chopper tool output.
     """
     def __init__(self, reqObj=None, summaryFile=None, verbose=False, log=sys.stderr):
-        self.__verbose=verbose
-        self.__lfh=log
-        self.__reqObj=reqObj
-        self.__summaryFile=summaryFile
-        self.__sObj=None
-        self.__sessionPath=None
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__reqObj = reqObj
+        self.__summaryFile = summaryFile
+        self.__sObj = None
+        self.__sessionPath = None
         self.__option = str(self.__reqObj.getValue('option'))
         #
         self.__getSession()
@@ -65,7 +67,7 @@ class ChopperHandler(object):
             elif self.__option == 'merge':
                 self.__message = 'merged'
             else:
-                self.__message = 'split' 
+                self.__message = 'split'
             #
         #
         return self.__message
@@ -88,7 +90,7 @@ class ChopperHandler(object):
             option = 'split'
         #
         extraOptions = ' -orig_cif ' + self.__instId + '.orig.cif  -merge_cif ' + self.__instId + '.merge.cif -comp_cif ' + self.__instId \
-                     + '.comp.cif -chopper_cif ' + os.path.join(self.__instancePath, 'chopper_output.cif') + ' -option ' + option + ' '
+            + '.comp.cif -chopper_cif ' + os.path.join(self.__instancePath, 'chopper_output.cif') + ' -option ' + option + ' '
         self.__cmdUtil.setSessionPath(self.__instancePath)
         self.__cmdUtil.runAnnotCmd('GenMappingFile', '', self.__instId + '.mapping.cif', 'generate-mapping.log', 'generate-mapping.clog', extraOptions)
         #
@@ -104,11 +106,11 @@ class ChopperHandler(object):
         """
         searchPath = os.path.join(self.__sessionPath, 'search')
         extraOptions = ' -summaryfile ' + self.__summaryFile + ' -searchpath ' + searchPath + ' -merge_cif ' + self.__instId \
-                     + '.merge.cif -chopper_cif ' + os.path.join(self.__instancePath, 'chopper_output.cif') + ' '
+            + '.merge.cif -chopper_cif ' + os.path.join(self.__instancePath, 'chopper_output.cif') + ' '
         #
         self.__cmdUtil.setSessionPath(self.__instancePath)
-        self.__cmdUtil.runAnnotCmd('SearchAllInstances', '', self.__instId + '.all_instance_search.list', \
-                                  'search-instances.log', 'search-instances.clog', extraOptions)
+        self.__cmdUtil.runAnnotCmd('SearchAllInstances', '', self.__instId + '.all_instance_search.list',
+                                   'search-instances.log', 'search-instances.clog', extraOptions)
         #
         filename = os.path.join(self.__instancePath, self.__instId + '.all_instance_search.list')
         if not os.access(filename, os.F_OK):
@@ -148,7 +150,7 @@ class ChopperHandler(object):
         #
         if self.__allInstMappingFiles:
             for file_name in self.__allInstMappingFiles:
-                 allinst_option += ' -mapping ' + self.__instId + '/' + file_name
+                allinst_option += ' -mapping ' + self.__instId + '/' + file_name
             #
         #
         identifier = str(self.__reqObj.getValue("identifier"))
@@ -165,7 +167,7 @@ class ChopperHandler(object):
             return
         #
         self.__getLogMessage(logfile)
-        
+
     def __getLogMessage(self, logfile):
         error = GetLogMessage(logfile)
         if error:
@@ -176,10 +178,10 @@ class ChopperHandler(object):
         """ Join existing session or create new session as required.
         """
         #
-        self.__sObj=self.__reqObj.newSessionObj()
-        self.__sessionPath=self.__sObj.getPath()
-        if (self.__verbose):
-            self.__lfh.write("------------------------------------------------------\n")                    
+        self.__sObj = self.__reqObj.newSessionObj()
+        self.__sessionPath = self.__sObj.getPath()
+        if self.__verbose:
+            self.__lfh.write("------------------------------------------------------\n")
             self.__lfh.write("+ChopperHandler.__getSession() - creating/joining session %s\n" % self.__sObj.getId())
-            self.__lfh.write("+ChopperHandler.__getSession() - session path %s\n" % self.__sessionPath)            
+            self.__lfh.write("+ChopperHandler.__getSession() - session path %s\n" % self.__sessionPath)
         #

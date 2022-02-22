@@ -16,10 +16,10 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 import os
 import sys
@@ -28,19 +28,20 @@ from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.apps.entity_transform.prd.ReadFormUtil import ReadFormUtil
 #
 
+
 class UpdatePrd(object):
     """ Class responsible for updating PRD definition.
 
     """
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
-        self.__verbose=verbose
-        self.__lfh=log
-        self.__reqObj=reqObj
-        self.__sObj=None
-        self.__sessionId=None
-        self.__sessionPath=None
-        self.__rltvSessionPath=None
-        self.__siteId  = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__reqObj = reqObj
+        self.__sObj = None
+        self.__sessionId = None
+        self.__sessionPath = None
+        self.__rltvSessionPath = None
+        self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
         self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         #
         self.__getSession()
@@ -59,10 +60,10 @@ class UpdatePrd(object):
         submit = self.__reqObj.getValue('submit')
         if submit == 'Get New PRD ID':
             self.__processNewPrdID()
-        #elif submit == 'Get Existing PRD Info':
-        #elif submit == 'Add Rows':
-        #elif submit == 'Commit to CVS':
-        #elif submit == 'Continue CVS Commit':
+        # elif submit == 'Get Existing PRD Info':
+        # elif submit == 'Add Rows':
+        # elif submit == 'Commit to CVS':
+        # elif submit == 'Continue CVS Commit':
         else:
             self.__updateStatus = False
         #
@@ -72,25 +73,25 @@ class UpdatePrd(object):
         """ Join existing session or create new session as required.
         """
         #
-        self.__sObj=self.__reqObj.newSessionObj()
-        self.__sessionId=self.__sObj.getId()
-        self.__sessionPath=self.__sObj.getPath()
-        self.__rltvSessionPath=self.__sObj.getRelativePath()
+        self.__sObj = self.__reqObj.newSessionObj()
+        self.__sessionId = self.__sObj.getId()
+        self.__sessionPath = self.__sObj.getPath()
+        self.__rltvSessionPath = self.__sObj.getRelativePath()
         if (self.__verbose):
-            self.__lfh.write("------------------------------------------------------\n")                    
+            self.__lfh.write("------------------------------------------------------\n")
             self.__lfh.write("+UpdatePrd.__getSession() - creating/joining session %s\n" % self.__sessionId)
-            self.__lfh.write("+UpdatePrd.__getSession() - session path %s\n" % self.__sessionPath)            
+            self.__lfh.write("+UpdatePrd.__getSession() - session path %s\n" % self.__sessionPath)
 
     def __getInputData(self):
         """
         """
         self.__inputData = {}
-        for key in ( 'prd_id', 'mol_name_flag', 'class_flag', 'type_flag', 'status_flag',
-                     'comp_detail_flag', 'description_flag'):
+        for key in ('prd_id', 'mol_name_flag', 'class_flag', 'type_flag', 'status_flag',
+                    'comp_detail_flag', 'description_flag'):
             self.__inputData[key] = str(self.__reqObj.getValue(key))
         #
         if not self.__inputData['prd_id'] or self.__inputData['prd_id'] == '':
-            self.__inputData['prd_id'] = 'PRD_XXXXXX' 
+            self.__inputData['prd_id'] = 'PRD_XXXXXX'
         #
         self.__inputData['prd_id'] = self.__inputData['prd_id'].upper()
 
@@ -98,25 +99,23 @@ class UpdatePrd(object):
         """
         """
         filePath = self.__cICommon.get_unused_prd_file()
-        f = open(filePath, 'r')
-        data = f.read()
-        f.close()
+        with open(filePath, 'r') as f:
+            data = f.read()
         #
         newId = ''
         idlist = data.split('\n')
         idx = 0
         for id in idlist:
             idx += 1
-            prdfile = os.path.join(self.__cICommon.get_site_prd_cvs_path(), id[len(id)-1], id+'.cif')
+            prdfile = os.path.join(self.__cICommon.get_site_prd_cvs_path(), id[len(id) - 1], id + '.cif')
             if not os.access(prdfile, os.F_OK):
                 newId = id
                 break
             #
         #
         data = '\n'.join(idlist[idx:])
-        f = open(filePath, 'w')
-        f.write(data)
-        f.close()
+        with open(filePath, 'w') as f:
+            f.write(data)
         #
         return newId
 

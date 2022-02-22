@@ -16,21 +16,22 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import os, sys, string, traceback
+import sys
+
 
 class LinkUtil(object):
     """ Class responsible for handling link records.
 
     """
     def __init__(self, cifObj=None, verbose=False, log=sys.stderr):
-        self.__cifObj=cifObj
-        self.__verbose=verbose
-        self.__lfh=log
+        self.__cifObj = cifObj
+        self.__verbose = verbose
+        self.__lfh = log
         #
         self.__links = {}
         self.__readLinkData()
@@ -47,14 +48,14 @@ class LinkUtil(object):
         if not dlist:
             return
         #
-        items1 = [ 'ptnr1_auth_asym_id', 'ptnr1_auth_comp_id', 'ptnr1_auth_seq_id', \
-                   'pdbx_ptnr1_PDB_ins_code', 'ptnr1_label_atom_id', 'ptnr1_symmetry', \
-                   'ptnr2_auth_asym_id', 'ptnr2_auth_comp_id', 'ptnr2_auth_seq_id', \
-                   'pdbx_ptnr2_PDB_ins_code', 'ptnr2_label_atom_id', 'ptnr2_symmetry' ]
-        items2 = [ 'ptnr2_auth_asym_id', 'ptnr2_auth_comp_id', 'ptnr2_auth_seq_id', \
-                   'pdbx_ptnr2_PDB_ins_code', 'ptnr2_label_atom_id', 'ptnr2_symmetry', \
-                   'ptnr1_auth_asym_id', 'ptnr1_auth_comp_id', 'ptnr1_auth_seq_id',
-                   'pdbx_ptnr1_PDB_ins_code', 'ptnr1_label_atom_id', 'ptnr1_symmetry' ]
+        items1 = ['ptnr1_auth_asym_id', 'ptnr1_auth_comp_id', 'ptnr1_auth_seq_id',
+                  'pdbx_ptnr1_PDB_ins_code', 'ptnr1_label_atom_id', 'ptnr1_symmetry',
+                  'ptnr2_auth_asym_id', 'ptnr2_auth_comp_id', 'ptnr2_auth_seq_id',
+                  'pdbx_ptnr2_PDB_ins_code', 'ptnr2_label_atom_id', 'ptnr2_symmetry']
+        items2 = ['ptnr2_auth_asym_id', 'ptnr2_auth_comp_id', 'ptnr2_auth_seq_id',
+                  'pdbx_ptnr2_PDB_ins_code', 'ptnr2_label_atom_id', 'ptnr2_symmetry',
+                  'ptnr1_auth_asym_id', 'ptnr1_auth_comp_id', 'ptnr1_auth_seq_id',
+                  'pdbx_ptnr1_PDB_ins_code', 'ptnr1_label_atom_id', 'ptnr1_symmetry']
         #
         index = {}
         for d in dlist:
@@ -75,7 +76,7 @@ class LinkUtil(object):
             self.__addLink(link2)
             key1 = '_'.join(link1[0:4])
             key2 = '_'.join(link2[0:4])
-            
+
         #
 
     def __getLink(self, dic, items):
@@ -112,7 +113,7 @@ class LinkUtil(object):
         if not dlist:
             return
         #
-        items = [ 'pdb_strand_id', 'pdb_mon_id', 'pdb_seq_num', 'pdb_ins_code' ]
+        items = ['pdb_strand_id', 'pdb_mon_id', 'pdb_seq_num', 'pdb_ins_code']
         #
         index = {}
         for d in dlist:
@@ -166,7 +167,7 @@ class LinkUtil(object):
         if not dlist:
             return
         #
-        items = [ 'pdb_strand_id', 'pdb_mon_id', 'pdb_seq_num', 'pdb_ins_code' ]
+        # items = ['pdb_strand_id', 'pdb_mon_id', 'pdb_seq_num', 'pdb_ins_code']
         #
         index = {}
         for d in dlist:

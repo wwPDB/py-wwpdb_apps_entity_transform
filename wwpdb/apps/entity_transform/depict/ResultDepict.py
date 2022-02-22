@@ -16,18 +16,20 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import os, sys, string, traceback
+import os
+import sys
 
-from wwpdb.utils.config.ConfigInfo                   import ConfigInfo
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
-from wwpdb.io.file.mmCIFUtil                    import mmCIFUtil
+from wwpdb.io.file.mmCIFUtil import mmCIFUtil
 from wwpdb.apps.entity_transform.depict.DepictBase import DepictBase
 #
+
 
 class ResultDepict(DepictBase):
     """ Class responsible for generating HTML depiction of PRD search results.
@@ -35,8 +37,8 @@ class ResultDepict(DepictBase):
     def __init__(self, reqObj=None, summaryCifObj=None, verbose=False, log=sys.stderr):
         super(ResultDepict, self).__init__(reqObj=reqObj, summaryCifObj=summaryCifObj, verbose=verbose, log=log)
         #
-        self.__siteId  = str(self._reqObj.getValue("WWPDB_SITE_ID"))
-        self.__cI=ConfigInfo(self.__siteId)
+        self.__siteId = str(self._reqObj.getValue("WWPDB_SITE_ID"))
+        self.__cI = ConfigInfo(self.__siteId)
         self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         #
         self.__instIds = self._cifObj.getMatchInstIds()
@@ -83,7 +85,7 @@ class ResultDepict(DepictBase):
     def DoRenderInputPage(self):
         content = ''
         count = 0
-        allInstIds = self._cifObj.getAllInstIds();
+        allInstIds = self._cifObj.getAllInstIds()
         for id in allInstIds:
             if id.startswith('merge') or self._cifObj.getLinkageInfo(id) == 'big_polymer':
                 continue
@@ -115,7 +117,7 @@ class ResultDepict(DepictBase):
             myD = {}
             myD['sessionid'] = self._sessionId
             myD['identifier'] = self._identifier
-            myD['pdbid' ] = self._pdbId
+            myD['pdbid'] = self._pdbId
             myD['instanceid'] = d['instance_id']
             myD['label'] = d['instance_id']
             myD['focus'] = d['focus']
@@ -127,7 +129,7 @@ class ResultDepict(DepictBase):
     def DoRenderMergePage(self):
         form_data = ''
         count = 0
-        allInstIds = self._cifObj.getAllInstIds();
+        allInstIds = self._cifObj.getAllInstIds()
         for instId in allInstIds:
             if not instId.startswith('merge'):
                 continue
@@ -135,7 +137,7 @@ class ResultDepict(DepictBase):
             myD = {}
             myD['sessionid'] = self._sessionId
             myD['identifier'] = self._identifier
-            myD['pdbid' ] = self._pdbId
+            myD['pdbid'] = self._pdbId
             myD['instanceid'] = instId
             myD['label'] = self._cifObj.getLabel(instId)
             myD['focus'] = self._cifObj.getFocus(instId)
@@ -161,7 +163,7 @@ class ResultDepict(DepictBase):
                     myD['cstatus'] = self.__getStatus(d['ccid'])
                     myD['value'] = d['value']
                     form_data += self._processTemplate('update_form/update_merge_polymer_residue_match_row_tmplt.html', myD)
-                #   
+                #
             #
             count += 1
         #
@@ -188,7 +190,7 @@ class ResultDepict(DepictBase):
             myD = {}
             myD['value'] = d['value']
             myD['instanceid'] = instId
-            myD['sessionid']  = self._sessionId
+            myD['sessionid'] = self._sessionId
             myD['identifier'] = self._identifier
             #
             if 'sequence' in d:
@@ -258,11 +260,11 @@ class ResultDepict(DepictBase):
         category = ''
         item = ''
         if id[:4] == 'PRD_':
-            sourcefile = os.path.join(self.__cICommon.get_site_prd_cvs_path(),id[len(id)-1],id+'.cif')
+            sourcefile = os.path.join(self.__cICommon.get_site_prd_cvs_path(), id[len(id) - 1], id + '.cif')
             category = 'pdbx_reference_molecule'
             item = 'release_status'
         else:
-            sourcefile = os.path.join(self.__cICommon.get_site_cc_cvs_path(),id[0],id,id+'.cif')
+            sourcefile = os.path.join(self.__cICommon.get_site_cc_cvs_path(), id[0], id, id + '.cif')
             category = 'chem_comp'
             item = 'pdbx_release_status'
         #

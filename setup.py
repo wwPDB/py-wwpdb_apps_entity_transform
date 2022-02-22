@@ -4,7 +4,6 @@
 # Update:
 #
 import re
-import glob
 
 from setuptools import find_packages
 from setuptools import setup
@@ -46,12 +45,11 @@ setup(
     install_requires=['wwpdb.utils.config ~= 0.24', 'wwpdb.apps.editormodule',
                       'wwpdb.io', 'wwpdb.utils.dp', 'wwpdb.utils.detach',
                       'wwpdb.utils.session', 'wwpdb.utils.wf',
-                      'wwpdb.utils.cc_dict_util',
                       'wwpdb.utils.oe_util'],
     packages=find_packages(exclude=['wwpdb.apps.tests-entity_transform',
                                     'mock-data']),
     # Enables Manifest to be used
-    #include_package_data = True,
+    # include_package_data = True,
     package_data={
         # If any package contains *.md or *.rst ...  files, include them:
         '': ['*.md', '*.rst', "*.txt", "*.cfg"],

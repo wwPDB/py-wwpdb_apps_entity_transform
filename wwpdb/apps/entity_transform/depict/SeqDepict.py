@@ -16,144 +16,146 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import copy, os, sys, string, traceback, types
+import sys
+import string
+
 
 class SeqDepict(object):
     """ Class responsible for generating HTML depiction of spliting polymer(s).
     """
     _monDict3 = {
-        'ALA':'A',
-        'ARG':'R',
-        'ASN':'N',
-        'ASP':'D',
-        'ASX':'B',
-        'CYS':'C',
-        'GLN':'Q',
-        'GLU':'E',
-        'GLX':'Z',
-        'GLY':'G',
-        'HIS':'H',
-        'ILE':'I',
-        'LEU':'L',
-        'LYS':'K',
-        'MET':'M',
-        'PHE':'F',
-        'PRO':'P',
-        'SER':'S',
-        'THR':'T',
-        'TRP':'W',
-        'TYR':'Y',
-        'VAL':'V',
-        'DAL':'A',
-        'DAR':'R',
-        'DSG':'N',
-        'DAS':'D',
-        'DCY':'C',
-        'DGN':'Q',
-        'DGL':'E',
-        'DHI':'H',
-        'DIL':'I',
-        'DLE':'L',
-        'DLY':'K',
-        'MED':'M',
-        'DPN':'F',
-        'DPR':'P',
-        'DSN':'S',
-        'DTH':'T',
-        'DTR':'W',
-        'DTY':'Y',
-        'DVA':'V',
-        'DA':'A',
-        'DC':'C',
-        'DG':'G',
-        'DT':'T',
-        'DU':'U',
-        'DI':'I',
-        'A':'A',
-        'C':'C',
-        'G':'G',
-        'I':'I',
-        'T':'T',
-        'U':'U',
-        'UNK':'X',
-        '.':'.'
-        }
+        'ALA': 'A',
+        'ARG': 'R',
+        'ASN': 'N',
+        'ASP': 'D',
+        'ASX': 'B',
+        'CYS': 'C',
+        'GLN': 'Q',
+        'GLU': 'E',
+        'GLX': 'Z',
+        'GLY': 'G',
+        'HIS': 'H',
+        'ILE': 'I',
+        'LEU': 'L',
+        'LYS': 'K',
+        'MET': 'M',
+        'PHE': 'F',
+        'PRO': 'P',
+        'SER': 'S',
+        'THR': 'T',
+        'TRP': 'W',
+        'TYR': 'Y',
+        'VAL': 'V',
+        'DAL': 'A',
+        'DAR': 'R',
+        'DSG': 'N',
+        'DAS': 'D',
+        'DCY': 'C',
+        'DGN': 'Q',
+        'DGL': 'E',
+        'DHI': 'H',
+        'DIL': 'I',
+        'DLE': 'L',
+        'DLY': 'K',
+        'MED': 'M',
+        'DPN': 'F',
+        'DPR': 'P',
+        'DSN': 'S',
+        'DTH': 'T',
+        'DTR': 'W',
+        'DTY': 'Y',
+        'DVA': 'V',
+        'DA': 'A',
+        'DC': 'C',
+        'DG': 'G',
+        'DT': 'T',
+        'DU': 'U',
+        'DI': 'I',
+        'A': 'A',
+        'C': 'C',
+        'G': 'G',
+        'I': 'I',
+        'T': 'T',
+        'U': 'U',
+        'UNK': 'X',
+        '.': '.'
+    }
 
     _monDictDNA = {
-        '.':'.',
-        'A':'DA',
-        'C':'DC',
-        'G':'DG',
-        'I':'DI',
-        'T':'DT',
-        'U':'DU',
-        'X':'UNK'
-        }
+        '.': '.',
+        'A': 'DA',
+        'C': 'DC',
+        'G': 'DG',
+        'I': 'DI',
+        'T': 'DT',
+        'U': 'DU',
+        'X': 'UNK'
+    }
 
     _monDictRNA = {
-        '.':'.',  
-        'A':'A',
-        'C':'C',
-        'G':'G',
-        'I':'I',
-        'T':'T',
-        'U':'U',
-        'X':'UNK'
-        }
+        '.': '.',
+        'A': 'A',
+        'C': 'C',
+        'G': 'G',
+        'I': 'I',
+        'T': 'T',
+        'U': 'U',
+        'X': 'UNK'
+    }
 
     _monDictL = {
-        '.':'.',
-        'A':'ALA',
-        'R':'ARG',
-        'N':'ASN',
-        'D':'ASP',
-        'B':'ASX',
-        'C':'CYS',
-        'Q':'GLN',
-        'E':'GLU',
-        'Z':'GLX',
-        'G':'GLY',
-        'H':'HIS',
-        'I':'ILE',
-        'L':'LEU',
-        'K':'LYS',
-        'M':'MET',
-        'F':'PHE',
-        'P':'PRO',
-        'S':'SER',
-        'T':'THR',
-        'W':'TRP',
-        'Y':'TYR',
-        'V':'VAL'
-        }
+        '.': '.',
+        'A': 'ALA',
+        'R': 'ARG',
+        'N': 'ASN',
+        'D': 'ASP',
+        'B': 'ASX',
+        'C': 'CYS',
+        'Q': 'GLN',
+        'E': 'GLU',
+        'Z': 'GLX',
+        'G': 'GLY',
+        'H': 'HIS',
+        'I': 'ILE',
+        'L': 'LEU',
+        'K': 'LYS',
+        'M': 'MET',
+        'F': 'PHE',
+        'P': 'PRO',
+        'S': 'SER',
+        'T': 'THR',
+        'W': 'TRP',
+        'Y': 'TYR',
+        'V': 'VAL'
+    }
 
     _monDictD = {
-        '.':'.',
-        'A':'DAL',
-        'R':'DAR',
-        'N':'DSG',
-        'D':'DAS',
-        'C':'DCY',
-        'Q':'DGN',
-        'E':'DGL',
-        'H':'DHI',
-        'I':'DIL',
-        'L':'DLE',
-        'K':'DLY',
-        'M':'MED',
-        'F':'DPN',
-        'P':'DPR',
-        'S':'DSN',
-        'T':'DTH',
-        'W':'DTR',
-        'Y':'DTY',
-        'V':'DVA'
-        }
+        '.': '.',
+        'A': 'DAL',
+        'R': 'DAR',
+        'N': 'DSG',
+        'D': 'DAS',
+        'C': 'DCY',
+        'Q': 'DGN',
+        'E': 'DGL',
+        'H': 'DHI',
+        'I': 'DIL',
+        'L': 'DLE',
+        'K': 'DLY',
+        'M': 'MED',
+        'F': 'DPN',
+        'P': 'DPR',
+        'S': 'DSN',
+        'T': 'DTH',
+        'W': 'DTR',
+        'Y': 'DTY',
+        'V': 'DVA'
+    }
 
     def __init__(self, entityInfo=None, option="split", verbose=False, log=sys.stderr):
         self.__entityInfo = entityInfo
@@ -175,7 +177,7 @@ class SeqDepict(object):
             length = len(seqlist)
             self.__entityLength[str(count) + '_' + infolist[0]] = length
             #
-            html_text += self.__depictSummaryTable(count, infolist[0], infolist[1], infolist[2], length, seqlist[0][1], seqlist[length-1][1])
+            html_text += self.__depictSummaryTable(count, infolist[0], infolist[1], infolist[2], length, seqlist[0][1], seqlist[length - 1][1])
             if infolist[5]:
                 labelList = list(infolist[5])
                 if len(labelList) != length:
@@ -198,10 +200,10 @@ class SeqDepict(object):
 
     def getScriptText(self):
         #
-       
+
         scriptText = 'var lengthMap = ' + self.__writeToString(obj=self.__entityLength) + ';\n' \
-                   + 'var indexMap = ' + self.__writeToString(obj=self.__entityIndices) + ';'
-        return scriptText;
+            + 'var indexMap = ' + self.__writeToString(obj=self.__entityIndices) + ';'
+        return scriptText
 
     def __getSeqList(self, polytype, one_letter_seq):
         seqlist = []
@@ -244,10 +246,10 @@ class SeqDepict(object):
                 return SeqDepict._monDictD[one_letter_code]
         elif polytype == 'polydeoxyribonucleotide':
             if one_letter_code in SeqDepict._monDictDNA:
-                 return SeqDepict._monDictDNA[one_letter_code]
+                return SeqDepict._monDictDNA[one_letter_code]
         elif polytype == 'polyribonucleotide' or polytype == 'polydeoxyribonucleotide/polyribonucleotide hybrid':
             if one_letter_code in SeqDepict._monDictRNA:
-                 return SeqDepict._monDictRNA[one_letter_code]
+                return SeqDepict._monDictRNA[one_letter_code]
 
         return one_letter_code
 
@@ -356,7 +358,7 @@ class SeqDepict(object):
                     currRes = seqList[idx][1] + '_' + str(idx + 1)
                     nextRes = ''
                     if (idx + 1) < resNumber:
-                        nextRes = seqList[idx+1][1] + '_' + str(idx + 2)
+                        nextRes = seqList[idx + 1][1] + '_' + str(idx + 2)
                     #
                     if nextRes and (self.__option == "split"):
                         currRes += '_' + nextRes
@@ -368,9 +370,9 @@ class SeqDepict(object):
                     if entity_key in self.__entityIndices:
                         self.__entityIndices[entity_key][idx + 1] = currRes
                     else:
-                        self.__entityIndices[entity_key] = { idx + 1 : currRes }
+                        self.__entityIndices[entity_key] = {idx + 1 : currRes}
                     #
-                    #text += '<li id="' + entity_key + '_' + currRes + '" class="dblclick viewres">' + seqList[idx][0] + '</li>\n'
+                    # text += '<li id="' + entity_key + '_' + currRes + '" class="dblclick viewres">' + seqList[idx][0] + '</li>\n'
                     text += '<li id="' + entity_key + '_' + currRes + '" class="' + currCss + '">' + seqList[idx][0] + '</li>\n'
                 #
                 # add space between block
@@ -414,8 +416,8 @@ class SeqDepict(object):
         text += '<th colspan="5">Split Position between Residues</th>\n'
         text += '</tr>\n'
         text += '<tr>\n'
-        text += '<th id="delete_all_' +  entity_key + '" colspan="5" class="displaynone"><input type="button" id="delete_all_button_' \
-              + entity_key + '" value="Remove All" class="deleteallrows action_button" /></th>\n'
+        text += '<th id="delete_all_' + entity_key + '" colspan="5" class="displaynone"><input type="button" id="delete_all_button_' \
+            + entity_key + '" value="Remove All" class="deleteallrows action_button" /></th>\n'
         text += '</tr>\n'
         text += '<tr>\n'
         text += '<th>1st Residue Name</th>\n'
@@ -437,8 +439,8 @@ class SeqDepict(object):
         text += '<th colspan="3">Remove Residue(s)</th>\n'
         text += '</tr>\n'
         text += '<tr>\n'
-        text += '<th id="delete_all_' +  entity_key + '"colspan="3" class="displaynone"><input type="button" id="delete_all_button_' \
-              + entity_key + '" value="Delete All" class="deleteallrows action_button" /></th>\n'
+        text += '<th id="delete_all_' + entity_key + '"colspan="3" class="displaynone"><input type="button" id="delete_all_button_' \
+            + entity_key + '" value="Delete All" class="deleteallrows action_button" /></th>\n'
         text += '</tr>\n'
         text += '<tr>\n'
         text += '<th>Residue Name</th>\n'
@@ -454,8 +456,8 @@ class SeqDepict(object):
         text = ''
 
         if sys.version_info[0] < 3:
-            numtypes = (int, long, float)
-            stringtypes = (str, unicode)
+            numtypes = (int, long, float)  # noqa: F821
+            stringtypes = (str, unicode)  # noqa: F821
         else:
             numtypes = (int, float)
             stringtypes = (str, bytes)
@@ -481,7 +483,7 @@ class SeqDepict(object):
             text += '[' + text1 + ']'
         elif isinstance(obj, dict):
             text1 = ''
-            for k,v in obj.items():
+            for k, v in obj.items():
                 if text1:
                     text1 += delimiter
                 #

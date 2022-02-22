@@ -16,28 +16,31 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import os, shutil, sys, string, traceback
+import os
+import shutil
+import sys
 
-from wwpdb.apps.entity_transform.utils.CommandUtil   import CommandUtil
+from wwpdb.apps.entity_transform.utils.CommandUtil import CommandUtil
 from wwpdb.apps.entity_transform.utils.GetLogMessage import GetLogMessage
 #
+
 
 class CombineCoord(object):
     """ Class responsible for combining selected instances into single residue.
     """
     def __init__(self, reqObj=None, instList=[], cifFile=None, verbose=False, log=sys.stderr):
-        self.__verbose=verbose
-        self.__lfh=log
-        self.__reqObj=reqObj
-        self.__instList=instList
-        self.__cifFile=cifFile
-        self.__sObj=None
-        self.__sessionPath=None
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__reqObj = reqObj
+        self.__instList = instList
+        self.__cifFile = cifFile
+        self.__sObj = None
+        self.__sessionPath = None
         self.__instId = ''
         self.__message = ''
         #
@@ -93,7 +96,7 @@ class CombineCoord(object):
         ciffile = os.path.join(self.__sessionPath, self.__cifFile)
         #
         options = ' -output_orig ' + self.__instId + '.orig.cif -output_merge ' + self.__instId + '.merge.cif -output_comp ' \
-                + self.__instId + '.comp.cif -group ' + ','.join(self.__instList) + ' '
+            + self.__instId + '.comp.cif -group ' + ','.join(self.__instList) + ' '
         #
         self.__cmdUtil.setSessionPath(self.__instancePath)
         self.__cmdUtil.runAnnotCmd('GetCombineCoord', ciffile, '', 'run-comb.log', 'run-comb.clog', options)
@@ -112,7 +115,7 @@ class CombineCoord(object):
         if not self.__instList or not self.__instList[0]:
             return False
         #
-        for ext in ( '.orig.cif', '.merge.cif', '.comp.cif'):
+        for ext in ('.orig.cif', '.merge.cif', '.comp.cif'):
             source = os.path.join(self.__sessionPath, 'search', self.__instList[0], self.__instList[0] + ext)
             if not os.access(source, os.F_OK):
                 return False
@@ -142,10 +145,10 @@ class CombineCoord(object):
         """ Join existing session or create new session as required.
         """
         #
-        self.__sObj=self.__reqObj.newSessionObj()
-        self.__sessionPath=self.__sObj.getPath()
+        self.__sObj = self.__reqObj.newSessionObj()
+        self.__sessionPath = self.__sObj.getPath()
         if (self.__verbose):
-            self.__lfh.write("------------------------------------------------------\n")                    
+            self.__lfh.write("------------------------------------------------------\n")
             self.__lfh.write("+CombineCoord.__getSession() - creating/joining session %s\n" % self.__sObj.getId())
-            self.__lfh.write("+CombineCoord.__getSession() - session path %s\n" % self.__sessionPath)            
+            self.__lfh.write("+CombineCoord.__getSession() - session path %s\n" % self.__sessionPath)
         #

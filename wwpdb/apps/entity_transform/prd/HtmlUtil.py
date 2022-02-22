@@ -16,12 +16,11 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import string, traceback
 
 class HtmlUtil(object):
     def addSelect(self, name, value, enum):
@@ -50,10 +49,10 @@ class HtmlUtil(object):
         """ Write HTML input tag with various options
         """
         text = '<input type="' + type + '" name="' + name + '" value="' \
-             + value + '" ' + checked + ' /> ' + display + ' \n'
+            + value + '" ' + checked + ' /> ' + display + ' \n'
         if type == 'text' and not value:
             text = '<input style = "background-color:#D3D6FF;" type="' + type + '" name="' + name \
-                 + '" value="' + value + '" ' + checked + ' /> ' + display + ' \n'
+                + '" value="' + value + '" ' + checked + ' /> ' + display + ' \n'
         return text
 
     def addText(self, name, value, size):
@@ -74,7 +73,7 @@ class HtmlUtil(object):
         if value:
             return '<td style="text-align:left;border-style:none;background-color:' + color + '">' + value + '</td>\n'
         else:
-           return '<td style="text-align:left;border-style:none"></td>\n'
+            return '<td style="text-align:left;border-style:none"></td>\n'
         #
 
     def addSpanTD(self, colspan, value):

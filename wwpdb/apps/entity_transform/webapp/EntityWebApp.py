@@ -16,53 +16,57 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import os, sys, time, types, string, traceback, ntpath, threading, shutil
-from json import loads, dumps
+import os
+import sys
+import time
+import traceback
+import ntpath
+import shutil
 
-from wwpdb.utils.config.ConfigInfo                        import ConfigInfo
-from wwpdb.utils.wf.dbapi.WfTracking                      import WfTracking
-from wwpdb.apps.editormodule.depict.EditorDepict          import EditorDepict
-from wwpdb.apps.editormodule.io.PdbxDataIo                import PdbxDataIo
-from wwpdb.apps.entity_transform.depict.LinkDepict        import LinkDepict
-from wwpdb.apps.entity_transform.depict.PrdSummaryDepict  import PrdSummaryDepict
-from wwpdb.apps.entity_transform.depict.StrSummaryDepict  import StrSummaryDepict
-from wwpdb.apps.entity_transform.depict.StrFormDepict     import StrFormDepict
-from wwpdb.apps.entity_transform.depict.ResultDepict      import ResultDepict
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
+from wwpdb.utils.wf.dbapi.WfTracking import WfTracking
+from wwpdb.apps.editormodule.depict.EditorDepict import EditorDepict
+from wwpdb.apps.editormodule.io.PdbxDataIo import PdbxDataIo
+from wwpdb.apps.entity_transform.depict.LinkDepict import LinkDepict
+from wwpdb.apps.entity_transform.depict.PrdSummaryDepict import PrdSummaryDepict
+from wwpdb.apps.entity_transform.depict.StrSummaryDepict import StrSummaryDepict
+from wwpdb.apps.entity_transform.depict.StrFormDepict import StrFormDepict
+from wwpdb.apps.entity_transform.depict.ResultDepict import ResultDepict
 from wwpdb.apps.entity_transform.openeye_util.OpenEyeUtil import OpenEyeUtil
-from wwpdb.apps.entity_transform.prd.BuildPrd             import BuildPrd
-from wwpdb.apps.entity_transform.prd.CVSCommit            import CVSCommit
-from wwpdb.apps.entity_transform.prd.DepictPrd            import DepictPrd
-from wwpdb.apps.entity_transform.prd.UpdatePrd            import UpdatePrd
-from wwpdb.apps.entity_transform.update.ChopperHandler    import ChopperHandler
-from wwpdb.apps.entity_transform.update.MergePolymer      import MergePolymer
-from wwpdb.apps.entity_transform.update.MergeLigand       import MergeLigand
-from wwpdb.apps.entity_transform.update.SplitPolymer      import SplitPolymer
-from wwpdb.apps.entity_transform.update.EditPolymer       import EditPolymer
-from wwpdb.apps.entity_transform.update.UpdateFile        import UpdateFile
-from wwpdb.apps.entity_transform.utils.CommandUtil        import CommandUtil
-from wwpdb.apps.entity_transform.utils.DownloadFile       import DownloadFile
-from wwpdb.apps.entity_transform.utils.GetLogMessage      import GetLogMessage
-from wwpdb.apps.entity_transform.utils.SummaryCifUtil     import SummaryCifUtil
+from wwpdb.apps.entity_transform.prd.BuildPrd import BuildPrd
+from wwpdb.apps.entity_transform.prd.CVSCommit import CVSCommit
+from wwpdb.apps.entity_transform.prd.DepictPrd import DepictPrd
+from wwpdb.apps.entity_transform.prd.UpdatePrd import UpdatePrd
+from wwpdb.apps.entity_transform.update.ChopperHandler import ChopperHandler
+from wwpdb.apps.entity_transform.update.MergePolymer import MergePolymer
+from wwpdb.apps.entity_transform.update.MergeLigand import MergeLigand
+from wwpdb.apps.entity_transform.update.SplitPolymer import SplitPolymer
+from wwpdb.apps.entity_transform.update.EditPolymer import EditPolymer
+from wwpdb.apps.entity_transform.update.UpdateFile import UpdateFile
+from wwpdb.apps.entity_transform.utils.DownloadFile import DownloadFile
+from wwpdb.apps.entity_transform.utils.GetLogMessage import GetLogMessage
+from wwpdb.apps.entity_transform.utils.SummaryCifUtil import SummaryCifUtil
 from wwpdb.apps.entity_transform.utils.RemoveEmptyCategories import RemoveEmptyCategories
-from wwpdb.apps.entity_transform.utils.WFDataIOUtil       import WFDataIOUtil
-from wwpdb.apps.entity_transform.webapp.FormPreProcess    import FormPreProcess
-from wwpdb.utils.detach.DetachUtils                       import DetachUtils
-from wwpdb.io.file.mmCIFUtil                              import mmCIFUtil
-from wwpdb.io.locator.PathInfo                            import PathInfo
-from wwpdb.utils.dp.RcsbDpUtility                         import RcsbDpUtility
-from wwpdb.utils.session.WebRequest                       import InputRequest,ResponseContent
+from wwpdb.apps.entity_transform.utils.WFDataIOUtil import WFDataIOUtil
+from wwpdb.apps.entity_transform.webapp.FormPreProcess import FormPreProcess
+from wwpdb.utils.detach.DetachUtils import DetachUtils
+from wwpdb.io.file.mmCIFUtil import mmCIFUtil
+from wwpdb.io.locator.PathInfo import PathInfo
+from wwpdb.utils.dp.RcsbDpUtility import RcsbDpUtility
+from wwpdb.utils.session.WebRequest import InputRequest, ResponseContent
 #
+
 
 class EntityWebApp(object):
     """Handle request and response object processing for the entity fixer tool application.
-    
+
     """
-    def __init__(self,parameterDict={},verbose=False,log=sys.stderr,siteId="WWPDB_DEV"):
+    def __init__(self, parameterDict={}, verbose=False, log=sys.stderr, siteId="WWPDB_DEV"):
         """
         Create an instance of `EntityWebApp` to manage a entity fixer web request.
 
@@ -70,47 +74,47 @@ class EntityWebApp(object):
              Storage model for GET and POST parameter data is a dictionary of lists.
          :param `verbose`:  boolean flag to activate verbose logging.
          :param `log`:      stream for logging.
-          
+
         """
-        self.__verbose=verbose
-        self.__lfh=log
-        self.__debug=False
-        self.__siteId=siteId
-        self.__cI=ConfigInfo(self.__siteId)
-        self.__topPath=self.__cI.get('SITE_WEB_APPS_TOP_PATH')
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__debug = False
+        self.__siteId = siteId
+        self.__cI = ConfigInfo(self.__siteId)
+        self.__topPath = self.__cI.get('SITE_WEB_APPS_TOP_PATH')
         #
 
         if isinstance(parameterDict, dict):
-            self.__myParameterDict=parameterDict
+            self.__myParameterDict = parameterDict
         else:
-            self.__myParameterDict={}
+            self.__myParameterDict = {}
 
         if (self.__verbose):
-            self.__lfh.write("+EntityWebApp.__init() - REQUEST STARTING ------------------------------------\n" )
-            self.__lfh.write("+EntityWebApp.__init() - dumping input parameter dictionary \n" )                        
+            self.__lfh.write("+EntityWebApp.__init() - REQUEST STARTING ------------------------------------\n")
+            self.__lfh.write("+EntityWebApp.__init() - dumping input parameter dictionary \n")
             self.__lfh.write("%s" % (''.join(self.__dumpRequest())))
-            
-        self.__reqObj=InputRequest(self.__myParameterDict,verbose=self.__verbose,log=self.__lfh)
-        
-        #self.__topSessionPath  = os.path.join(self.__topPath)
-        self.__topSessionPath  = self.__cI.get('SITE_WEB_APPS_TOP_SESSIONS_PATH')
-        self.__templatePath = os.path.join(self.__topPath,"htdocs","entity_transform_ui","templates")
+
+        self.__reqObj = InputRequest(self.__myParameterDict, verbose=self.__verbose, log=self.__lfh)
+
+        # self.__topSessionPath  = os.path.join(self.__topPath)
+        self.__topSessionPath = self.__cI.get('SITE_WEB_APPS_TOP_SESSIONS_PATH')
+        self.__templatePath = os.path.join(self.__topPath, "htdocs", "entity_transform_ui", "templates")
         #
         self.__reqObj.setValue("TopSessionPath", self.__topSessionPath)
-        self.__reqObj.setValue("TemplatePath",   self.__templatePath)
-        self.__reqObj.setValue("TopPath",        self.__topPath)
-        self.__reqObj.setValue("WWPDB_SITE_ID",  self.__siteId)
-        os.environ["WWPDB_SITE_ID"]=self.__siteId
+        self.__reqObj.setValue("TemplatePath", self.__templatePath)
+        self.__reqObj.setValue("TopPath", self.__topPath)
+        self.__reqObj.setValue("WWPDB_SITE_ID", self.__siteId)
+        os.environ["WWPDB_SITE_ID"] = self.__siteId
         #
         self.__reqObj.setReturnFormat(return_format="html")
         #
         if (self.__verbose):
             self.__lfh.write("-----------------------------------------------------\n")
-            self.__lfh.write("+EntityWebApp.__init() Leaving _init with request contents\n" )            
+            self.__lfh.write("+EntityWebApp.__init() Leaving _init with request contents\n")
             self.__reqObj.printIt(ofh=self.__lfh)
-            self.__lfh.write("---------------EntityWebApp - done -------------------------------\n")   
+            self.__lfh.write("---------------EntityWebApp - done -------------------------------\n")
             self.__lfh.flush()
-            
+
     def doOp(self):
         """ Execute request and package results in response dictionary.
 
@@ -119,17 +123,17 @@ class EntityWebApp(object):
              Minimally, the content of this dictionary will include the
              keys: CONTENT_TYPE and REQUEST_STRING.
         """
-        stw=EntityWebAppWorker(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
-        rC=stw.doOp()
+        stw = EntityWebAppWorker(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
+        rC = stw.doOp()
         if (self.__debug):
-            rqp=self.__reqObj.getRequestPath()
+            rqp = self.__reqObj.getRequestPath()
             self.__lfh.write("+EntityWebApp.doOp() operation %s\n" % rqp)
             self.__lfh.write("+EntityWebApp.doOp() return format %s\n" % self.__reqObj.getReturnFormat())
             if rC is not None:
                 self.__lfh.write("%s" % (''.join(rC.dump())))
             else:
                 self.__lfh.write("+EntityWebApp.doOp() return object is empty\n")
-                
+
         #
         # Package return according to the request return_format -
         #
@@ -140,39 +144,40 @@ class EntityWebApp(object):
            containing data from the input web request.
 
            :Returns:
-               ``list`` of formatted text lines 
+               ``list`` of formatted text lines
         """
-        retL=[]
-        retL.append("\n\-----------------EntityWebApp().__dumpRequest()-----------------------------\n")
-        retL.append("Parameter dictionary length = %d\n" % len(self.__myParameterDict))            
-        for k,vL in self.__myParameterDict.items():
+        retL = []
+        retL.append("\n-----------------EntityWebApp().__dumpRequest()-----------------------------\n")
+        retL.append("Parameter dictionary length = %d\n" % len(self.__myParameterDict))
+        for k, vL in self.__myParameterDict.items():
             retL.append("Parameter %30s :" % k)
             for v in vL:
                 retL.append(" ->  %s\n" % v)
-        retL.append("-------------------------------------------------------------\n")                
+        retL.append("-------------------------------------------------------------\n")
         return retL
 
+
 class EntityWebAppWorker(object):
-    def __init__(self, reqObj=None, verbose=False,log=sys.stderr):
+    def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
         """
          Worker methods for the chemical component editor application
 
          Performs URL - application mapping and application launching
          for chemical component editor tool.
-         
+
          All operations can be driven from this interface which can
          supplied with control information from web application request
          or from a testing application.
         """
-        self.__verbose=verbose
-        self.__lfh=log
-        self.__reqObj=reqObj
-        self.__sObj=None
-        self.__sessionId=None
-        self.__sessionPath=None
-        self.__rltvSessionPath=None
-        self.__siteId  = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
-        self.__cI=ConfigInfo(self.__siteId)
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__reqObj = reqObj
+        self.__sObj = None
+        self.__sessionId = None
+        self.__sessionPath = None
+        self.__rltvSessionPath = None
+        self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
+        self.__cI = ConfigInfo(self.__siteId)
         self.__identifier = ''
         self.__modelfileId = ''
         self.__summaryfileId = ''
@@ -183,32 +188,33 @@ class EntityWebAppWorker(object):
         #
         self.__message = ''
         #
-        self.__appPathD={'/service/environment/dump':                       '_dumpOp',
-                         '/service/entity/assign':                          '_StandaloneOp',
-                         '/service/entity/new_session/wf':                  '_WorkflowOp',
-                         '/service/entity/refresh_struct_summary':          '_reRunPrdSearchOp',
-                         '/service/entity/check_running_status':            '_checkRunningStatusOp',
-                         '/service/entity/chopper_output':                  '_chopperHandler',
-                         '/service/entity/build_prd':                       '_buildPRD',
-                         '/service/entity/update_prd':                      '_updatePRD',
-                         '/service/entity/download_file':                   '_downloadFile',
-                         '/service/entity/commit_prd_to_cvs':               '_commitPRD',
-                         '/service/entity/gif_view':                        '_gifView',
-                         '/service/entity/jmol_view':                       '_jmolView',
-                         '/service/entity/launch_fixer':                    '_LaunchFixer',
-                         '/service/entity/launch_editor':                   '_LaunchEditor',
-                         '/service/entity/link_view':                       '_LinkView',
-                         '/service/entity/mcs_match_view':                  '_OpenEyeMatchView',
-                         '/service/entity/merge_polymer':                   '_mergePolymer',
-                         '/service/entity/merge_ligand':                    '_mergeLigand',
-                         '/service/entity/result_view':                     '_resultView',
-                         '/service/entity/split_polymer':                   '_splitPolymer',
-                         '/service/entity/edit_polymer':                    '_editPolymer',
-                         '/service/entity/summary_view':                    '_StructSummaryView',
-                         '/service/entity/update_file':                     '_updateFile',
-                         '/service/entity/exit_finished':                   '_exit_Finished'
-                         }
-
+        # fmt:off
+        self.__appPathD = {'/service/environment/dump':                       '_dumpOp',                # noqa: E241
+                           '/service/entity/assign':                          '_StandaloneOp',          # noqa: E241
+                           '/service/entity/new_session/wf':                  '_WorkflowOp',            # noqa: E241
+                           '/service/entity/refresh_struct_summary':          '_reRunPrdSearchOp',      # noqa: E241
+                           '/service/entity/check_running_status':            '_checkRunningStatusOp',  # noqa: E241
+                           '/service/entity/chopper_output':                  '_chopperHandler',        # noqa: E241
+                           '/service/entity/build_prd':                       '_buildPRD',              # noqa: E241
+                           '/service/entity/update_prd':                      '_updatePRD',             # noqa: E241
+                           '/service/entity/download_file':                   '_downloadFile',          # noqa: E241
+                           '/service/entity/commit_prd_to_cvs':               '_commitPRD',             # noqa: E241
+                           '/service/entity/gif_view':                        '_gifView',               # noqa: E241
+                           '/service/entity/jmol_view':                       '_jmolView',              # noqa: E241
+                           '/service/entity/launch_fixer':                    '_LaunchFixer',           # noqa: E241
+                           '/service/entity/launch_editor':                   '_LaunchEditor',          # noqa: E241
+                           '/service/entity/link_view':                       '_LinkView',              # noqa: E241
+                           '/service/entity/mcs_match_view':                  '_OpenEyeMatchView',      # noqa: E241
+                           '/service/entity/merge_polymer':                   '_mergePolymer',          # noqa: E241
+                           '/service/entity/merge_ligand':                    '_mergeLigand',           # noqa: E241
+                           '/service/entity/result_view':                     '_resultView',            # noqa: E241
+                           '/service/entity/split_polymer':                   '_splitPolymer',          # noqa: E241
+                           '/service/entity/edit_polymer':                    '_editPolymer',           # noqa: E241
+                           '/service/entity/summary_view':                    '_StructSummaryView',     # noqa: E241
+                           '/service/entity/update_file':                     '_updateFile',            # noqa: E241
+                           '/service/entity/exit_finished':                   '_exit_Finished'          # noqa: E241
+                           }
+        # fmt:on
 
     def __updateFileId(self):
         self.__identifier = str(self.__reqObj.getValue("identifier"))
@@ -228,8 +234,8 @@ class EntityWebAppWorker(object):
         #
 
     def doOp(self):
-        """Map operation to path and invoke operation.  
-        
+        """Map operation to path and invoke operation.
+
             :Returns:
 
             Operation output is packaged in a ResponseContent() object.
@@ -242,50 +248,50 @@ class EntityWebAppWorker(object):
         try:
             self.__lfh = log
             return True
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             return False
         #
-    
+
     def __doOpNoException(self):
         """Map operation to path and invoke operation.  No exception handling is performed.
-        
+
             :Returns:
 
             Operation output is packaged in a ResponseContent() object.
         """
         #
-        reqPath=self.__reqObj.getRequestPath()
-        if not reqPath in self.__appPathD:
+        reqPath = self.__reqObj.getRequestPath()
+        if reqPath not in self.__appPathD:
             # bail out if operation is unknown -
-            rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+            rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
             rC.setError(errMsg='Unknown operation')
             return rC
         else:
-            mth=getattr(self,self.__appPathD[reqPath],None)
-            rC=mth()
+            mth = getattr(self, self.__appPathD[reqPath], None)
+            rC = mth()
         return rC
 
     def __doOpException(self):
         """Map operation to path and invoke operation.  Exceptions are caught within this method.
-        
+
             :Returns:
 
             Operation output is packaged in a ResponseContent() object.
         """
         #
         try:
-            reqPath=self.__reqObj.getRequestPath()
-            if not reqPath in self.__appPathD:
+            reqPath = self.__reqObj.getRequestPath()
+            if reqPath not in self.__appPathD:
                 # bail out if operation is unknown -
-                rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+                rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
                 rC.setError(errMsg='Unknown operation')
             else:
-                mth=getattr(self,self.__appPathD[reqPath],None)
-                rC=mth()
+                mth = getattr(self, self.__appPathD[reqPath], None)
+                rC = mth()
             return rC
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             traceback.print_exc(file=self.__lfh)
-            rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+            rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
             rC.setError(errMsg='Operation failure')
             return rC
 
@@ -295,7 +301,7 @@ class EntityWebAppWorker(object):
     # ------------------------------------------------------------------------------------------------------------
     #
     def _dumpOp(self):
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         rC.setHtmlList(self.__reqObj.dump(format='html'))
         return rC
 
@@ -307,8 +313,8 @@ class EntityWebAppWorker(object):
         #
         self.__getSession()
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        self.__reqObj.setReturnFormat(return_format="html")
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         depId = str(self.__reqObj.getValue('identifier')).upper().strip()
         if depId:
@@ -354,8 +360,8 @@ class EntityWebAppWorker(object):
             self.__lfh.write("+EntityWebAppWorker._WorkflowOp() workflow flag is %r\n" % bIsWorkflow)
         #
         if not bIsWorkflow:
-            self.__reqObj.setReturnFormat(return_format="html")        
-            rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+            self.__reqObj.setReturnFormat(return_format="html")
+            rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
             rC.setError(errMsg="Operation is not in Workflow Managed environment\n")
             return rC
         #
@@ -381,7 +387,7 @@ class EntityWebAppWorker(object):
         dU.runDetach()
         #
         self.__reqObj.setReturnFormat(return_format="json")
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         rC.setStatusCode('running')
         return rC
 
@@ -390,7 +396,7 @@ class EntityWebAppWorker(object):
         """
         self.__getSession()
         self.__reqObj.setReturnFormat(return_format="json")
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         sph = self.__reqObj.getSemaphore()
         dU = DetachUtils(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
@@ -411,12 +417,12 @@ class EntityWebAppWorker(object):
         return rC
 
     def _runPrdSearch(self):
-        inputPath = os.path.join(self.__sessionPath, self.__modelfileId)
+        # inputPath = os.path.join(self.__sessionPath, self.__modelfileId)
         WorkingDirPath = os.path.join(self.__sessionPath, 'search')
         firstModelPath = os.path.join(WorkingDirPath, 'firstmodel.cif')
-        logFilePath    = os.path.join(WorkingDirPath, 'search-prd.log')
+        logFilePath = os.path.join(WorkingDirPath, 'search-prd.log')
         #
-        dp=RcsbDpUtility(tmpPath=self.__sessionPath,siteId=self.__cI.get('SITE_PREFIX'),verbose=True)
+        dp = RcsbDpUtility(tmpPath=self.__sessionPath, siteId=self.__cI.get('SITE_PREFIX'), verbose=True)
         dp.setWorkingDir(WorkingDirPath)
         dp.imp(os.path.join(self.__sessionPath, self.__modelfileId))
         dp.addInput(name='firstmodel', value=firstModelPath)
@@ -435,9 +441,9 @@ class EntityWebAppWorker(object):
             self.__message = "TRACKING status update to 'open' failed for session %s \n" % self.__sessionId
         else:
             if (self.__verbose):
-                self.__lfh.write("+EntityWebAppWorker._WorkflowOp() Tracking status set to open\n")                
+                self.__lfh.write("+EntityWebAppWorker._WorkflowOp() Tracking status set to open\n")
             #
-            ioUtil = WFDataIOUtil(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+            ioUtil = WFDataIOUtil(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
             ok = ioUtil.ImportData()
             if not ok:
                 self.__message = "Get WorkFlow result(s) failed for session %s \n" % self.__sessionId
@@ -447,8 +453,8 @@ class EntityWebAppWorker(object):
         #
 
     def __returnPrdSummaryPage(self):
-        self.__reqObj.setReturnFormat(return_format="html")        
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        self.__reqObj.setReturnFormat(return_format="html")
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         myD = {}
         myD['sessionid'] = self.__sessionId
@@ -462,7 +468,7 @@ class EntityWebAppWorker(object):
         #
         rC.setHtmlText(self.__processTemplate('summary_view/prd_summary_tmplt.html', myD))
         return rC
-        
+
     def _getSummaryHtml(self, iFlag=False):
         if not self.__message:
             if not self.__summaryCifObj:
@@ -491,8 +497,8 @@ class EntityWebAppWorker(object):
         self.__getSession()
         self.__updateFileId()
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        self.__reqObj.setReturnFormat(return_format="html")
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         myD = {}
         myD['sessionid'] = self.__sessionId
@@ -519,10 +525,10 @@ class EntityWebAppWorker(object):
         self.__getSession()
         self.__updateFileId()
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        self.__reqObj.setReturnFormat(return_format="html")
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
-        prePro = FormPreProcess(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        prePro = FormPreProcess(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         error = prePro.getMessage()
         if error:
             myD = {}
@@ -555,8 +561,8 @@ class EntityWebAppWorker(object):
         self.__getSession()
         self.__updateFileId()
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        self.__reqObj.setReturnFormat(return_format="html")
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         strObj = StrFormDepict(reqObj=self.__reqObj, summaryCifObj=self.__summaryCifObj, verbose=self.__verbose, log=self.__lfh)
         rC.setHtmlText(strObj.LaunchEditor())
@@ -571,8 +577,8 @@ class EntityWebAppWorker(object):
         self.__getSession()
         self.__updateFileId()
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        self.__reqObj.setReturnFormat(return_format="html")
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         mergeObj = MergePolymer(reqObj=self.__reqObj, summaryCifObj=self.__summaryCifObj, verbose=self.__verbose, log=self.__lfh)
         mergeObj.updateFile()
@@ -581,8 +587,8 @@ class EntityWebAppWorker(object):
         myD['pdbid'] = self.__reqObj.getValue('pdbid')
         myD['identifier'] = self.__identifier
         myD['title'] = self.__title
-        myD['data']  = mergeObj.getMessage()
-        rC.setHtmlText(self.__processTemplate('update_form/update_result_tmplt.html',  myD))
+        myD['data'] = mergeObj.getMessage()
+        rC.setHtmlText(self.__processTemplate('update_form/update_result_tmplt.html', myD))
         return rC
 
     def _mergeLigand(self):
@@ -594,8 +600,8 @@ class EntityWebAppWorker(object):
         self.__getSession()
         self.__updateFileId()
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        self.__reqObj.setReturnFormat(return_format="html")
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         mergeObj = MergeLigand(reqObj=self.__reqObj, summaryCifObj=self.__summaryCifObj, verbose=self.__verbose, log=self.__lfh)
         mergeObj.updateFile()
@@ -604,8 +610,8 @@ class EntityWebAppWorker(object):
         myD['pdbid'] = self.__reqObj.getValue('pdbid')
         myD['identifier'] = self.__identifier
         myD['title'] = self.__title
-        myD['data']  = mergeObj.getMessage()
-        rC.setHtmlText(self.__processTemplate('update_form/update_result_tmplt.html',  myD))
+        myD['data'] = mergeObj.getMessage()
+        rC.setHtmlText(self.__processTemplate('update_form/update_result_tmplt.html', myD))
         return rC
 
     def _jmolView(self):
@@ -617,8 +623,8 @@ class EntityWebAppWorker(object):
         self.__getSession()
         self.__updateFileId()
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        self.__reqObj.setReturnFormat(return_format="html")
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         myD = {}
         myD['pdbid'] = self.__reqObj.getValue('pdbid')
@@ -631,7 +637,7 @@ class EntityWebAppWorker(object):
         rC.setHtmlText(self.__processTemplate('summary_view/jmol_environ_view_tmplt.html', myD))
         #
         return rC
-    
+
     def _gifView(self):
         """ Launch 2D view interface
         """
@@ -641,8 +647,8 @@ class EntityWebAppWorker(object):
         self.__getSession()
         self.__updateFileId()
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        self.__reqObj.setReturnFormat(return_format="html")
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         myD = {}
         myD['pdbid'] = self.__reqObj.getValue('pdbid')
@@ -658,14 +664,14 @@ class EntityWebAppWorker(object):
     def _buildPRD(self):
         """ Launch Build PRD interface
         """
-        if (self.__verbose):
+        if self.__verbose:
             self.__lfh.write("+EntityWebAppWorker._buildPRD() Starting now\n")
         #
         self.__getSession()
         self.__updateFileId()
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        self.__reqObj.setReturnFormat(return_format="html")
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         prdObj = BuildPrd(reqObj=self.__reqObj, summaryFile=self.__summaryfilePath, verbose=self.__verbose, log=self.__lfh)
         error_msg = prdObj.build()
@@ -678,30 +684,30 @@ class EntityWebAppWorker(object):
             rC.setHtmlText(self.__processTemplate('prd/build_prd_failed_tmplt.html', myD))
             return rC
         #
-        templatePath = os.path.join(str(self.__reqObj.getValue('TopPath')), 'htdocs','editormodule')
+        templatePath = os.path.join(str(self.__reqObj.getValue('TopPath')), 'htdocs', 'editormodule')
         self.__reqObj.setValue('TemplatePath', templatePath)
         #
-        #subdirectory = str(self.__reqObj.getValue('instanceid'))
-        #self.__reqObj.setValue('subdirectory', subdirectory)
+        # subdirectory = str(self.__reqObj.getValue('instanceid'))
+        # self.__reqObj.setValue('subdirectory', subdirectory)
         #
         datafile = prdObj.getPRDID() + '.cif'
         self.__reqObj.setValue('datafile', datafile)
         #
         self.__reqObj.setValue('context', 'entityfix')
-        #absPath = os.path.join(self.__sessionPath, 'search', subdirectory)
+        # absPath = os.path.join(self.__sessionPath, 'search', subdirectory)
         #
         # instantiate datastore to be used for capturing/persisting edits
-        pdbxDataIo=PdbxDataIo(self.__reqObj,self.__verbose,self.__lfh)
+        pdbxDataIo = PdbxDataIo(self.__reqObj, self.__verbose, self.__lfh)
         dataBlockName = pdbxDataIo.initializeDataStore()
         pdbxDataIo.initializeDictInfoStore()
         #
         self.__reqObj.setValue('datablockname', dataBlockName)
-        edtrDpct=EditorDepict(self.__verbose,self.__lfh)
-        #edtrDpct.setAbsolutePath(absPath)
+        edtrDpct = EditorDepict(self.__verbose, self.__lfh)
+        # edtrDpct.setAbsolutePath(absPath)
         edtrDpct.setAbsolutePath(self.__sessionPath)
-        #oL = edtrDpct.doRender(self.__reqObj,False,dataBlockName,self.__title)
-        oL = edtrDpct.doRender(self.__reqObj,False)
-        rC.setHtmlText( '\n'.join(oL) )
+        # oL = edtrDpct.doRender(self.__reqObj,False,dataBlockName,self.__title)
+        oL = edtrDpct.doRender(self.__reqObj, False)
+        rC.setHtmlText('\n'.join(oL))
         #
         """
         prdId = prdObj.getPRDID()
@@ -726,7 +732,7 @@ class EntityWebAppWorker(object):
         return rC
 
     def _updatePRD(self):
-        """ Update PRD based on interface input 
+        """ Update PRD based on interface input
         """
         if (self.__verbose):
             self.__lfh.write("+EntityWebAppWorker._updatePRD() Starting now\n")
@@ -734,8 +740,8 @@ class EntityWebAppWorker(object):
         self.__getSession()
         self.__updateFileId()
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        self.__reqObj.setReturnFormat(return_format="html")
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         updObj = UpdatePrd(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         updObj.Update()
@@ -753,7 +759,7 @@ class EntityWebAppWorker(object):
         initD['update_comment_start'] = ''
         initD['update_comment_end'] = ''
         #
-        depictObj = DepictPrd(reqObj=self.__reqObj, prdID=prdId, prdFile=prdfile, myD=initD, \
+        depictObj = DepictPrd(reqObj=self.__reqObj, prdID=prdId, prdFile=prdfile, myD=initD,
                               verbose=self.__verbose, log=self.__lfh)
         myD = depictObj.getDepictContext()
         rC.setHtmlText(self.__processTemplate('prd/build_prd_tmplt.html', myD))
@@ -768,8 +774,8 @@ class EntityWebAppWorker(object):
         self.__getSession()
         self.__updateFileId()
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        self.__reqObj.setReturnFormat(return_format="html")
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         instId = str(self.__reqObj.getValue("instanceid"))
         type = str(self.__reqObj.getValue("type"))
@@ -834,8 +840,8 @@ class EntityWebAppWorker(object):
         self.__getSession()
         self.__updateFileId()
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        self.__reqObj.setReturnFormat(return_format="html")
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         resultObj = OpenEyeUtil(reqObj=self.__reqObj, summaryCifObj=self.__summaryCifObj, verbose=self.__verbose, log=self.__lfh)
         rC.setHtmlText(resultObj.MatchHtmlText())
@@ -850,8 +856,8 @@ class EntityWebAppWorker(object):
         self.__getSession()
         self.__updateFileId()
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        self.__reqObj.setReturnFormat(return_format="html")
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         updateObj = UpdateFile(reqObj=self.__reqObj, summaryCifObj=self.__summaryCifObj, verbose=self.__verbose, log=self.__lfh)
         updateObj.updateFile()
@@ -877,11 +883,11 @@ class EntityWebAppWorker(object):
         fileId = str(self.__reqObj.getValue('fileid'))
         if fullFilePath:
             self.__reqObj.setReturnFormat(return_format="binary")
-            rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
-            rC.setBinaryFile(fullFilePath, attachmentFlag = True, serveCompressed = False)
+            rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
+            rC.setBinaryFile(fullFilePath, attachmentFlag=True, serveCompressed=False)
         elif fileId:
             self.__reqObj.setReturnFormat(return_format="binary")
-            rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+            rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
             filePath = os.path.join(self.__sessionPath, fileId)
             instId = str(self.__reqObj.getValue("instanceid"))
             if instId:
@@ -890,10 +896,10 @@ class EntityWebAppWorker(object):
             if fileId.startswith('PRD_'):
                 RemoveEmptyCategories(filePath)
             #
-            rC.setBinaryFile(filePath, attachmentFlag = True, serveCompressed = False)
+            rC.setBinaryFile(filePath, attachmentFlag=True, serveCompressed=False)
         else:
             self.__reqObj.setReturnFormat(return_format="html")
-            rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+            rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
             #
             downloadObj = DownloadFile(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
             myD = {}
@@ -917,7 +923,7 @@ class EntityWebAppWorker(object):
         self.__updateFileId()
         #
         self.__reqObj.setReturnFormat(return_format="json")
-        rC=ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         cvsObj = CVSCommit(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         returntcontent = cvsObj.checkin()
@@ -934,7 +940,7 @@ class EntityWebAppWorker(object):
         self.__updateFileId()
         #
         self.__reqObj.setReturnFormat(return_format="json")
-        rC=ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         chopperObj = ChopperHandler(reqObj=self.__reqObj, summaryFile=self.__summaryfilePath, verbose=self.__verbose, log=self.__lfh)
         returnCode = chopperObj.process()
@@ -950,8 +956,8 @@ class EntityWebAppWorker(object):
         self.__getSession()
         self.__updateFileId()
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        self.__reqObj.setReturnFormat(return_format="html")
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         myD = {}
         myD['pdbid'] = self.__reqObj.getValue('pdbid')
@@ -977,8 +983,8 @@ class EntityWebAppWorker(object):
         self.__getSession()
         self.__updateFileId()
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        self.__reqObj.setReturnFormat(return_format="html")
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         splitObj = SplitPolymer(reqObj=self.__reqObj, summaryCifObj=self.__summaryCifObj, verbose=self.__verbose, log=self.__lfh)
         splitObj.updateFile()
@@ -987,8 +993,8 @@ class EntityWebAppWorker(object):
         myD['pdbid'] = self.__reqObj.getValue('pdbid')
         myD['identifier'] = self.__identifier
         myD['title'] = self.__title
-        myD['data']  = splitObj.getMessage()
-        rC.setHtmlText(self.__processTemplate('update_form/update_result_tmplt.html',  myD))
+        myD['data'] = splitObj.getMessage()
+        rC.setHtmlText(self.__processTemplate('update_form/update_result_tmplt.html', myD))
         return rC
 
     def _editPolymer(self):
@@ -1000,8 +1006,8 @@ class EntityWebAppWorker(object):
         self.__getSession()
         self.__updateFileId()
         #
-        self.__reqObj.setReturnFormat(return_format="html")        
-        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        self.__reqObj.setReturnFormat(return_format="html")
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         editObj = EditPolymer(reqObj=self.__reqObj, summaryCifObj=self.__summaryCifObj, verbose=self.__verbose, log=self.__lfh)
         editObj.updateFile()
@@ -1010,14 +1016,14 @@ class EntityWebAppWorker(object):
         myD['pdbid'] = self.__reqObj.getValue('pdbid')
         myD['identifier'] = self.__identifier
         myD['title'] = self.__title
-        myD['data']  = editObj.getMessage()
-        rC.setHtmlText(self.__processTemplate('update_form/update_result_tmplt.html',  myD))
+        myD['data'] = editObj.getMessage()
+        rC.setHtmlText(self.__processTemplate('update_form/update_result_tmplt.html', myD))
         return rC
 
     def _exit_Finished(self):
         """ Exiting Entity Transform Module when annotator has completed all necessary processing
         """
-        if (self.__verbose):
+        if self.__verbose:
             self.__lfh.write("--------------------------------------------\n")
             self.__lfh.write("+EntityWebAppWorker._exit_Finished() - starting\n")
         #
@@ -1025,30 +1031,30 @@ class EntityWebAppWorker(object):
         bIsWorkflow = self.__isWorkflow()
         #
         self.__getSession()
-        sessionId   = self.__sessionId 
+        sessionId = self.__sessionId
         self.__reqObj.setReturnFormat('json')
         #
-        rC=ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
-        if( bIsWorkflow ):
+        if bIsWorkflow:
             try:
-                ioUtil = WFDataIOUtil(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+                ioUtil = WFDataIOUtil(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
                 ok = ioUtil.ExportData()
-                if( ok ):
+                if ok:
                     bSuccess = self.__updateWfTrackingDb(state)
-                    if( not bSuccess ):
-                        rC.setError(errMsg="+EntityWebAppWorker._exit_Finished() - TRACKING status, update to '%s' failed for session %s \n" % (state,sessionId) )
+                    if not bSuccess:
+                        rC.setError(errMsg="+EntityWebAppWorker._exit_Finished() - TRACKING status, update to '%s' failed for session %s \n" % (state, sessionId))
                 else:
                     rC.setError(errMsg="+EntityWebAppWorker._exit_Finished() - problem saving log module state")
 
-            except:
-                if (self.__verbose):
+            except:  # noqa: E722 pylint: disable=bare-except
+                if self.__verbose:
                     self.__lfh.write("+EntityWebAppWorker._exit_Finished() - problem saving lig module state")
                 traceback.print_exc(file=self.__lfh)
                 rC.setError(errMsg="+EntityWebAppWorker._exit_Finished() - exception thrown on saving lig module state")
         else:
             if (self.__verbose):
-                    self.__lfh.write("+EntityWebAppWorker._exit_Finished() - Not in WF environ so skipping save action of pickle file and status update to TRACKING database for session %s \n" % sessionId)
+                self.__lfh.write("+EntityWebAppWorker._exit_Finished() - Not in WF environ so skipping save action of pickle file and status update to TRACKING database for session %s \n" % sessionId)  # noqa: E501
             rC.setError(errMsg="+EntityWebAppWorker._exit_Finished() - Not in WF environ")
         #
         return rC
@@ -1059,67 +1065,66 @@ class EntityWebAppWorker(object):
             self.__message = '<pre>\n' + error + '\n</pre>\n'
         #
 
-    def __updateWfTrackingDb(self,p_status):
+    def __updateWfTrackingDb(self, p_status):
         """ Private function used to udpate the Workflow Status Tracking Database
-        
+
             :Params:
                 ``p_status``: the new status value to which the deposition data set is being set
-                
+
             :Helpers:
                 wwpdb.apps.ccmodule.utils.WfTracking.WfTracking
-                    
+
             :Returns:
                 ``bSuccess``: boolean indicating success/failure of the database update
-        """        
+        """
         #
         bSuccess = False
         #
-        sessionId   = self.__sessionId
-        depId  =  self.__reqObj.getValue("identifier").upper()
-        instId =  self.__reqObj.getValue("instance")
-        classId=  str(self.__reqObj.getValue("classID")).lower()
+        sessionId = self.__sessionId
+        depId = self.__reqObj.getValue("identifier").upper()
+        instId = self.__reqObj.getValue("instance")
+        classId = str(self.__reqObj.getValue("classID")).lower()
         #
         try:
-            wft=WfTracking(verbose=self.__verbose,log=self.__lfh)
+            wft = WfTracking(verbose=self.__verbose, log=self.__lfh)
             bSuccess = wft.setInstanceStatus(depId=depId,
-                                  instId=instId,
-                                  classId=classId,
-                                  status=p_status)
-            if (self.__verbose):
-                self.__lfh.write("+EntityWebAppWorker.__updateWfTrackingDb() -TRACKING status updated to '%s' for session %s \n" % (p_status,sessionId))
-        except:
+                                             instId=instId,
+                                             classId=classId,
+                                             status=p_status)
+            if self.__verbose:
+                self.__lfh.write("+EntityWebAppWorker.__updateWfTrackingDb() -TRACKING status updated to '%s' for session %s \n" % (p_status, sessionId))
+        except:  # noqa: E722 pylint: disable=bare-except
             bSuccess = False
-            if (self.__verbose):
-                self.__lfh.write("+EntityWebAppWorker.__updateWfTrackingDb() - TRACKING status, update to '%s' failed for session %s \n" % (p_status,sessionId))
-            traceback.print_exc(file=self.__lfh)                    
+            if self.__verbose:
+                self.__lfh.write("+EntityWebAppWorker.__updateWfTrackingDb() - TRACKING status, update to '%s' failed for session %s \n" % (p_status, sessionId))
+            traceback.print_exc(file=self.__lfh)
         #
         return bSuccess
-
 
     def __getSession(self):
         """ Join existing session or create new session as required.
         """
         #
-        self.__sObj=self.__reqObj.newSessionObj()
-        self.__sessionId=self.__sObj.getId()
-        self.__sessionPath=self.__sObj.getPath()
-        self.__rltvSessionPath=self.__sObj.getRelativePath()
+        self.__sObj = self.__reqObj.newSessionObj()
+        self.__sessionId = self.__sObj.getId()
+        self.__sessionPath = self.__sObj.getPath()
+        self.__rltvSessionPath = self.__sObj.getRelativePath()
         if (self.__verbose):
-            self.__lfh.write("------------------------------------------------------\n")                    
+            self.__lfh.write("------------------------------------------------------\n")
             self.__lfh.write("+EntityWebApp.__getSession() - creating/joining session %s\n" % self.__sessionId)
-            #self.__lfh.write("+EntityWebApp.__getSession() - workflow storage path    %s\n" % self.__workflowStoragePath)
-            self.__lfh.write("+EntityWebApp.__getSession() - session path %s\n" % self.__sessionPath)            
+            # self.__lfh.write("+EntityWebApp.__getSession() - workflow storage path    %s\n" % self.__workflowStoragePath)
+            self.__lfh.write("+EntityWebApp.__getSession() - session path %s\n" % self.__sessionPath)
 
-    def __isFileUpload(self,fileTag='file'):
+    def __isFileUpload(self, fileTag='file'):
         """ Generic check for the existence of request paramenter "file".
-        """ 
-        # Gracefully exit if no file is provide in the request object - 
+        """
+        # Gracefully exit if no file is provide in the request object -
         try:
             stringtypes = (unicode, str)
         except NameError:
             stringtypes = (str, bytes)
-        fs=self.__reqObj.getRawValue(fileTag)
-        if ( (fs is None) or isinstance(fs, stringtypes) ):
+        fs = self.__reqObj.getRawValue(fileTag)
+        if ((fs is None) or isinstance(fs, stringtypes)):
             return False
         return True
 
@@ -1136,31 +1141,31 @@ class EntityWebAppWorker(object):
         #
         return False
 
-    def __uploadFile(self,fileTag='file',fileTypeTag='filetype'):
+    def __uploadFile(self, fileTag='file', fileTypeTag='filetype'):
         #
         #
         if (self.__verbose):
             self.__lfh.write("+EntityWebApp.__uploadFile() - file upload starting\n")
-        
+
         #
-        # Copy upload file to session directory - 
+        # Copy upload file to session directory -
         try:
-            fs=self.__reqObj.getRawValue(fileTag)
+            fs = self.__reqObj.getRawValue(fileTag)
             fNameInput = str(fs.filename)
             #
             # Need to deal with some platform issues -
             #
             if (fNameInput.find('\\') != -1) :
                 # likely windows path -
-                fName=ntpath.basename(fNameInput)
+                fName = ntpath.basename(fNameInput)
             else:
-                fName=os.path.basename(fNameInput)
+                fName = os.path.basename(fNameInput)
             #
             if (self.__verbose):
                 self.__lfh.write("+EntityWebApp.__uploadFile() - upload file %s\n" % fs.filename)
                 self.__lfh.write("+EntityWebApp.__uploadFile() - basename %s\n" % fName)
             #
-            # Store upload file in session directory - 
+            # Store upload file in session directory -
             #
             list = fName.split('.')
             idx = list[0].find('_model')
@@ -1170,7 +1175,7 @@ class EntityWebAppWorker(object):
                 self.__identifier = list[0][0:idx]
             #
             uploadFilePath = os.path.join(self.__sessionPath, '_upload_' + str(time.strftime("%Y%m%d%H%M%S", time.localtime())))
-            ofh=open(uploadFilePath, 'wb')
+            ofh = open(uploadFilePath, 'wb')
             ofh.write(fs.file.read())
             ofh.close()
             #
@@ -1182,10 +1187,10 @@ class EntityWebAppWorker(object):
                 #
                 return True
             #
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             if (self.__verbose):
-                self.__lfh.write("+EntityWebApp.__uploadFile() File upload processing failed for %s\n" % str(fs.filename) )        
-                traceback.print_exc(file=self.__lfh)                            
+                self.__lfh.write("+EntityWebApp.__uploadFile() File upload processing failed for %s\n" % str(fs.filename))
+                traceback.print_exc(file=self.__lfh)
             #
         #
         return False
@@ -1195,9 +1200,9 @@ class EntityWebAppWorker(object):
         """
         try:
             cifObj = mmCIFUtil(filePath=inputFileName)
-            dList = cifObj.GetValue('database_2') 
+            dList = cifObj.GetValue('database_2')
             for d in dList:
-                if (not 'database_id' in d) or (not d['database_id']) or (not 'database_code' in d) or (not d['database_code']):
+                if ('database_id' not in d) or (not d['database_id']) or ('database_code' not in d) or (not d['database_code']):
                     continue
                 #
                 dbname = d['database_id'].upper().strip()
@@ -1214,54 +1219,55 @@ class EntityWebAppWorker(object):
             #
             self.__reqObj.setValue('identifier', self.__identifier)
             self.__updateFileId()
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             if (self.__verbose):
-                traceback.print_exc(file=self.__lfh)                            
+                traceback.print_exc(file=self.__lfh)
             #
         #
 
-    def __processTemplate(self,fn,parameterDict={}):
+    def __processTemplate(self, fn, parameterDict={}):
         """ Read the input HTML template data file and perform the key/value substitutions in the
             input parameter dictionary.
-            
+
             :Params:
                 ``parameterDict``: dictionary where
                 key = name of subsitution placeholder in the template and
                 value = data to be used to substitute information for the placeholder
-                
+
             :Returns:
                 string representing entirety of content with subsitution placeholders now replaced with data
         """
-        tPath =self.__reqObj.getValue("TemplatePath")
-        fPath=os.path.join(tPath,fn)
-        ifh=open(fPath,'r')
-        sIn=ifh.read()
+        tPath = self.__reqObj.getValue("TemplatePath")
+        fPath = os.path.join(tPath, fn)
+        ifh = open(fPath, 'r')
+        sIn = ifh.read()
         ifh.close()
-        return (  sIn % parameterDict )
-    
+        return (sIn % parameterDict)
+
     def __isWorkflow(self):
         """ Determine if currently operating in Workflow Managed environment
-        
+
             :Returns:
                 boolean indicating whether or not currently operating in Workflow Managed environment
         """
         #
-        fileSource  = str(self.__reqObj.getValue("filesource")).lower()
+        fileSource = str(self.__reqObj.getValue("filesource")).lower()
         #
         if (self.__verbose):
             self.__lfh.write("+EntityWebAppWorker.__isWorkflow() - filesource is %s\n" % fileSource)
         #
         # add wf_archive to fix PDBe wfm issue -- jdw 2011-06-30
         #
-        if fileSource in ['archive','wf-archive','wf_archive','wf-instance','wf_instance']:
-            #if the file source is any of the above then we are in the workflow manager environment
+        if fileSource in ['archive', 'wf-archive', 'wf_archive', 'wf-instance', 'wf_instance']:
+            # if the file source is any of the above then we are in the workflow manager environment
             return True
         else:
-            #else we are in the standalone dev environment
+            # else we are in the standalone dev environment
             return False
 
+
 if __name__ == '__main__':
-    sTool=EntityWebApp()
-    d=sTool.doOp()
-    for k,v in d.items():
-        sys.stdout.write("Key - %s  value - %r\n" % (k,v))
+    sTool = EntityWebApp()
+    d = sTool.doOp()
+    for k, v in d.items():
+        sys.stdout.write("Key - %s  value - %r\n" % (k, v))
