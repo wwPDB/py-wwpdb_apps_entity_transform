@@ -23,6 +23,7 @@ __version__ = "V0.07"
 
 import os
 import sys
+import inspect
 
 
 class DepictBase(object):
@@ -52,7 +53,7 @@ class DepictBase(object):
     def GetPDBID(self):
         return self._pdbId
 
-    def _processTemplate(self, fn, parameterDict={}):
+    def _processTemplate(self, fn, parameterDict=None):
         """ Read the input HTML template data file and perform the key/value substitutions in the
             input parameter dictionary.
 
@@ -64,6 +65,8 @@ class DepictBase(object):
             :Returns:
                 string representing entirety of content with subsitution placeholders now replaced with data
         """
+        if parameterDict is None:
+            parameterDict = {}
         tPath = self._reqObj.getValue("TemplatePath")
         fPath = os.path.join(tPath, fn)
         ifh = open(fPath, 'r')
@@ -81,6 +84,6 @@ class DepictBase(object):
         self._rltvSessionPath = self._sObj.getRelativePath()
         if (self._verbose):
             self._lfh.write("------------------------------------------------------\n")
-            self._lfh.write("+%s.%s() - creating/joining session %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, self._sessionId))
-            self._lfh.write("+%s.%s() - session path %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, self._sessionPath))
+            self._lfh.write("+%s.%s() - creating/joining session %s\n" % (self.__class__.__name__, inspect.currentframe().f_code.co_name, self._sessionId))
+            self._lfh.write("+%s.%s() - session path %s\n" % (self.__class__.__name__, inspect.currentframe().f_code.co_name, self._sessionPath))
         #

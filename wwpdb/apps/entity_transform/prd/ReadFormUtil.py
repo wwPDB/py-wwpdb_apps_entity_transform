@@ -23,11 +23,10 @@ __version__ = "V0.07"
 
 import os
 import sys
-import string
 import traceback
 
 from mmcif.io.PdbxReader import PdbxReader
-from mmcif.api.PdbxContainers import DataCategory
+from mmcif.api.DataCategory import DataCategory
 from mmcif.io.PdbxWriter import PdbxWriter
 #
 
@@ -39,12 +38,13 @@ class ReadFormUtil(object):
     def __init__(self, reqObj=None, prdID=None, outputFile=None, verbose=False, log=sys.stderr):
         """
         """
-        self.__verbose = verbose
+        self.__verbose = verbose  # pylint: disable=unused-private-member
         self.__lfh = log
         self.__reqObj = reqObj
         self.__prdID = prdID
         self.__inputFile = str(self.__reqObj.getValue('prdfile'))
         self.__outputFile = outputFile
+        self.__status = True
         #
         self.__readCif()
 
@@ -62,7 +62,7 @@ class ReadFormUtil(object):
             pRd.read(myDataList)
             ifh.close()
             self.__myBlock = myDataList[0]
-        except:  # noqa: E722 pylint: disable=bare-except
+        except:  # noqa: E722  pylint: disable=bare-except
             traceback.print_exc(file=self.__lfh)
         #
 
@@ -128,23 +128,23 @@ class ReadFormUtil(object):
     def __getFormValue(self, pKey, num):
         """ Get form value
         """
-        map = {}
-        list = []
+        pmap = {}
+        list = []  # pylint: disable=redefined-builtin
         list.append(pKey)
         valMap = self.__reqObj.getValueMap(list)
         if not valMap:
-            return map
+            return pmap
         #
         for key, val in valMap.items():
             list1 = key.split('_')
             if num == 2:
                 idx = list1[1] + '_' + list1[2]
-                map[idx] = val
+                pmap[idx] = val
             else:
-                map[list1[1]] = val
+                pmap[list1[1]] = val
             #
         #
-        return map
+        return pmap
 
     def __updateSourceInfo(self):
         """ Update pdbx_reference_entity_src_nat category
@@ -177,23 +177,23 @@ class ReadFormUtil(object):
             cat.appendAttribute('db_name')
             self.__myBlock.append(cat)
         #
-        map = {}
-        map['prd_id'] = 'prd_id'
-        map['entityid_'] = 'ref_entity_id'
-        map['orgsci_'] = 'organism_scientific'
-        map['taxid_'] = 'taxid'
-        map['source_'] = 'source'
-        map['sourceid_'] = 'source_id'
-        map['natcode_'] = 'db_code'
-        map['natname_'] = 'db_name'
+        pmap = {}
+        pmap['prd_id'] = 'prd_id'
+        pmap['entityid_'] = 'ref_entity_id'
+        pmap['orgsci_'] = 'organism_scientific'
+        pmap['taxid_'] = 'taxid'
+        pmap['source_'] = 'source'
+        pmap['sourceid_'] = 'source_id'
+        pmap['natcode_'] = 'db_code'
+        pmap['natname_'] = 'db_name'
         #
         row = 0
-        for dir in vlist:
+        for sdir in vlist:
             cat.setValue(str(row + 1), 'ordinal', row)
             for token in ('prd_id', 'entityid_', 'orgsci_', 'taxid_', 'source_', 'sourceid_',
                           'natname_', 'natcode_'):
-                if token in dir:
-                    cat.setValue(dir[token], map[token], row)
+                if token in sdir:
+                    cat.setValue(sdir[token], pmap[token], row)
             #
             row += 1
             #
@@ -203,9 +203,9 @@ class ReadFormUtil(object):
         """ Get maximum source ID
         """
         defined_row = -1
-        for key, val in valMap.items():
-            list = key.split('_')
-            n = string.atoi(list[1])
+        for key, _val in valMap.items():
+            klist = key.split('_')
+            n = int(str((klist[1])))
             if n > defined_row:
                 defined_row = n
             #
@@ -215,11 +215,11 @@ class ReadFormUtil(object):
     def __getSourceList(self, defined_row, pKey_list, valMap):
         """ Get values based on source ID
         """
-        list = []
+        rlist = []
         for i in range(0, defined_row + 1):
-            dir = {}
+            dir = {}  # pylint: disable=redefined-builtin
             for token in pKey_list:
-                id = token + str(i)
+                id = token + str(i)  # pylint: disable=redefined-builtin
                 if id in valMap:
                     dir[token] = valMap[id]
                 #
@@ -227,10 +227,10 @@ class ReadFormUtil(object):
             if 'orgsci_' in dir or 'taxid_' in dir or \
                'source_' in dir or 'sourceid_' in dir:
                 dir['prd_id'] = self.__prdID
-                list.append(dir)
+                rlist.append(dir)
             #
         #
-        return list
+        return rlist
 
     def __updatePolymerInfo(self):
         """ Update pdbx_reference_entity_poly_seq & pdbx_reference_entity_sequence categories
@@ -346,16 +346,16 @@ class ReadFormUtil(object):
         if (not actiontype) and (not details):
             return
         #
-        list = []
+        list = []  # pylint: disable=redefined-builtin
         uniqueMap = {}
         if actiontype:
-            for k, v in actiontype.items():
+            for k, _v in actiontype.items():
                 uniqueMap[k] = 'yes'
                 list.append(int(k))
             #
         #
         if details:
-            for k, v in details.items():
+            for k, _v in details.items():
                 if k in uniqueMap:
                     continue
                 #
@@ -365,8 +365,8 @@ class ReadFormUtil(object):
         list.sort()
         dlist = []
         for i in list:
-            id = str(i)
-            dir = {}
+            id = str(i)  # pylint: disable=redefined-builtin
+            dir = {}  # pylint: disable=redefined-builtin
             if id in actiontype:
                 dir['action_type'] = actiontype[id]
             #
@@ -414,7 +414,7 @@ class ReadFormUtil(object):
             pdbxW = PdbxWriter(ofh)
             pdbxW.write(myDataList)
             ofh.close()
-        except:  # noqa: E722 pynlint: disable=bare-except
+        except:  # noqa: E722  pylint: disable=bare-except
             traceback.print_exc(file=self.__lfh)
             self.__status = False
         #

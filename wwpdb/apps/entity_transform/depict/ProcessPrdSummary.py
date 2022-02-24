@@ -289,7 +289,7 @@ class ProcessPrdSummary(object):
             if d['residue_id'] in nonpolymermap:
                 nonpolymermap[d['residue_id']].append(d)
             else:
-                list = []
+                list = []  # pylint: disable=redefined-builtin
                 list.append(d)
                 nonpolymermap[d['residue_id']] = list
             #
@@ -416,7 +416,7 @@ class ProcessPrdSummary(object):
             other_grouplist.append(dic)
             #
             if action_required == "Y":
-                act_dic = copy.eepcopy(dic)
+                act_dic = copy.deepcopy(dic)
                 act_dic["arrow"] = "ui-icon-circle-arrow-s"
                 act_dic["display"] = "block"
                 action_grouplist.append(act_dic)

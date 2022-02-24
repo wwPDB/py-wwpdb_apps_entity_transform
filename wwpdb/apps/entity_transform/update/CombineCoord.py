@@ -33,7 +33,9 @@ from wwpdb.apps.entity_transform.utils.GetLogMessage import GetLogMessage
 class CombineCoord(object):
     """ Class responsible for combining selected instances into single residue.
     """
-    def __init__(self, reqObj=None, instList=[], cifFile=None, verbose=False, log=sys.stderr):
+    def __init__(self, reqObj=None, instList=None, cifFile=None, verbose=False, log=sys.stderr):
+        if instList is None:
+            instList = []
         self.__verbose = verbose
         self.__lfh = log
         self.__reqObj = reqObj

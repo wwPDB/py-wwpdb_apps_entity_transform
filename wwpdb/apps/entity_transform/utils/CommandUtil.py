@@ -35,8 +35,8 @@ from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 class CommandUtil(object):
     """ Class for running back-end commands
     """
-    def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
-        self.__verbose = verbose
+    def __init__(self, reqObj=None, verbose=False, log=sys.stderr):  # pylint: disable=unused-argument
+        # self.__verbose = verbose
         self.__lfh = log
         self.__reqObj = reqObj
         self.__sObj = None
@@ -149,7 +149,9 @@ class CommandUtil(object):
         """
         start = datetime.datetime.now()
         try:
-            process = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True, preexec_fn=os.setsid, shell=True)
+            process = subprocess.Popen(cmd, stderr=subprocess.PIPE,  # pylint: disable=subprocess-popen-preexec-fn
+                                       stdout=subprocess.PIPE, close_fds=True,
+                                       preexec_fn=os.setsid, shell=True)
             while process.poll() is None:
                 time.sleep(0.1)
                 now = datetime.datetime.now()

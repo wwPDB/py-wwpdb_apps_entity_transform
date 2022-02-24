@@ -37,7 +37,7 @@ class DownloadFile(object):
         self.__sObj = None
         self.__sessionId = None
         self.__sessionPath = None
-        self.__rltvSessionPath = None
+        # self.__rltvSessionPath = None
         self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
         self.__cI = ConfigInfo(self.__siteId)
         #
@@ -53,14 +53,14 @@ class DownloadFile(object):
         self.__sObj = self.__reqObj.newSessionObj()
         self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
-        self.__rltvSessionPath = self.__sObj.getRelativePath()
+        # self.__rltvSessionPath = self.__sObj.getRelativePath()
         if (self.__verbose):
             self.__lfh.write("------------------------------------------------------\n")
             self.__lfh.write("+DownloadFile.__getSession() - creating/joining session %s\n" % self.__sessionId)
             self.__lfh.write("+DownloadFile.__getSession() - session path %s\n" % self.__sessionPath)
         #
 
-    def __processTemplate(self, fn, parameterDict={}):
+    def __processTemplate(self, fn, parameterDict=None):
         """ Read the input HTML template data file and perform the key/value substitutions in the
             input parameter dictionary.
 
@@ -72,6 +72,8 @@ class DownloadFile(object):
             :Returns:
                 string representing entirety of content with subsitution placeholders now replaced with data
         """
+        if parameterDict is None:
+            parameterDict = {}
         tPath = self.__reqObj.getValue("TemplatePath")
         fPath = os.path.join(tPath, fn)
         ifh = open(fPath, "r")

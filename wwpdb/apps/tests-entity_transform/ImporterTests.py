@@ -45,7 +45,6 @@ class ImportTests(unittest.TestCase):
     def testInstantiate(self):
         """Tests simple instantiation"""
         _ewa = EntityWebApp()  # noqa: F841
-        pass
 
 
 if __name__ == "__main__":

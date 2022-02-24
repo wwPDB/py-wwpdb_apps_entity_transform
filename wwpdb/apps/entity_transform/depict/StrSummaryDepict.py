@@ -113,20 +113,20 @@ class StrSummaryDepict(DepictBase):
             if ('mon_id' not in d) or ('pdb_seq_num' not in d):
                 continue
             #
-            list = []
-            list.append(d['mon_id'])
+            llist = []
+            llist.append(d['mon_id'])
             if 'pdbx_strand_id' in d:
-                list.append(d['pdbx_strand_id'])
+                llist.append(d['pdbx_strand_id'])
             else:
-                list.append('')
+                llist.append('')
             #
-            list.append(d['pdb_seq_num'])
+            llist.append(d['pdb_seq_num'])
             if 'pdb_ins_code' in d:
-                list.append(d['pdb_ins_code'])
+                llist.append(d['pdb_ins_code'])
             else:
-                list.append('')
+                llist.append('')
             #
-            self.__ligands.append(list)
+            self.__ligands.append(llist)
         #
 
     def __readGroupData(self):
@@ -166,9 +166,9 @@ class StrSummaryDepict(DepictBase):
             text += '<tr>\n'
             text += '<td><input type="checkbox" name="entity" value="' + d['entity_id'] + '" /> ' + d['entity_id'] + ' </td>\n'
             if 'pdbx_strand_id' in d:
-                list = d['pdbx_strand_id'].split(',')
+                list = d['pdbx_strand_id'].split(',')  # pylint: disable=redefined-builtin
                 text += '<td>\n'
-                for v in list:
+                for v in list:  # pylint: disable=redefined-builtin
                     text += '<input type="checkbox" name="chain" value="' + v + '" /> ' + v + ' &nbsp; &nbsp; <input type="text" name="chain_' + v \
                         + '" size="5" value="" />  <br/>\n'
                 text += '</td>\n'
@@ -235,12 +235,12 @@ class StrSummaryDepict(DepictBase):
         text += '<th>Links</th>\n'
         text += '</tr>\n'
         #
-        for list in self.__ligands:
-            ligand_id = list[1] + '_' + list[0] + '_' + list[2] + '_' + list[3]
+        for liglist in self.__ligands:
+            ligand_id = liglist[1] + '_' + liglist[0] + '_' + liglist[2] + '_' + liglist[3]
             text += '<tr>\n'
             text += '<td><input type="checkbox" name="ligand" value="' + ligand_id + '" />' + ' &nbsp; &nbsp; <input type="text" name="ligand_' \
                 + ligand_id + '" size="5" value="" /> </td>\n'
-            for v in list:
+            for v in liglist:
                 text += '<td> ' + v + ' </td>\n'
             #
             if ligand_id in self.__links:
@@ -271,8 +271,8 @@ class StrSummaryDepict(DepictBase):
             text += '<td><input type="text" name="group_' + v + '" size="5" value="" /> </td>\n'
             #
             label = ''
-            list = v.split(',')
-            for val in list:
+            glist = v.split(',')
+            for val in glist:
                 if label:
                     label += ', '
                 list1 = val.split('_')

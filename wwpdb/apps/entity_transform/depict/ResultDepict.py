@@ -24,7 +24,6 @@ __version__ = "V0.07"
 import os
 import sys
 
-from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.io.file.mmCIFUtil import mmCIFUtil
 from wwpdb.apps.entity_transform.depict.DepictBase import DepictBase
@@ -38,7 +37,6 @@ class ResultDepict(DepictBase):
         super(ResultDepict, self).__init__(reqObj=reqObj, summaryCifObj=summaryCifObj, verbose=verbose, log=log)
         #
         self.__siteId = str(self._reqObj.getValue("WWPDB_SITE_ID"))
-        self.__cI = ConfigInfo(self.__siteId)
         self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         #
         self.__instIds = self._cifObj.getMatchInstIds()
@@ -52,31 +50,31 @@ class ResultDepict(DepictBase):
             return self.__processMatch(instId)
         #
         content = ''
-        for id in self.__instIds:
-            if id.startswith('merge'):
+        for instId in self.__instIds:
+            if instId.startswith('merge'):
                 continue
             #
             myD = {}
-            myD['label'] = self._cifObj.getLabel(id)
-            myD['sequence'] = self.getSeqs(id)
+            myD['label'] = self._cifObj.getLabel(instId)
+            myD['sequence'] = self.getSeqs(instId)
             content += self._processTemplate('result_view/all_individual_header_tmplt.html', myD)
-            content += self.__processMatch(id)
+            content += self.__processMatch(instId)
         return content
 
     def DoRenderUpdatePage(self):
         content = ''
         count = 0
-        for id in self.__instIds:
-            if id.startswith('merge') or ('graph' not in self.__matchResults[id]):
+        for instId in self.__instIds:
+            if instId.startswith('merge') or ('graph' not in self.__matchResults[instId]):
                 continue
             #
             myD = {}
-            myD['label'] = self._cifObj.getLabel(id)
+            myD['label'] = self._cifObj.getLabel(instId)
             myD['id'] = 'id_' + str(count)
-            myD['value'] = id
-            myD['sequence'] = self.getSeqs(id)
+            myD['value'] = instId
+            myD['sequence'] = self.getSeqs(instId)
             content += self._processTemplate('update_form/update_header_tmplt.html', myD)
-            content += self.__processUpdate(id, self.__matchResults[id]['graph'], count)
+            content += self.__processUpdate(instId, self.__matchResults[instId]['graph'], count)
             count += 1
         #
         content += '<input type="hidden" name="count" value="' + str(count) + '" />\n'
@@ -86,15 +84,15 @@ class ResultDepict(DepictBase):
         content = ''
         count = 0
         allInstIds = self._cifObj.getAllInstIds()
-        for id in allInstIds:
-            if id.startswith('merge') or self._cifObj.getLinkageInfo(id) == 'big_polymer':
+        for instId in allInstIds:
+            if instId.startswith('merge') or self._cifObj.getLinkageInfo(instId) == 'big_polymer':
                 continue
             #
             myD = {}
-            myD['label'] = self._cifObj.getLabel(id)
-            myD['sequence'] = self.getSeqs(id)
+            myD['label'] = self._cifObj.getLabel(instId)
+            myD['sequence'] = self.getSeqs(instId)
             myD['id'] = 'id_' + str(count)
-            myD['value'] = id
+            myD['value'] = instId
             myD['user_defined_id'] = 'user_defined_id_' + str(count)
             content += self._processTemplate('update_form/row_input_tmplt.html', myD)
             count += 1
@@ -184,9 +182,9 @@ class ResultDepict(DepictBase):
             content += self.__processHit(instId, dic['sequence'])
         return content
 
-    def __processHit(self, instId, list):
+    def __processHit(self, instId, hlist):
         content = ''
-        for d in list:
+        for d in hlist:
             myD = {}
             myD['value'] = d['value']
             myD['instanceid'] = instId
@@ -220,10 +218,10 @@ class ResultDepict(DepictBase):
         #
         return content
 
-    def __processUpdate(self, instId, list, count):
+    def __processUpdate(self, instId, mlist, count):
         content = self._processTemplate('update_form/graph_match_selection_header.html', {})
         #
-        for d in list:
+        for d in mlist:
             myD = {}
             myD['value'] = d['value']
             myD['id'] = 'match_id_' + str(count)
@@ -255,16 +253,16 @@ class ResultDepict(DepictBase):
         #
         return content
 
-    def __getStatus(self, id):
+    def __getStatus(self, cid):
         sourcefile = ''
         category = ''
         item = ''
-        if id[:4] == 'PRD_':
-            sourcefile = os.path.join(self.__cICommon.get_site_prd_cvs_path(), id[len(id) - 1], id + '.cif')
+        if cid[:4] == 'PRD_':
+            sourcefile = os.path.join(self.__cICommon.get_site_prd_cvs_path(), cid[len(cid) - 1], cid + '.cif')
             category = 'pdbx_reference_molecule'
             item = 'release_status'
         else:
-            sourcefile = os.path.join(self.__cICommon.get_site_cc_cvs_path(), id[0], id, id + '.cif')
+            sourcefile = os.path.join(self.__cICommon.get_site_cc_cvs_path(), cid[0], cid, cid + '.cif')
             category = 'chem_comp'
             item = 'pdbx_release_status'
         #

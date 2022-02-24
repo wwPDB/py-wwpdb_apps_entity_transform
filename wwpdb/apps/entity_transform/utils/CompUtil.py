@@ -31,9 +31,7 @@ from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 class CompUtil(object):
     """ Class responsible for checking Comp/PRD ID and finding chemical component file.
     """
-    def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
-        self.__verbose = verbose
-        self.__lfh = log
+    def __init__(self, reqObj=None, verbose=False, log=sys.stderr):  # pylint: disable=unused-argument
         self.__reqObj = reqObj
         self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
         self.__cICommon = ConfigInfoAppCommon(self.__siteId)
@@ -43,7 +41,7 @@ class CompUtil(object):
         self.__prdccPath = self.__cICommon.get_site_prdcc_cvs_path()
         #
 
-    def checkInputId(self, id):
+    def checkInputId(self, id):  # pylint: disable=redefined-builtin
         filePath = os.path.join(self.__ccPath, id[0], id, id + '.cif')
         if id[:4] == 'PRD_':
             filePath = os.path.join(self.__prdPath, id[len(id) - 1], id + '.cif')
@@ -60,7 +58,7 @@ class CompUtil(object):
         #
         return ''
 
-    def getTemplateFile(self, id):
+    def getTemplateFile(self, id):  # pylint: disable=redefined-builtin
         if id[:4] == 'PRD_':
             ccid = id.replace('PRD', 'PRDCC')
             filePath1 = os.path.join(self.__prdccPath, ccid[len(ccid) - 1], ccid + '.cif')

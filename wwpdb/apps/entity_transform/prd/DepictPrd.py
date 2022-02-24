@@ -35,21 +35,26 @@ from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 class DepictPrd(object):
     """ Class responsible for generating HTML depiction of PRD entry.
     """
-    def __init__(self, reqObj=None, prdID=None, prdFile=None, myD={}, verbose=False, log=sys.stderr):
+    def __init__(self, reqObj=None, prdID=None, prdFile=None, myD=None, verbose=False, log=sys.stderr):
+        if myD is None:
+            myD = {}
         self.__verbose = verbose
         self.__lfh = log
         self.__reqObj = reqObj
-        self.__prdID = prdID
+        self.__prdID = prdID  # pylint: disable=unused-private-member
         self.__prdFile = prdFile
         self.__myD = myD
         self.__sObj = None
         self.__sessionId = None
         self.__sessionPath = None
-        self.__rltvSessionPath = None
         self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
         self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         self.__dictRoot = self.__cICommon.get_mmcif_dict_path()
         self.__dictionary_v5 = self.__cICommon.get_mmcif_archive_next_dict_filename() + '.odb'
+        #
+        self.__depictUtil = None
+        self.__htmlUtil = None
+        self.__prdObj = None
         #
         self.__getSession()
         #
@@ -98,7 +103,6 @@ class DepictPrd(object):
         self.__sObj = self.__reqObj.newSessionObj()
         self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
-        self.__rltvSessionPath = self.__sObj.getRelativePath()
         if (self.__verbose):
             self.__lfh.write("------------------------------------------------------\n")
             self.__lfh.write("+DepictPrd.__getSession() - creating/joining session %s\n" % self.__sessionId)
@@ -139,10 +143,10 @@ class DepictPrd(object):
         #
         elist = self.__getCategoryInfo('pdbx_reference_entity_list')
         if elist:
-            dir = {}
+            dir = {}  # pylint: disable=redefined-builtin
             for d in elist:
                 if polymer_only:
-                    type = ''
+                    type = ''  # pylint: disable=redefined-builtin
                     if 'type' in d:
                         type = d['type']
                     #
@@ -185,10 +189,12 @@ class DepictPrd(object):
     def __getTextualData(self):
         """ Get molecule name, component details & description
         """
+        # fmt: off
         lists = [['mol_name',    'name',             'style_background_color1'],  # noqa: E241
                  ['comp_detail', 'compound_details', 'style_background_color2'],
                  ['description', 'description',      'style_background_color3']]  # noqa: E241
-        for list in lists:
+        # fmt: on
+        for list in lists:  # pylint: disable=redefined-builtin
             self.__myD[list[0]] = self.__getTextInfo('pdbx_reference_molecule', list[1])
             self.__myD[list[2]] = 'style = "background-color:#D3D6FF;"'
             if self.__myD[list[0]]:
@@ -332,7 +338,7 @@ class DepictPrd(object):
     def __getRefData(self):
         """ Read DB reference Info from pdbx_reference_entity_poly category
         """
-        dir = {}
+        dir = {}  # pylint: disable=redefined-builtin
         dlist = self.__getCategoryInfo('pdbx_reference_entity_poly')
         if not dlist:
             return dir

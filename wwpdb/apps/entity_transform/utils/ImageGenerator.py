@@ -40,6 +40,7 @@ class ImageGenerator(object):
         self.__verbose = verbose
         self.__lfh = log
         self.__sessionPath = None
+        self.__sObj = None
         self.__cmdUtil = None
 
     def setSessionPath(self, path):
@@ -62,9 +63,9 @@ class ImageGenerator(object):
         mpu = MultiProcUtil(verbose=True)
         mpu.set(workerObj=self, workerMethod="runMultiProcess")
         mpu.setWorkingDir(self.__sessionPath)
-        ok, failList, retLists, diagList = mpu.runMulti(dataList=instList, numProc=numProc, numResults=1)
+        _ok, _failList, _retLists, _diagList = mpu.runMulti(dataList=instList, numProc=numProc, numResults=1)
 
-    def runMultiProcess(self, dataList, procName, optionsD, workingDir):
+    def runMultiProcess(self, dataList, procName, optionsD, workingDir):  # pylint: disable=unused-argument
         """
         """
         rList = []
@@ -89,9 +90,9 @@ class ImageGenerator(object):
             return
         #
         het_id = label
-        list = inst_id.split('_')
-        if len(list) == 4:
-            het_id = list[1]
+        instList = inst_id.split('_')
+        if len(instList) == 4:
+            het_id = instList[1]
         #
         self.__cmdUtil.setSessionPath(instancePath)
         rootName = self.__cmdUtil.getRootFileName('update-comp')

@@ -34,10 +34,10 @@ class DepictUtil(object):
         """
         """
         vd = {}
-        for list in lists:
-            vd[list[0]] = ''
-            if list[1] in d:
-                vd[list[0]] = d[list[1]]
+        for tlist in lists:
+            vd[tlist[0]] = ''
+            if tlist[1] in d:
+                vd[tlist[0]] = d[tlist[1]]
             #
         #
         return vd
@@ -121,8 +121,8 @@ class DepictUtil(object):
         #
         if count < row:
             vd = {}
-            for list in lists:
-                vd[list[0]] = ''
+            for tlist in lists:
+                vd[tlist[0]] = ''
             #
             for i in range(count, row):
                 tr = self.__getSourceRow(vd, i, entity_list)
@@ -194,7 +194,7 @@ class DepictUtil(object):
         text += '</tr>\n'
         #
         for d in dlist:
-            list = []
+            list = []  # pylint: disable=redefined-builtin
             list.append(items[0])
             list.append(items[3])
             list.append(items[2])

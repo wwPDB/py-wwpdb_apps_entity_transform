@@ -66,7 +66,7 @@ class EntityWebApp(object):
     """Handle request and response object processing for the entity fixer tool application.
 
     """
-    def __init__(self, parameterDict={}, verbose=False, log=sys.stderr, siteId="WWPDB_DEV"):
+    def __init__(self, parameterDict=None, verbose=False, log=sys.stderr, siteId="WWPDB_DEV"):
         """
         Create an instance of `EntityWebApp` to manage a entity fixer web request.
 
@@ -76,6 +76,8 @@ class EntityWebApp(object):
          :param `log`:      stream for logging.
 
         """
+        if parameterDict is None:
+            parameterDict = {}
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
@@ -252,7 +254,7 @@ class EntityWebAppWorker(object):
             return False
         #
 
-    def __doOpNoException(self):
+    def __doOpNoException(self):  # pylint: disable=unused-private-member
         """Map operation to path and invoke operation.  No exception handling is performed.
 
             :Returns:
@@ -709,26 +711,26 @@ class EntityWebAppWorker(object):
         oL = edtrDpct.doRender(self.__reqObj, False)
         rC.setHtmlText('\n'.join(oL))
         #
-        """
-        prdId = prdObj.getPRDID()
-        prdfile = os.path.join(self.__sessionPath, 'search', str(self.__reqObj.getValue('instanceid')), prdId + '.cif')
-        #
-        initD = {}
-        initD['prd_id'] = ''
-        initD['label_prd_id'] = ''
-        initD['fam_id'] = ''
-        initD['prdfile'] = prdfile
-        initD['family_name'] = ''
-        initD['build_comment_start'] = '<!--'
-        initD['build_comment_end'] = '-->'
-        initD['update_comment_start'] = ''
-        initD['update_comment_end'] = ''
-        #
-        depictObj = DepictPrd(reqObj=self.__reqObj, prdID=prdObj.getPRDID(), prdFile=prdfile, myD=initD, \
-                              verbose=self.__verbose, log=self.__lfh)
-        myD = depictObj.getDepictContext()
-        rC.setHtmlText(self.__processTemplate('prd/build_prd_tmplt.html', myD))
-        """
+        # """
+        # prdId = prdObj.getPRDID()
+        # prdfile = os.path.join(self.__sessionPath, 'search', str(self.__reqObj.getValue('instanceid')), prdId + '.cif')
+        # #
+        # initD = {}
+        # initD['prd_id'] = ''
+        # initD['label_prd_id'] = ''
+        # initD['fam_id'] = ''
+        # initD['prdfile'] = prdfile
+        # initD['family_name'] = ''
+        # initD['build_comment_start'] = '<!--'
+        # initD['build_comment_end'] = '-->'
+        # initD['update_comment_start'] = ''
+        # initD['update_comment_end'] = ''
+        # #
+        # depictObj = DepictPrd(reqObj=self.__reqObj, prdID=prdObj.getPRDID(), prdFile=prdfile, myD=initD, \
+        #                       verbose=self.__verbose, log=self.__lfh)
+        # myD = depictObj.getDepictContext()
+        # rC.setHtmlText(self.__processTemplate('prd/build_prd_tmplt.html', myD))
+        # """
         return rC
 
     def _updatePRD(self):
@@ -778,7 +780,7 @@ class EntityWebAppWorker(object):
         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         instId = str(self.__reqObj.getValue("instanceid"))
-        type = str(self.__reqObj.getValue("type"))
+        type = str(self.__reqObj.getValue("type"))  # pylint: disable=redefined-builtin
         resultObj = None
         if self.__summaryCifObj:
             resultObj = ResultDepict(reqObj=self.__reqObj, summaryCifObj=self.__summaryCifObj, verbose=self.__verbose, log=self.__lfh)
@@ -1141,7 +1143,7 @@ class EntityWebAppWorker(object):
         #
         return False
 
-    def __uploadFile(self, fileTag='file', fileTypeTag='filetype'):
+    def __uploadFile(self, fileTag='file'):
         #
         #
         if (self.__verbose):
@@ -1167,12 +1169,12 @@ class EntityWebAppWorker(object):
             #
             # Store upload file in session directory -
             #
-            list = fName.split('.')
-            idx = list[0].find('_model')
+            flist = fName.split('.')
+            idx = flist[0].find('_model')
             if idx == -1:
-                self.__identifier = list[0]
+                self.__identifier = flist[0]
             else:
-                self.__identifier = list[0][0:idx]
+                self.__identifier = flist[0][0:idx]
             #
             uploadFilePath = os.path.join(self.__sessionPath, '_upload_' + str(time.strftime("%Y%m%d%H%M%S", time.localtime())))
             ofh = open(uploadFilePath, 'wb')
@@ -1225,7 +1227,7 @@ class EntityWebAppWorker(object):
             #
         #
 
-    def __processTemplate(self, fn, parameterDict={}):
+    def __processTemplate(self, fn, parameterDict=None):
         """ Read the input HTML template data file and perform the key/value substitutions in the
             input parameter dictionary.
 
@@ -1237,6 +1239,8 @@ class EntityWebAppWorker(object):
             :Returns:
                 string representing entirety of content with subsitution placeholders now replaced with data
         """
+        if parameterDict is None:
+            parameterDict = {}
         tPath = self.__reqObj.getValue("TemplatePath")
         fPath = os.path.join(tPath, fn)
         ifh = open(fPath, 'r')
@@ -1266,8 +1270,12 @@ class EntityWebAppWorker(object):
             return False
 
 
-if __name__ == '__main__':
+def main():
     sTool = EntityWebApp()
     d = sTool.doOp()
     for k, v in d.items():
         sys.stdout.write("Key - %s  value - %r\n" % (k, v))
+
+
+if __name__ == '__main__':
+    main()

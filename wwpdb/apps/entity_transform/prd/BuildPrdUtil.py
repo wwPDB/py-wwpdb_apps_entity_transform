@@ -24,7 +24,6 @@ __version__ = "V0.07"
 import os
 import sys
 
-from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.apps.entity_transform.utils.CommandUtil import CommandUtil
 from wwpdb.apps.entity_transform.utils.GetLogMessage import GetLogMessage
 from wwpdb.io.file.mmCIFUtil import mmCIFUtil
@@ -39,8 +38,6 @@ class BuildPrdUtil(object):
         self.__verbose = verbose
         self.__lfh = log
         self.__reqObj = reqObj
-        self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
-        self.__cI = ConfigInfo(self.__siteId)
         #
         self.__instanceId = str(self.__reqObj.getValue("instanceid"))
         self.__instancePath = str(self.__reqObj.getValue("instancepath"))
@@ -50,6 +47,8 @@ class BuildPrdUtil(object):
         #
         self.__prdccFlag = True
         self.__message = ""
+        #
+        self.__cmdUtil = None
 
     def setInstancePath(self, path):
         """ Set working instance path

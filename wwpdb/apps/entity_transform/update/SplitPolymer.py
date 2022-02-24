@@ -65,8 +65,8 @@ class SplitPolymer(UpdateBase):
             #
             splits = str(','.join(splitList))
             #
-            list = chainList.split(',')
-            for chain_id in list:
+            clist = chainList.split(',')
+            for chain_id in clist:
                 options += ' -split ' + str(chain_id) + ':' + splits
             #
         #

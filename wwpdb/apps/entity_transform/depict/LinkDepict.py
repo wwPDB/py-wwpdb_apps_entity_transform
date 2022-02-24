@@ -53,8 +53,8 @@ class LinkDepict(DepictBase):
         self.__links = linkutil.getLinks()
 
     def __process(self):
-        id = str(self._reqObj.getValue('id'))
-        list = id.split(',')
+        id = str(self._reqObj.getValue('id'))  # pylint: disable=redefined-builtin
+        list = id.split(',')  # pylint: disable=redefined-builtin
         if len(list) == 1:
             list1 = list[0].split('_')
             if len(list1) == 1:

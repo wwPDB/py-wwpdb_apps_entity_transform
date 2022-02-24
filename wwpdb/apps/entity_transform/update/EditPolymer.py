@@ -65,8 +65,8 @@ class EditPolymer(UpdateBase):
             #
             deletes = str(','.join(deleteList))
             #
-            list = chainList.split(',')
-            for chain_id in list:
+            clist = chainList.split(',')
+            for chain_id in clist:
                 options += ' -delete ' + str(chain_id) + ':' + deletes
             #
         #

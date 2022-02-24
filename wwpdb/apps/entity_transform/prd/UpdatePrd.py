@@ -40,7 +40,9 @@ class UpdatePrd(object):
         self.__sObj = None
         self.__sessionId = None
         self.__sessionPath = None
-        self.__rltvSessionPath = None
+        self.__updateStatus = True
+
+        # self.__rltvSessionPath = None
         self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
         self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         #
@@ -76,7 +78,7 @@ class UpdatePrd(object):
         self.__sObj = self.__reqObj.newSessionObj()
         self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
-        self.__rltvSessionPath = self.__sObj.getRelativePath()
+        # self.__rltvSessionPath = self.__sObj.getRelativePath()
         if (self.__verbose):
             self.__lfh.write("------------------------------------------------------\n")
             self.__lfh.write("+UpdatePrd.__getSession() - creating/joining session %s\n" % self.__sessionId)
@@ -105,11 +107,11 @@ class UpdatePrd(object):
         newId = ''
         idlist = data.split('\n')
         idx = 0
-        for id in idlist:
+        for cid in idlist:
             idx += 1
-            prdfile = os.path.join(self.__cICommon.get_site_prd_cvs_path(), id[len(id) - 1], id + '.cif')
+            prdfile = os.path.join(self.__cICommon.get_site_prd_cvs_path(), cid[len(cid) - 1], cid + '.cif')
             if not os.access(prdfile, os.F_OK):
-                newId = id
+                newId = cid
                 break
             #
         #

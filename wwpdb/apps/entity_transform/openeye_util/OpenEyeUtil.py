@@ -24,11 +24,11 @@ __version__ = "V0.07"
 import os
 import sys
 import traceback
+import inspect
 
 from wwpdb.utils.oe_util.oedepict.OeAlignDepict import OeDepictMCSAlign
 from wwpdb.apps.entity_transform.utils.CompUtil import CompUtil
 from wwpdb.io.file.mmCIFUtil import mmCIFUtil
-from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 #
 
 
@@ -44,11 +44,6 @@ class OpenEyeUtil(object):
         self.__sessionId = None
         self.__sessionPath = None
         self.__rltvSessionPath = None
-        self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
-        self.__cICommon = ConfigInfoAppCommon(self.__siteId)
-        #
-        self.__ccPath = self.__cICommon.get_site_cc_cvs_path()
-        self.__prdccPath = self.__cICommon.get_site_prdcc_cvs_path()
         #
         self.__getSession()
         #
@@ -89,7 +84,7 @@ class OpenEyeUtil(object):
         for k, v in self.__labels.items():
             self.__lfh.write("+OpenEyeUtil.__getSummaryCifInfo() %s = %s\n" % (k, v))
 
-    def __processTemplate(self, fn, parameterDict={}):
+    def __processTemplate(self, fn, parameterDict=None):
         """ Read the input HTML template data file and perform the key/value substitutions in the
             input parameter dictionary.
 
@@ -101,6 +96,9 @@ class OpenEyeUtil(object):
             :Returns:
                 string representing entirety of content with subsitution placeholders now replaced with data
         """
+        if parameterDict is None:
+            parameterDict = {}
+
         tPath = self.__reqObj.getValue("TemplatePath")
         fPath = os.path.join(tPath, fn)
         with open(fPath, 'r') as ifh:
@@ -110,7 +108,7 @@ class OpenEyeUtil(object):
     def __MCSAlignPairDepict(self, refFile, fitFile, imageFile):
         """Simple pairwise MCSS alignment  -  Each aligned pair output to a separate image file
         """
-        self.__lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
+        self.__lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, inspect.currentframe().f_code.co_name))
         #
         try:
             oed = OeDepictMCSAlign(verbose=self.__verbose, log=self.__lfh)
@@ -119,7 +117,7 @@ class OpenEyeUtil(object):
             oed.setFitPath(fitFile)
             aML = oed.alignPair(imagePath=imageFile, imageX=1000, imageY=1000)
             if len(aML) > 0:
-                for (rCC, rAt, tCC, tAt) in aML:
+                for (_rCC, rAt, _tCC, tAt) in aML:
                     if rAt and tAt:
                         self.__CoorChemMap[rAt] = tAt
                         self.__ChemCoorMap[tAt] = rAt
@@ -130,7 +128,7 @@ class OpenEyeUtil(object):
             traceback.print_exc(file=self.__lfh)
             # self.fail()
         #
-        self.__lfh.write("\nFinished %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
+        self.__lfh.write("\nFinished %s %s\n" % (self.__class__.__name__, inspect.currentframe().f_code.co_name))
         #
 
     def __readAtomSite(self, coorPath):
@@ -249,14 +247,14 @@ class OpenEyeUtil(object):
                 self.__extraList.append(dic)
         #
 
-    def __processList(self, title, list):
-        if not list:
+    def __processList(self, title, list_in):
+        if not list_in:
             return ''
         #
         myD = {}
         myD['title'] = title
         content = self.__processTemplate('openeye_mcs/title_row_tmplt.html', myD)
-        for d in list:
+        for d in list_in:
             content += self.__processTemplate('openeye_mcs/atom_row_tmplt.html', d)
         return content
         #

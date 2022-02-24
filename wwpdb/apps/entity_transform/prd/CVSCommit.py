@@ -44,13 +44,16 @@ class CVSCommit(object):
         self.__sObj = None
         self.__sessionId = None
         self.__sessionPath = None
-        self.__rltvSessionPath = None
+        # self.__rltvSessionPath = None
         self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
         self.__cI = ConfigInfo(self.__siteId)
         self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         self.__prdRoot = self.__cICommon.get_site_prd_cvs_path()
         self.__prdccRoot = self.__cICommon.get_site_prdcc_cvs_path()
         #
+        self.__PrdIDList = None
+        self.__returnError = ""
+
         self.__getSession()
         #
 
@@ -127,7 +130,7 @@ class CVSCommit(object):
         self.__sObj = self.__reqObj.newSessionObj()
         self.__sessionId = self.__sObj.getId()
         self.__sessionPath = self.__sObj.getPath()
-        self.__rltvSessionPath = self.__sObj.getRelativePath()
+        # self.__rltvSessionPath = self.__sObj.getRelativePath()
         if (self.__verbose):
             self.__lfh.write("------------------------------------------------------\n")
             self.__lfh.write("+CVSCommit.__getSession() - creating/joining session %s\n" % self.__sessionId)

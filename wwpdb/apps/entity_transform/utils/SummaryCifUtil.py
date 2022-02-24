@@ -30,9 +30,9 @@ from wwpdb.io.file.mmCIFUtil import mmCIFUtil
 class SummaryCifUtil(object):
     """ Class responsible for handling search summary cif file.
     """
-    def __init__(self, summaryFile=None, verbose=False, log=sys.stderr):
-        self.__verbose = verbose
-        self.__lfh = log
+    def __init__(self, summaryFile=None, verbose=False, log=sys.stderr):  # pylint: disable=unused-argument
+        # self.__verbose = verbose
+        # self.__lfh = log
         self.__cifObj = mmCIFUtil(filePath=summaryFile)
         #
         self.__seqs = {}
@@ -195,11 +195,11 @@ class SummaryCifUtil(object):
             m_dic['value'] = d['type']
             if 'sequence' in d:
                 m_dic['sequence'] = d['sequence']
-            id = d['id']
-            if id[:4] == 'PRD_':
-                m_dic['prdid'] = id
+            tid = d['id']
+            if tid[:4] == 'PRD_':
+                m_dic['prdid'] = tid
             else:
-                m_dic['ccid'] = id
+                m_dic['ccid'] = tid
                 if 'prd_id' in d:
                     m_dic['prdid'] = d['prd_id']
             #
@@ -207,15 +207,15 @@ class SummaryCifUtil(object):
                 if d['method'] in self.__matchResults[d['inst_id']]:
                     self.__matchResults[d['inst_id']][d['method']].append(m_dic)
                 else:
-                    list = []
-                    list.append(m_dic)
-                    self.__matchResults[d['inst_id']][d['method']] = list
+                    rlist = []
+                    rlist.append(m_dic)
+                    self.__matchResults[d['inst_id']][d['method']] = rlist
             else:
                 self.__matchInstIds.append(d['inst_id'])
-                list = []
-                list.append(m_dic)
+                rlist = []
+                rlist.append(m_dic)
                 dic = {}
-                dic[d['method']] = list
+                dic[d['method']] = rlist
                 self.__matchResults[d['inst_id']] = dic
             #
         #

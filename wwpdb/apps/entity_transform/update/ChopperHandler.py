@@ -119,8 +119,8 @@ class ChopperHandler(object):
         f = open(filename, 'r')
         data = f.read()
         f.close()
-        list = data.split('\n')
-        for line in list:
+        dlist = data.split('\n')
+        for line in dlist:
             if not line:
                 continue
             #

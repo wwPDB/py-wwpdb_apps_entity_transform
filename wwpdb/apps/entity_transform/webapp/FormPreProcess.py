@@ -29,9 +29,7 @@ class FormPreProcess(object):
     """ Class responsible for checking the input value(s)
 
     """
-    def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
-        self.__verbose = verbose
-        self.__lfh = log
+    def __init__(self, reqObj=None, verbose=False, log=sys.stderr):  # pylint: disable=unused-argument
         self.__reqObj = reqObj
         #
         self.__submitValue = str(self.__reqObj.getValue('submit'))
@@ -105,8 +103,8 @@ class FormPreProcess(object):
                 + 'with chopper" option, only one User defind Group can be processed each time.\n'
             return
         #
-        for id, label in self.__labelDic.items():
-            if id not in self.__valueDic:
+        for lid, label in self.__labelDic.items():
+            if lid not in self.__valueDic:
                 self.__errorMessage += 'No User defind Group ID assigned for "' + label + '".<br/>\n'
             #
         #
@@ -125,14 +123,14 @@ class FormPreProcess(object):
         new_list = []
         for v in instList:
             val = str(v)
-            list = val.split(',')
-            if len(list) > 1:
-                val = ','.join(list[1:])
-                self.__labelDic[val] = label_prefix + list[0]
+            slist = val.split(',')
+            if len(slist) > 1:
+                val = ','.join(slist[1:])
+                self.__labelDic[val] = label_prefix + slist[0]
                 new_list.append(val)
             else:
                 new_list.append(val)
-                list1 = list[0].split('_')
+                list1 = slist[0].split('_')
                 if len(list1) > 1:
                     self.__labelDic[val] = label_prefix + ' '.join(list1)
                 else:

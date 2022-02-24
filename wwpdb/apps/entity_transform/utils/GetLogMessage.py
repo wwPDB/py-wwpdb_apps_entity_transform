@@ -26,8 +26,8 @@ def GetLogMessage(logfile):
     f.close()
     #
     error = ''
-    list = data.split('\n')
-    for line in list:
+    dlist = data.split('\n')
+    for line in dlist:
         if not line:
             continue
         #

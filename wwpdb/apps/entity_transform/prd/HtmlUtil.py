@@ -45,7 +45,7 @@ class HtmlUtil(object):
         text += '</select>\n'
         return text
 
-    def addInput(self, type, name, value, checked, display):
+    def addInput(self, type, name, value, checked, display):  # pylint: disable=redefined-builtin
         """ Write HTML input tag with various options
         """
         text = '<input type="' + type + '" name="' + name + '" value="' \

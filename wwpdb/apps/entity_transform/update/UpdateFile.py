@@ -54,22 +54,22 @@ class UpdateFile(UpdateBase):
         """
         count = int(str(self._reqObj.getValue('count')))
         for i in range(0, count):
-            id = self._reqObj.getValue('id_' + str(i))
+            id = self._reqObj.getValue('id_' + str(i))  # pylint: disable=redefined-builtin
             if not id:
                 continue
             #
-            list = id.split(',')
+            ilist = id.split(',')
             dic = {}
-            dic['instid'] = list[0]
+            dic['instid'] = ilist[0]
             if len(list) == 2:
-                dic['only'] = list[1]
+                dic['only'] = ilist[1]
             #
             has_value = False
             match_id = self._reqObj.getValue('match_id_' + str(i))
             if match_id:
-                list = match_id.split(',')
-                dic['hitid'] = list[1]
-                dic['fileid'] = list[1]
+                mlist = match_id.split(',')
+                dic['hitid'] = mlist[1]
+                dic['fileid'] = mlist[1]
                 has_value = True
             #
             user_defined_id = self._reqObj.getValue('user_defined_id_' + str(i))

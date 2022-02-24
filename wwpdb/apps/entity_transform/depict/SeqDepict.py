@@ -157,11 +157,11 @@ class SeqDepict(object):
         'V': 'DVA'
     }
 
-    def __init__(self, entityInfo=None, option="split", verbose=False, log=sys.stderr):
+    def __init__(self, entityInfo=None, option="split", verbose=False, log=sys.stderr):  # pylint: disable=unused-argument
         self.__entityInfo = entityInfo
         self.__option = option
-        self.__verbose = verbose
-        self.__lfh = log
+        # self.__verbose = verbose
+        # self.__lfh = log
         self.__entityLength = {}
         self.__entityIndices = {}
 
@@ -456,8 +456,8 @@ class SeqDepict(object):
         text = ''
 
         if sys.version_info[0] < 3:
-            numtypes = (int, long, float)  # noqa: F821
-            stringtypes = (str, unicode)  # noqa: F821
+            numtypes = (int, long, float)  # noqa: F821  pylint: disable=undefined-variable
+            stringtypes = (str, unicode)  # noqa: F821  pylint: disable=undefined-variable
         else:
             numtypes = (int, float)
             stringtypes = (str, bytes)

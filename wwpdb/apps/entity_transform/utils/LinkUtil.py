@@ -28,10 +28,8 @@ class LinkUtil(object):
     """ Class responsible for handling link records.
 
     """
-    def __init__(self, cifObj=None, verbose=False, log=sys.stderr):
+    def __init__(self, cifObj=None, verbose=False, log=sys.stderr):  # pylint: disable=unused-argument
         self.__cifObj = cifObj
-        self.__verbose = verbose
-        self.__lfh = log
         #
         self.__links = {}
         self.__readLinkData()
@@ -81,28 +79,28 @@ class LinkUtil(object):
 
     def __getLink(self, dic, items):
         has_value = False
-        list = []
+        rlist = []
         for item in items:
             val = ''
             if item in dic:
                 val = dic[item]
                 has_value = True
             #
-            list.append(val)
+            rlist.append(val)
         #
         if not has_value:
-            list = []
+            rlist = []
         #
-        return list
+        return rlist
 
     def __addLink(self, link):
         res_key = '_'.join(link[0:4])
         if res_key in self.__links:
             self.__links[res_key].append(link)
         else:
-            list = []
-            list.append(link)
-            self.__links[res_key] = list
+            link_list = []
+            link_list.append(link)
+            self.__links[res_key] = link_list
         #
 
     def __getPolymerLinkData(self):
@@ -152,9 +150,9 @@ class LinkUtil(object):
                 if v_list[0] in self.__links:
                     self.__links[v_list[0]].append(link)
                 else:
-                    list = []
-                    list.append(link)
-                    self.__links[v_list[0]] = list
+                    llist = []
+                    llist.append(link)
+                    self.__links[v_list[0]] = llist
                 #
             #
         #
@@ -176,9 +174,9 @@ class LinkUtil(object):
             #
             index = {}
             group = str(d['component_ids'])
-            list = group.split(',')
+            glist = group.split(',')
             link_list = []
-            for component in list:
+            for component in glist:
                 if component not in self.__links:
                     continue
                 #
