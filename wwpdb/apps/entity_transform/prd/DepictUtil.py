@@ -106,7 +106,7 @@ class DepictUtil(object):
                  ['source_id', 'source_id'           ],  # noqa: E202,E241
                  ['db_name',   'db_name'             ],  # noqa: E202,E241
                  ['db_code',   'db_code'             ]]  # noqa: E202,E241
-        # fmt: oon
+        # fmt: on
         #
         text = ''
         count = 0
