@@ -16,10 +16,10 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 import os
 import sys
@@ -27,16 +27,13 @@ import sys
 from wwpdb.io.file.mmCIFUtil import mmCIFUtil
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 
-#
 
 class CompUtil(object):
     """ Class responsible for checking Comp/PRD ID and finding chemical component file.
     """
-    def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
-        self.__verbose=verbose
-        self.__lfh=log
-        self.__reqObj=reqObj
-        self.__siteId  = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
+    def __init__(self, reqObj=None, verbose=False, log=sys.stderr):  # pylint: disable=unused-argument
+        self.__reqObj = reqObj
+        self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
         self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         #
         self.__ccPath = self.__cICommon.get_site_cc_cvs_path()
@@ -44,10 +41,10 @@ class CompUtil(object):
         self.__prdccPath = self.__cICommon.get_site_prdcc_cvs_path()
         #
 
-    def checkInputId(self, id):
+    def checkInputId(self, id):  # pylint: disable=redefined-builtin
         filePath = os.path.join(self.__ccPath, id[0], id, id + '.cif')
         if id[:4] == 'PRD_':
-            filePath = os.path.join(self.__prdPath, id[len(id)-1], id + '.cif')
+            filePath = os.path.join(self.__prdPath, id[len(id) - 1], id + '.cif')
         #
         if not os.access(filePath, os.F_OK):
             return id + ' is not a valid Component or PRD ID.\n'
@@ -61,16 +58,16 @@ class CompUtil(object):
         #
         return ''
 
-    def getTemplateFile(self, id):
+    def getTemplateFile(self, id):  # pylint: disable=redefined-builtin
         if id[:4] == 'PRD_':
             ccid = id.replace('PRD', 'PRDCC')
-            filePath1 = os.path.join(self.__prdccPath, ccid[len(ccid)-1], ccid+'.cif')
+            filePath1 = os.path.join(self.__prdccPath, ccid[len(ccid) - 1], ccid + '.cif')
             if os.access(filePath1, os.F_OK):
                 return filePath1
             #
             # check single ligand defined in PRD entry
             #
-            fileName = os.path.join(self.__prdPath, id[len(id)-1], id + '.cif')
+            fileName = os.path.join(self.__prdPath, id[len(id) - 1], id + '.cif')
             cf = mmCIFUtil(filePath=fileName)
             dlist = cf.GetValue('pdbx_reference_molecule')
             if not dlist:
@@ -91,4 +88,3 @@ class CompUtil(object):
             #
         #
         return ''
-

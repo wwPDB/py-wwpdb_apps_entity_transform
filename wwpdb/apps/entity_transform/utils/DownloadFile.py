@@ -16,28 +16,30 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import os, sys, string, traceback
+import os
+import sys
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
+
 
 class DownloadFile(object):
     """ Class responsible for download files.
     """
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
-        self.__verbose=verbose
-        self.__lfh=log
-        self.__reqObj=reqObj
-        self.__sObj=None
-        self.__sessionId=None
-        self.__sessionPath=None
-        self.__rltvSessionPath=None
-        self.__siteId=str(self.__reqObj.getValue("WWPDB_SITE_ID"))
-        self.__cI=ConfigInfo(self.__siteId)
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__reqObj = reqObj
+        self.__sObj = None
+        self.__sessionId = None
+        self.__sessionPath = None
+        # self.__rltvSessionPath = None
+        self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
+        self.__cI = ConfigInfo(self.__siteId)
         #
         self.__getSession()
         #
@@ -48,34 +50,36 @@ class DownloadFile(object):
         """ Join existing session or create new session as required.
         """
         #
-        self.__sObj=self.__reqObj.newSessionObj()
-        self.__sessionId=self.__sObj.getId()
-        self.__sessionPath=self.__sObj.getPath()
-        self.__rltvSessionPath=self.__sObj.getRelativePath()
+        self.__sObj = self.__reqObj.newSessionObj()
+        self.__sessionId = self.__sObj.getId()
+        self.__sessionPath = self.__sObj.getPath()
+        # self.__rltvSessionPath = self.__sObj.getRelativePath()
         if (self.__verbose):
-            self.__lfh.write("------------------------------------------------------\n")                    
+            self.__lfh.write("------------------------------------------------------\n")
             self.__lfh.write("+DownloadFile.__getSession() - creating/joining session %s\n" % self.__sessionId)
-            self.__lfh.write("+DownloadFile.__getSession() - session path %s\n" % self.__sessionPath)            
+            self.__lfh.write("+DownloadFile.__getSession() - session path %s\n" % self.__sessionPath)
         #
 
-    def __processTemplate(self,fn,parameterDict={}):
+    def __processTemplate(self, fn, parameterDict=None):
         """ Read the input HTML template data file and perform the key/value substitutions in the
             input parameter dictionary.
-            
+
             :Params:
                 ``parameterDict``: dictionary where
                 key = name of subsitution placeholder in the template and
                 value = data to be used to substitute information for the placeholder
-                
+
             :Returns:
                 string representing entirety of content with subsitution placeholders now replaced with data
         """
-        tPath =self.__reqObj.getValue("TemplatePath")
-        fPath=os.path.join(tPath,fn)
-        ifh=open(fPath,"r")
-        sIn=ifh.read()
+        if parameterDict is None:
+            parameterDict = {}
+        tPath = self.__reqObj.getValue("TemplatePath")
+        fPath = os.path.join(tPath, fn)
+        ifh = open(fPath, "r")
+        sIn = ifh.read()
         ifh.close()
-        return (  sIn % parameterDict )
+        return (sIn % parameterDict)
 
     def __findPRDFiles(self):
         fileList = []
@@ -96,7 +100,7 @@ class DownloadFile(object):
         setting = " RCSBROOT=" + self.__cI.get("SITE_ANNOT_TOOLS_PATH") + "; export RCSBROOT; "
         #
         for prdid in self.__PrdIds:
-            prdfile =  os.path.join(self.__sessionPath, prdid + ".cif")
+            prdfile = os.path.join(self.__sessionPath, prdid + ".cif")
             if not os.access(prdfile, os.F_OK):
                 continue
             #

@@ -16,29 +16,28 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import os, shutil, string, sys, traceback
+import os
+import sys
 
-from wwpdb.utils.config.ConfigInfo                   import ConfigInfo
-from wwpdb.apps.entity_transform.utils.CommandUtil   import CommandUtil
+from wwpdb.apps.entity_transform.utils.CommandUtil import CommandUtil
 from wwpdb.apps.entity_transform.utils.GetLogMessage import GetLogMessage
-from wwpdb.io.file.mmCIFUtil                         import mmCIFUtil
+from wwpdb.io.file.mmCIFUtil import mmCIFUtil
 #
+
 
 class BuildPrdUtil(object):
     """ Class responsible for building PRD definition based on instance.
 
     """
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):
-        self.__verbose=verbose
-        self.__lfh=log
-        self.__reqObj=reqObj
-        self.__siteId  = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
-        self.__cI = ConfigInfo(self.__siteId)
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__reqObj = reqObj
         #
         self.__instanceId = str(self.__reqObj.getValue("instanceid"))
         self.__instancePath = str(self.__reqObj.getValue("instancepath"))
@@ -48,6 +47,8 @@ class BuildPrdUtil(object):
         #
         self.__prdccFlag = True
         self.__message = ""
+        #
+        self.__cmdUtil = None
 
     def setInstancePath(self, path):
         """ Set working instance path
@@ -75,7 +76,7 @@ class BuildPrdUtil(object):
         self.__cmdUtil = CommandUtil(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         self.__cmdUtil.setSessionPath(self.__instancePath)
         #
-        for existFile in ( self.__prdID + ".cif", self.__prdID + ".support.cif", self.__prdID + ".comp.cif", self.__prdccID + ".cif"):
+        for existFile in (self.__prdID + ".cif", self.__prdID + ".support.cif", self.__prdID + ".comp.cif", self.__prdccID + ".cif"):
             filePath = os.path.join(self.__instancePath, existFile)
             if os.access(filePath, os.F_OK):
                 os.remove(filePath)
@@ -108,7 +109,7 @@ class BuildPrdUtil(object):
         #
         rootName = self.__cmdUtil.getRootFileName("build-prd")
         extraOptions = " -summary " + self.__summaryFile + " -instfile " + self.__instanceId + ".orig.cif -instid " + self.__instanceId \
-                     + " -prdfile " + self.__prdID + ".cif -prdid " + self.__prdID + " -support " + self.__prdID + ".support.cif "
+            + " -prdfile " + self.__prdID + ".cif -prdid " + self.__prdID + " -support " + self.__prdID + ".support.cif "
         #
         self.__cmdUtil.runAnnotCmd("GenPrdEntry", "", "", rootName + ".log", rootName + ".clog", extraOptions)
         #
@@ -150,7 +151,7 @@ class BuildPrdUtil(object):
         #
         rootName = self.__cmdUtil.getRootFileName("build-prdcc")
         extraOptions = " -instfile " + self.__instanceId + ".orig.cif -prdfile " + self.__prdID + ".cif -prdid " + self.__prdID \
-                     + " -compfile " + self.__prdID + ".comp.cif -support " + self.__prdID + ".support.cif "
+            + " -compfile " + self.__prdID + ".comp.cif -support " + self.__prdID + ".support.cif "
         #
         self.__cmdUtil.runAnnotCmd("GenPrdCCEntry", "", "", rootName + ".log", rootName + ".clog", extraOptions)
         #
@@ -181,7 +182,7 @@ class BuildPrdUtil(object):
             return
         #
         rootName = self.__cmdUtil.getRootFileName("update")
-        extraOptions = " -prd " + self.__prdID + ".cif -comp " + self.__prdID + ".comp.cif -annotatecomp " +  self.__prdccID + ".cif "
+        extraOptions = " -prd " + self.__prdID + ".cif -comp " + self.__prdID + ".comp.cif -annotatecomp " + self.__prdccID + ".cif "
         self.__cmdUtil.runAnnotCmd("MergeCompWithPrd", "", "", rootName + ".log", rootName + ".clog", extraOptions)
         #
         self.__parseLogFile(rootName + ".log")

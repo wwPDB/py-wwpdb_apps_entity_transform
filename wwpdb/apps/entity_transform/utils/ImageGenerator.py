@@ -16,15 +16,19 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import multiprocessing, os, sys, string, traceback
+import multiprocessing
+import os
+import sys
+
 
 from wwpdb.apps.entity_transform.utils.CommandUtil import CommandUtil
-from rcsb.utils.multiproc.MultiProcUtil                import MultiProcUtil
+from rcsb.utils.multiproc.MultiProcUtil import MultiProcUtil
+
 
 class ImageGenerator(object):
     """ Class responsible generating instance's image
@@ -32,10 +36,11 @@ class ImageGenerator(object):
     def __init__(self, reqObj=None, subPath='search', fileExt='comp.cif', verbose=False, log=sys.stderr):
         self.__reqObj = reqObj
         self.__subPath = subPath
-        self.__fileExt = fileExt 
+        self.__fileExt = fileExt
         self.__verbose = verbose
         self.__lfh = log
         self.__sessionPath = None
+        self.__sObj = None
         self.__cmdUtil = None
 
     def setSessionPath(self, path):
@@ -55,12 +60,12 @@ class ImageGenerator(object):
         self.__cmdUtil = CommandUtil(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         numProc = int(multiprocessing.cpu_count() / 2)
-        mpu = MultiProcUtil(verbose = True)
-        mpu.set(workerObj = self, workerMethod = "runMultiProcess")
+        mpu = MultiProcUtil(verbose=True)
+        mpu.set(workerObj=self, workerMethod="runMultiProcess")
         mpu.setWorkingDir(self.__sessionPath)
-        ok,failList,retLists,diagList = mpu.runMulti(dataList=instList, numProc=numProc, numResults=1)
+        _ok, _failList, _retLists, _diagList = mpu.runMulti(dataList=instList, numProc=numProc, numResults=1)
 
-    def runMultiProcess(self, dataList, procName, optionsD, workingDir):
+    def runMultiProcess(self, dataList, procName, optionsD, workingDir):  # pylint: disable=unused-argument
         """
         """
         rList = []
@@ -68,7 +73,7 @@ class ImageGenerator(object):
             self.__generate2DImage(instData[0], instData[1])
             rList.append(instData[0])
         #
-        return rList,rList,[]
+        return rList, rList, []
 
     def __getSession(self):
         """
@@ -85,9 +90,9 @@ class ImageGenerator(object):
             return
         #
         het_id = label
-        list = inst_id.split('_')
-        if len(list) == 4:
-            het_id = list[1]
+        instList = inst_id.split('_')
+        if len(instList) == 4:
+            het_id = instList[1]
         #
         self.__cmdUtil.setSessionPath(instancePath)
         rootName = self.__cmdUtil.getRootFileName('update-comp')
@@ -100,12 +105,11 @@ class ImageGenerator(object):
             os.rename(source, target)
         #
         rootName = self.__cmdUtil.getRootFileName('comp-report')
-        self.__cmdUtil.runCCToolCmdWithTimeOut('makeCompReport', '', '', '', rootName + '.clog', ' -v -i ' + inst_id + '.' + self.__fileExt + \
-                                    ' -type html-cctools -path "./" -of report.html -noaromatic ')
+        self.__cmdUtil.runCCToolCmdWithTimeOut('makeCompReport', '', '', '', rootName + '.clog', ' -v -i ' + inst_id + '.' + self.__fileExt
+                                               + ' -type html-cctools -path "./" -of report.html -noaromatic ')
         #
         source = os.path.join(instancePath, het_id + '-500.gif')
         if os.access(source, os.F_OK):
             os.rename(source, os.path.join(instancePath, label + '.gif'))
         #
         self.__cmdUtil.removeSelectedFiles('__' + het_id + '__')
-

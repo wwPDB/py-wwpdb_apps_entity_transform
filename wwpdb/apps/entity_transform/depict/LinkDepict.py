@@ -16,16 +16,17 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import os, sys, string, traceback
+import sys
 
 from wwpdb.apps.entity_transform.depict.DepictBase import DepictBase
-from wwpdb.apps.entity_transform.utils.LinkUtil    import LinkUtil
+from wwpdb.apps.entity_transform.utils.LinkUtil import LinkUtil
 #
+
 
 class LinkDepict(DepictBase):
     """ Class responsible for generating HTML depiction of Links.
@@ -52,8 +53,8 @@ class LinkDepict(DepictBase):
         self.__links = linkutil.getLinks()
 
     def __process(self):
-        id = str(self._reqObj.getValue('id'))
-        list = id.split(',')
+        id = str(self._reqObj.getValue('id'))  # pylint: disable=redefined-builtin
+        list = id.split(',')  # pylint: disable=redefined-builtin
         if len(list) == 1:
             list1 = list[0].split('_')
             if len(list1) == 1:
@@ -61,7 +62,7 @@ class LinkDepict(DepictBase):
             else:
                 self.__labelId = 'Residue ' + ' '.join(list1)
         else:
-            self.__labelId = 'GROUP_' + list[0] 
+            self.__labelId = 'GROUP_' + list[0]
             id = ','.join(list[1:])
         #
         if id not in self.__links:

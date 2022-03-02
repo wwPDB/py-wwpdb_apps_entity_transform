@@ -16,16 +16,17 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import copy, os, sys, string, traceback
+import copy
+import sys
 
-from wwpdb.apps.entity_transform.depict.DepictBase import DepictBase
 from wwpdb.apps.entity_transform.utils.ImageGenerator import ImageGenerator
 from wwpdb.apps.entity_transform.utils.SummaryCifUtil import SummaryCifUtil
+
 
 class ProcessPrdSummary(object):
     """ Class responsible for reading PRD search results and generating images.
@@ -36,12 +37,12 @@ class ProcessPrdSummary(object):
         self.__verbose = verbose
         self.__lfh = log
         #
-        self.__propertyList = ( ( 'Name', 'name' ), ( 'Residue number', 'residue_number' ), \
-                                ( 'Chain ID(s)', 'pdb_chain_ids' ), ( 'Type', 'polymer_type' ) )
+        self.__propertyList = (('Name', 'name'), ('Residue number', 'residue_number'),
+                               ('Chain ID(s)', 'pdb_chain_ids'), ('Type', 'polymer_type'))
         #
-        self.__typeMap = { 'polydeoxyribonucleotide' : 'DNA', 'polydeoxyribonucleotide/polyribonucleotide hybrid' : 'DNA/RNA', \
-                           'polypeptide(D)' : 'Protein', 'polypeptide(L)' : 'Protein', 'polyribonucleotide' : 'RNA', \
-                           'polysaccharide(D)' : 'Sugar', 'polysaccharide(L)' : 'Sugar' }
+        self.__typeMap = {'polydeoxyribonucleotide' : 'DNA', 'polydeoxyribonucleotide/polyribonucleotide hybrid' : 'DNA/RNA',
+                          'polypeptide(D)' : 'Protein', 'polypeptide(L)' : 'Protein', 'polyribonucleotide' : 'RNA',
+                          'polysaccharide(D)' : 'Sugar', 'polysaccharide(L)' : 'Sugar'}
         #
         self.__topDirPath = None
         self.__image_data = []
@@ -83,13 +84,13 @@ class ProcessPrdSummary(object):
             self.__data.append(dic)
             #
             if self.__other_data:
-#               dic = {}
-#               dic["id"] = "other"
-#               dic["arrow"] = "ui-icon-circle-arrow-e"
-#               dic["text"] = "Other entities:"
-#               dic["display"] = "none"
-#               dic["list"] = self.__other_data
-#               self.__data.append(dic)
+                # dic = {}
+                # dic["id"] = "other"
+                # dic["arrow"] = "ui-icon-circle-arrow-e"
+                # dic["text"] = "Other entities:"
+                # dic["display"] = "none"
+                # dic["list"] = self.__other_data
+                # self.__data.append(dic)
                 self.__data.extend(self.__other_data)
             #
         else:
@@ -140,15 +141,15 @@ class ProcessPrdSummary(object):
                     continue
                 #
                 if d["linkage_info"] == "linked":
-                    self.__image_data.append( ( d["polymer_id"], "CHAIN_" + d["pdb_chain_id"]) )
+                    self.__image_data.append((d["polymer_id"], "CHAIN_" + d["pdb_chain_id"]))
                 #
             #
         #
-        for polymerTup in ( ( "polymer", "polymers", "Polymers" ), ( "branched", "oligosaccharide", "Oligosaccharides" ) ):
+        for polymerTup in (("polymer", "polymers", "Polymers"), ("branched", "oligosaccharide", "Oligosaccharides")):
             action_entitylist = []
             other_entitylist = []
             for d in elist:
-                if ("type" not in d ) or (d["type"] != polymerTup[0]):
+                if ("type" not in d) or (d["type"] != polymerTup[0]):
                     continue
                 #
                 entity_id = ""
@@ -201,7 +202,7 @@ class ProcessPrdSummary(object):
                     if text:
                         text += ", "
                     #
-                    #text += prolist[0] + ": <span style="color:red;">" + properties[prolist[0]] + "</span>"
+                    # text += prolist[0] + ": <span style="color:red;">" + properties[prolist[0]] + "</span>"
                     text += prolist[0] + ": " + properties[prolist[0]]
                 #
                 dic = {}
@@ -224,7 +225,7 @@ class ProcessPrdSummary(object):
                         continue
                     #
                     pdic = {}
-                    pdic["id"] =  pmap[c]["polymer_id"]
+                    pdic["id"] = pmap[c]["polymer_id"]
                     pdic["linkage_info"] = pmap[c]["linkage_info"]
                     if "message" in pmap[c]:
                         pdic["message"] = pmap[c]["message"]
@@ -283,12 +284,12 @@ class ProcessPrdSummary(object):
                 #
             #
             if d['linkage_info'] == 'linked':
-                self.__image_data.append( ( d['instance_id'], d['instance_id'] ) )
+                self.__image_data.append((d['instance_id'], d['instance_id']))
             #
             if d['residue_id'] in nonpolymermap:
                 nonpolymermap[d['residue_id']].append(d)
             else:
-                list = []
+                list = []  # pylint: disable=redefined-builtin
                 list.append(d)
                 nonpolymermap[d['residue_id']] = list
             #
@@ -297,7 +298,7 @@ class ProcessPrdSummary(object):
             return
         #
         keylist = []
-        for k,v in nonpolymermap.items():
+        for k, v in nonpolymermap.items():
             keylist.append(k)
         #
         keylist.sort()
@@ -388,7 +389,7 @@ class ProcessPrdSummary(object):
                 continue
             #
             if d['linkage_info'] == 'linked':
-                self.__image_data.append( ( d['group_id'], d['group_id'].upper() ) )
+                self.__image_data.append((d['group_id'], d['group_id'].upper()))
             #
             action_required = ''
             if 'action_required' in d:
@@ -415,7 +416,7 @@ class ProcessPrdSummary(object):
             other_grouplist.append(dic)
             #
             if action_required == "Y":
-                act_dic = copy.eepcopy(dic)
+                act_dic = copy.deepcopy(dic)
                 act_dic["arrow"] = "ui-icon-circle-arrow-s"
                 act_dic["display"] = "block"
                 action_grouplist.append(act_dic)
@@ -469,7 +470,7 @@ class ProcessPrdSummary(object):
                     continue
                 #
                 if d['linkage_info'] == 'linked':
-                    self.__image_data.append( ( d['instance_id'], d['instance_id'] ) )
+                    self.__image_data.append((d['instance_id'], d['instance_id']))
                 #
             #
         #
@@ -480,7 +481,7 @@ class ProcessPrdSummary(object):
                     continue
                 #
                 if d['linkage_info'] == 'linked':
-                    self.__image_data.append( ( d['merge_id'], d['merge_id'].upper() ) )
+                    self.__image_data.append((d['merge_id'], d['merge_id'].upper()))
                 #
             #
         #
@@ -513,8 +514,8 @@ class ProcessPrdSummary(object):
                 count = 0
             #
         #
-        #return output_seq.replace('(', '<span style="color:red;">(').replace(')', ')</span>')
-        for color,colorResList in colorResMap.items():
+        # return output_seq.replace('(', '<span style="color:red;">(').replace(')', ')</span>')
+        for color, colorResList in colorResMap.items():
             for res in colorResList:
                 output_seq = output_seq.replace("(" + res + ")", '<span style="color:' + color + ';">(' + res + ")</span>")
             #
@@ -523,7 +524,7 @@ class ProcessPrdSummary(object):
 
     def __processingThreeLetterSeq(self, input_seq, colorResMap):
         output_seq = input_seq
-        for color,colorResList in colorResMap.items():
+        for color, colorResList in colorResMap.items():
             for res in colorResList:
                 output_seq = output_seq.replace(res, '<span style="color:' + color + ';">' + res + "</span>")
             #

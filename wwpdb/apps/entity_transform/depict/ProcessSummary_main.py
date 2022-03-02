@@ -16,12 +16,14 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import getopt, os, sys, string, traceback
+import getopt
+import sys
+import traceback
 
 from wwpdb.apps.entity_transform.depict.ProcessPrdSummary import ProcessPrdSummary
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
@@ -47,13 +49,12 @@ if __name__ == "__main__":
             myReqObj = InputRequest({}, verbose=True, log=sys.stderr)
             myReqObj.setValue("TopSessionPath", cI.get("SITE_WEB_APPS_TOP_SESSIONS_PATH"))
             myReqObj.setValue("TopPath", cI.get("SITE_WEB_APPS_TOP_PATH"))
-            myReqObj.setValue("WWPDB_SITE_ID",  siteId)
+            myReqObj.setValue("WWPDB_SITE_ID", siteId)
             prdUtil = ProcessPrdSummary(reqObj=myReqObj, verbose=True, log=sys.stderr)
             prdUtil.setTopDirPath(dirPath)
             prdUtil.setPrdSummaryFile(resultFilePath)
             prdUtil.run()
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             traceback.print_exc(file=sys.stderr)
         #
     #
-

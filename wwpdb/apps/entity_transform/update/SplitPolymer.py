@@ -16,14 +16,15 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import os, sys, string, traceback
+import sys
 
-from wwpdb.apps.entity_transform.update.UpdateBase   import UpdateBase
+from wwpdb.apps.entity_transform.update.UpdateBase import UpdateBase
+
 
 class SplitPolymer(UpdateBase):
     """ Class responsible for spliting polymer(s) in coordinate cif file.
@@ -64,8 +65,8 @@ class SplitPolymer(UpdateBase):
             #
             splits = str(','.join(splitList))
             #
-            list = chainList.split(',')
-            for chain_id in list:
+            clist = chainList.split(',')
+            for chain_id in clist:
                 options += ' -split ' + str(chain_id) + ':' + splits
             #
         #

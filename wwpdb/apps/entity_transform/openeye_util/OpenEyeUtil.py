@@ -16,39 +16,34 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 import os
 import sys
 import traceback
+import inspect
 
-from wwpdb.utils.cc_dict_util.persist.PdbxChemCompPersist         import PdbxChemCompIt,PdbxChemCompAtomIt,PdbxChemCompBondIt
-from wwpdb.utils.oe_util.oedepict.OeAlignDepict                   import OeDepictMCSAlign
-from wwpdb.apps.entity_transform.utils.CompUtil       import CompUtil
-from wwpdb.io.file.mmCIFUtil                       import mmCIFUtil
-from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
+from wwpdb.utils.oe_util.oedepict.OeAlignDepict import OeDepictMCSAlign
+from wwpdb.apps.entity_transform.utils.CompUtil import CompUtil
+from wwpdb.io.file.mmCIFUtil import mmCIFUtil
 #
+
 
 class OpenEyeUtil(object):
     """ Class responsible for OpenEye MCS functionalities
     """
     def __init__(self, reqObj=None, summaryCifObj=None, verbose=False, log=sys.stderr):
-        self.__verbose=verbose
-        self.__lfh=log
-        self.__reqObj=reqObj
-        self.__summaryCifObj=summaryCifObj
-        self.__sObj=None
-        self.__sessionId=None
-        self.__sessionPath=None
-        self.__rltvSessionPath=None
-        self.__siteId  = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
-        self.__cICommon = ConfigInfoAppCommon(self.__siteId)
-        #
-        self.__ccPath = self.__cICommon.get_site_cc_cvs_path()
-        self.__prdccPath = self.__cICommon.get_site_prdcc_cvs_path()
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__reqObj = reqObj
+        self.__summaryCifObj = summaryCifObj
+        self.__sObj = None
+        self.__sessionId = None
+        self.__sessionPath = None
+        self.__rltvSessionPath = None
         #
         self.__getSession()
         #
@@ -69,14 +64,14 @@ class OpenEyeUtil(object):
         """ Join existing session or create new session as required.
         """
         #
-        self.__sObj=self.__reqObj.newSessionObj()
-        self.__sessionId=self.__sObj.getId()
-        self.__sessionPath=self.__sObj.getPath()
-        self.__rltvSessionPath=self.__sObj.getRelativePath()
+        self.__sObj = self.__reqObj.newSessionObj()
+        self.__sessionId = self.__sObj.getId()
+        self.__sessionPath = self.__sObj.getPath()
+        self.__rltvSessionPath = self.__sObj.getRelativePath()
         if (self.__verbose):
-            self.__lfh.write("------------------------------------------------------\n")                    
+            self.__lfh.write("------------------------------------------------------\n")
             self.__lfh.write("+OpenEyeUtil.__getSession() - creating/joining session %s\n" % self.__sessionId)
-            self.__lfh.write("+OpenEyeUtil.__getSession() - session path %s\n" % self.__sessionPath)            
+            self.__lfh.write("+OpenEyeUtil.__getSession() - session path %s\n" % self.__sessionPath)
 
     def __getSummaryCifInfo(self):
         if not self.__summaryCifObj:
@@ -86,52 +81,54 @@ class OpenEyeUtil(object):
         self.__title = self.__summaryCifObj.getTitle()
         self.__labels = self.__summaryCifObj.getLabels()
         self.__lfh.write("+OpenEyeUtil.__getSummaryCifInfo() __labels = %d\n" % len(self.__labels))
-        for k,v in self.__labels.items():
+        for k, v in self.__labels.items():
             self.__lfh.write("+OpenEyeUtil.__getSummaryCifInfo() %s = %s\n" % (k, v))
 
-    def __processTemplate(self,fn,parameterDict={}):
+    def __processTemplate(self, fn, parameterDict=None):
         """ Read the input HTML template data file and perform the key/value substitutions in the
             input parameter dictionary.
-            
+
             :Params:
                 ``parameterDict``: dictionary where
                 key = name of subsitution placeholder in the template and
                 value = data to be used to substitute information for the placeholder
-                
+
             :Returns:
                 string representing entirety of content with subsitution placeholders now replaced with data
         """
-        tPath =self.__reqObj.getValue("TemplatePath")
-        fPath=os.path.join(tPath,fn)
-        ifh=open(fPath,'r')
-        sIn=ifh.read()
-        ifh.close()
-        return (  sIn % parameterDict )
+        if parameterDict is None:
+            parameterDict = {}
+
+        tPath = self.__reqObj.getValue("TemplatePath")
+        fPath = os.path.join(tPath, fn)
+        with open(fPath, 'r') as ifh:
+            sIn = ifh.read()
+        return (sIn % parameterDict)
 
     def __MCSAlignPairDepict(self, refFile, fitFile, imageFile):
-        """Simple pairwise MCSS alignment  -  Each aligned pair output to a separate image file 
+        """Simple pairwise MCSS alignment  -  Each aligned pair output to a separate image file
         """
-        self.__lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
+        self.__lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, inspect.currentframe().f_code.co_name))
         #
         try:
             oed = OeDepictMCSAlign(verbose=self.__verbose, log=self.__lfh)
             oed.setSearchType(sType='relaxed')
             oed.setRefPath(refFile)
             oed.setFitPath(fitFile)
-            aML = oed.alignPair(imagePath=imageFile,imageX=1000,imageY=1000)
+            aML = oed.alignPair(imagePath=imageFile, imageX=1000, imageY=1000)
             if len(aML) > 0:
-                for (rCC,rAt,tCC,tAt) in aML:
+                for (_rCC, rAt, _tCC, tAt) in aML:
                     if rAt and tAt:
                         self.__CoorChemMap[rAt] = tAt
                         self.__ChemCoorMap[tAt] = rAt
                     #
                 #
             #
-        except:
+        except:  # noqa: E722 pylint: disable=bare-except
             traceback.print_exc(file=self.__lfh)
-            #self.fail()
+            # self.fail()
         #
-        self.__lfh.write("\nFinished %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
+        self.__lfh.write("\nFinished %s %s\n" % (self.__class__.__name__, inspect.currentframe().f_code.co_name))
         #
 
     def __readAtomSite(self, coorPath):
@@ -181,17 +178,17 @@ class OpenEyeUtil(object):
         # get start index for each subcomponent within same subcomponent ids
         #
         length = len(i_list)
-        for i in range (0, length - 1):
-            res  = self.__chemAtomList[i_list[i]]['pdbx_component_comp_id']
+        for i in range(0, length - 1):
+            res = self.__chemAtomList[i_list[i]]['pdbx_component_comp_id']
             atom = self.__chemAtomList[i_list[i]]['pdbx_component_atom_id']
-            for j in range(i_list[i] + 1, i_list[i+1]):
+            for j in range(i_list[i] + 1, i_list[i + 1]):
                 if self.__chemAtomList[j]['pdbx_component_comp_id'] == res and \
                    self.__chemAtomList[j]['pdbx_component_atom_id'] == atom:
                     i_list.append(j)
         #
-        res  = self.__chemAtomList[i_list[length-1]]['pdbx_component_comp_id']
-        atom = self.__chemAtomList[i_list[length-1]]['pdbx_component_atom_id']
-        for j in range(i_list[length-1] + 1, count):
+        res = self.__chemAtomList[i_list[length - 1]]['pdbx_component_comp_id']
+        atom = self.__chemAtomList[i_list[length - 1]]['pdbx_component_atom_id']
+        for j in range(i_list[length - 1] + 1, count):
             if self.__chemAtomList[j]['pdbx_component_comp_id'] == res and \
                self.__chemAtomList[j]['pdbx_component_atom_id'] == atom:
                 i_list.append(j)
@@ -203,13 +200,13 @@ class OpenEyeUtil(object):
         # add pdbx_residue_numbering
         #
         cnt = 0
-        for i in range (0, len(i_list)-1):
+        for i in range(0, len(i_list) - 1):
             cnt += 1
-            for j in range(i_list[i], i_list[i+1]):
+            for j in range(i_list[i], i_list[i + 1]):
                 self.__chemAtomList[j]['pdbx_residue_numbering'] = str(cnt)
         #
         cnt += 1
-        for j in range(i_list[len(i_list)-1], count):
+        for j in range(i_list[len(i_list) - 1], count):
             self.__chemAtomList[j]['pdbx_residue_numbering'] = str(cnt)
         #
 
@@ -244,20 +241,20 @@ class OpenEyeUtil(object):
                 dic['td7'] = d1['pdbx_component_atom_id']
                 self.__matchList.append(dic)
             else:
-                dic['td5'] ='&nbsp;'
-                dic['td6'] ='&nbsp;'
-                dic['td7'] ='&nbsp;'
+                dic['td5'] = '&nbsp;'
+                dic['td6'] = '&nbsp;'
+                dic['td7'] = '&nbsp;'
                 self.__extraList.append(dic)
         #
 
-    def __processList(self, title, list):
-        if not list:
+    def __processList(self, title, list_in):
+        if not list_in:
             return ''
         #
         myD = {}
         myD['title'] = title
         content = self.__processTemplate('openeye_mcs/title_row_tmplt.html', myD)
-        for d in list:
+        for d in list_in:
             content += self.__processTemplate('openeye_mcs/atom_row_tmplt.html', d)
         return content
         #
@@ -287,7 +284,7 @@ class OpenEyeUtil(object):
         instId = str(self.__reqObj.getValue('instanceid'))
         compId = str(self.__reqObj.getValue('compid'))
         #
-        compObj = CompUtil(reqObj=self.__reqObj, verbose=self.__verbose,log=self.__lfh)
+        compObj = CompUtil(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
 
         refPath = os.path.join(self.__sessionPath, 'search', instId, instId + '.comp.cif')
         coorPath = os.path.join(self.__sessionPath, 'search', instId, instId + '.merge.cif')

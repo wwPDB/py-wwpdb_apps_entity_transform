@@ -16,39 +16,45 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
 import os
 import sys
 
-from wwpdb.apps.entity_transform.prd.DepictUtil    import DepictUtil
-from wwpdb.apps.entity_transform.prd.HtmlUtil      import HtmlUtil
+from wwpdb.apps.entity_transform.prd.DepictUtil import DepictUtil
+from wwpdb.apps.entity_transform.prd.HtmlUtil import HtmlUtil
 from wwpdb.apps.entity_transform.utils.CommandUtil import CommandUtil
-from wwpdb.io.file.mmCIFUtil                    import mmCIFUtil
+from wwpdb.io.file.mmCIFUtil import mmCIFUtil
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 #
+
 
 class DepictPrd(object):
     """ Class responsible for generating HTML depiction of PRD entry.
     """
-    def __init__(self, reqObj=None, prdID=None, prdFile=None, myD={}, verbose=False, log=sys.stderr):
-        self.__verbose=verbose
-        self.__lfh=log
-        self.__reqObj=reqObj
-        self.__prdID=prdID
-        self.__prdFile=prdFile
-        self.__myD=myD
-        self.__sObj=None
-        self.__sessionId=None
-        self.__sessionPath=None
-        self.__rltvSessionPath=None
-        self.__siteId  = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
+    def __init__(self, reqObj=None, prdID=None, prdFile=None, myD=None, verbose=False, log=sys.stderr):
+        if myD is None:
+            myD = {}
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__reqObj = reqObj
+        self.__prdID = prdID  # pylint: disable=unused-private-member
+        self.__prdFile = prdFile
+        self.__myD = myD
+        self.__sObj = None
+        self.__sessionId = None
+        self.__sessionPath = None
+        self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
         self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         self.__dictRoot = self.__cICommon.get_mmcif_dict_path()
         self.__dictionary_v5 = self.__cICommon.get_mmcif_archive_next_dict_filename() + '.odb'
+        #
+        self.__depictUtil = None
+        self.__htmlUtil = None
+        self.__prdObj = None
         #
         self.__getSession()
         #
@@ -94,19 +100,18 @@ class DepictPrd(object):
         """ Join existing session or create new session as required.
         """
         #
-        self.__sObj=self.__reqObj.newSessionObj()
-        self.__sessionId=self.__sObj.getId()
-        self.__sessionPath=self.__sObj.getPath()
-        self.__rltvSessionPath=self.__sObj.getRelativePath()
+        self.__sObj = self.__reqObj.newSessionObj()
+        self.__sessionId = self.__sObj.getId()
+        self.__sessionPath = self.__sObj.getPath()
         if (self.__verbose):
-            self.__lfh.write("------------------------------------------------------\n")                    
+            self.__lfh.write("------------------------------------------------------\n")
             self.__lfh.write("+DepictPrd.__getSession() - creating/joining session %s\n" % self.__sessionId)
-            self.__lfh.write("+DepictPrd.__getSession() - session path %s\n" % self.__sessionPath)            
+            self.__lfh.write("+DepictPrd.__getSession() - session path %s\n" % self.__sessionPath)
 
     def __getPrdObject(self):
         """ Read built PRD cif file
         """
-        self.__prdObj=None
+        self.__prdObj = None
         if not os.access(self.__prdFile, os.F_OK):
             return
         #
@@ -138,10 +143,10 @@ class DepictPrd(object):
         #
         elist = self.__getCategoryInfo('pdbx_reference_entity_list')
         if elist:
-            dir = {}
+            dir = {}  # pylint: disable=redefined-builtin
             for d in elist:
                 if polymer_only:
-                    type = ''
+                    type = ''  # pylint: disable=redefined-builtin
                     if 'type' in d:
                         type = d['type']
                     #
@@ -174,7 +179,7 @@ class DepictPrd(object):
         self.__myD['comp_detail_flag_end'] = ''
         represent_type = self.__getTextInfo('pdbx_reference_molecule', 'represent_as').lower()
         if represent_type == 'polymer':
-            #self.__myD['prdcc_button'] = '<input type="submit" name="submit" value="Download PRDCC" />'
+            # self.__myD['prdcc_button'] = '<input type="submit" name="submit" value="Download PRDCC" />'
             self.__myD['single_comment_start'] = ''
             self.__myD['single_comment_end'] = ''
             self.__myD['comp_detail_flag_start'] = self.__myD['update_comment_start']
@@ -184,10 +189,12 @@ class DepictPrd(object):
     def __getTextualData(self):
         """ Get molecule name, component details & description
         """
-        lists = [ [ 'mol_name',    'name',             'style_background_color1' ], 
-                  [ 'comp_detail', 'compound_details', 'style_background_color2' ],
-                  [ 'description', 'description',      'style_background_color3' ] ]
-        for list in lists:
+        # fmt: off
+        lists = [['mol_name',    'name',             'style_background_color1'],  # noqa: E241
+                 ['comp_detail', 'compound_details', 'style_background_color2'],
+                 ['description', 'description',      'style_background_color3']]  # noqa: E241
+        # fmt: on
+        for list in lists:  # pylint: disable=redefined-builtin
             self.__myD[list[0]] = self.__getTextInfo('pdbx_reference_molecule', list[1])
             self.__myD[list[2]] = 'style = "background-color:#D3D6FF;"'
             if self.__myD[list[0]]:
@@ -199,21 +206,21 @@ class DepictPrd(object):
         """ Get _pdbx_reference_molecule.class value from PRD object
         """
         enumList = self.__getEnumList('_pdbx_reference_molecule.class')
-        text = self.__getTextInfo('pdbx_reference_molecule', 'class') 
+        text = self.__getTextInfo('pdbx_reference_molecule', 'class')
         self.__myD['class'] = self.__htmlUtil.addSelect('class_id', text, enumList)
 
     def __getTypeInfo(self):
         """ Get _pdbx_reference_molecule.type value from PRD object
         """
         enumList = self.__getEnumList('_pdbx_reference_molecule.type')
-        text = self.__getTextInfo('pdbx_reference_molecule', 'type') 
+        text = self.__getTextInfo('pdbx_reference_molecule', 'type')
         self.__myD['type'] = self.__htmlUtil.addSelect('type_id', text, enumList)
 
     def __getStatusInfo(self):
         """ Get _pdbx_reference_molecule.release_status value from PRD object
         """
         enumList = self.__getEnumList('_pdbx_reference_molecule.release_status')
-        text = self.__getTextInfo('pdbx_reference_molecule', 'release_status') 
+        text = self.__getTextInfo('pdbx_reference_molecule', 'release_status')
         self.__myD['status'] = self.__htmlUtil.addSelect('release_status_id', text, enumList)
 
     def __getComponentList(self):
@@ -234,7 +241,7 @@ class DepictPrd(object):
     def __getPolymerInfo(self):
         """ Get pdbx_reference_entity_poly_seq values from PRD object
         """
-        aalist = ['',    '?',   'ALA', 'ARG', 'ASN', 'ASP', 'CYS', 'GLN', 'GLU', 'GLY', 'HIS', \
+        aalist = ['', '?', 'ALA', 'ARG', 'ASN', 'ASP', 'CYS', 'GLN', 'GLU', 'GLY', 'HIS',
                   'ILE', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'SER', 'THR', 'TRP', 'TYR', 'VAL']
         #
         dlist = self.__getCategoryInfo('pdbx_reference_entity_poly_seq')
@@ -283,7 +290,7 @@ class DepictPrd(object):
         #
         cmdUtil = CommandUtil(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         rootName = cmdUtil.getRootFileName('Enum')
-        cmdUtil.runAnnotCmd('GetEnumValue', os.path.join(self.__dictRoot, self.__dictionary_v5), rootName + '.txt', \
+        cmdUtil.runAnnotCmd('GetEnumValue', os.path.join(self.__dictRoot, self.__dictionary_v5), rootName + '.txt',
                             rootName + '.log', '', ' -item ' + item)
         #
         filepath = os.path.join(self.__sessionPath, rootName + '.txt')
@@ -306,7 +313,7 @@ class DepictPrd(object):
         if not polymer:
             return missing_residue
         #
-        item_list = [ 'ref_entity_id', 'num', 'mon_id' ]
+        item_list = ['ref_entity_id', 'num', 'mon_id']
         #
         for d in polymer:
             observed = ''
@@ -327,11 +334,11 @@ class DepictPrd(object):
             missing_residue[idx] = 'Y'
         #
         return missing_residue
-       
+
     def __getRefData(self):
         """ Read DB reference Info from pdbx_reference_entity_poly category
         """
-        dir = {}
+        dir = {}  # pylint: disable=redefined-builtin
         dlist = self.__getCategoryInfo('pdbx_reference_entity_poly')
         if not dlist:
             return dir
@@ -339,16 +346,16 @@ class DepictPrd(object):
         for d in dlist:
             ref_id = ''
             if 'ref_entity_id' in d:
-                 ref_id = d['ref_entity_id']
+                ref_id = d['ref_entity_id']
             #
             if not ref_id:
                 continue
             dir1 = {}
             if 'db_name' in d:
-                 dir1['db_name'] = d['db_name']
+                dir1['db_name'] = d['db_name']
             #
             if 'db_code' in d:
-                 dir1['db_code'] = d['db_code']
+                dir1['db_code'] = d['db_code']
             #
             if dir1:
                 dir[ref_id] = dir1

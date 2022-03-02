@@ -16,18 +16,20 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import os, sys, string, traceback
+import os
+import sys
 
-from wwpdb.apps.entity_transform.update.UpdateBase    import UpdateBase
-from wwpdb.apps.entity_transform.utils.CommandUtil    import CommandUtil
-from wwpdb.apps.entity_transform.utils.CompUtil       import CompUtil
-from wwpdb.apps.entity_transform.utils.GetLogMessage  import GetLogMessage
+from wwpdb.apps.entity_transform.update.UpdateBase import UpdateBase
+from wwpdb.apps.entity_transform.utils.CommandUtil import CommandUtil
+from wwpdb.apps.entity_transform.utils.CompUtil import CompUtil
+from wwpdb.apps.entity_transform.utils.GetLogMessage import GetLogMessage
 #
+
 
 class UpdateFile(UpdateBase):
     """ Class responsible for Update coordinate cif file.
@@ -51,23 +53,23 @@ class UpdateFile(UpdateBase):
         """ Get selected instance IDs
         """
         count = int(str(self._reqObj.getValue('count')))
-        for i in range (0, count):
-            id = self._reqObj.getValue('id_' + str(i))
+        for i in range(0, count):
+            id = self._reqObj.getValue('id_' + str(i))  # pylint: disable=redefined-builtin
             if not id:
                 continue
             #
-            list = id.split(',')
+            ilist = id.split(',')
             dic = {}
-            dic['instid'] = list[0]
+            dic['instid'] = ilist[0]
             if len(list) == 2:
-                dic['only'] = list[1]
+                dic['only'] = ilist[1]
             #
             has_value = False
             match_id = self._reqObj.getValue('match_id_' + str(i))
             if match_id:
-                list = match_id.split(',')
-                dic['hitid'] = list[1]
-                dic['fileid'] = list[1]
+                mlist = match_id.split(',')
+                dic['hitid'] = mlist[1]
+                dic['fileid'] = mlist[1]
                 has_value = True
             #
             user_defined_id = self._reqObj.getValue('user_defined_id_' + str(i))
@@ -117,14 +119,14 @@ class UpdateFile(UpdateBase):
             self._message = '<pre>\n' + error + '\n</pre>\n'
         #
         return optionlist
-   
+
     def __runGraphMatch(self, dic):
         """ Run Graph match and get mapping file
         """
         if 'inputid' not in dic:
             return ''
         #
-        compObj = CompUtil(reqObj=self._reqObj, verbose=self._verbose,log=self._lfh)
+        compObj = CompUtil(reqObj=self._reqObj, verbose=self._verbose, log=self._lfh)
         error = compObj.checkInputId(dic['inputid'])
         if error:
             return error
@@ -135,7 +137,7 @@ class UpdateFile(UpdateBase):
         #
         instancePath = os.path.join(self._sessionPath, 'search', dic['instid'])
         option = ' -template ' + templateFile + ' -cif ' + os.path.join(instancePath, dic['instid'] + '.orig.cif') \
-               + ' -path ' + os.path.join(self._sessionPath, 'search') + ' -idlist ' + dic['instid'] + ' '
+            + ' -path ' + os.path.join(self._sessionPath, 'search') + ' -idlist ' + dic['instid'] + ' '
         #
         if dic['inputid'][:4] == 'PRD_':
             option += ' -prd_id ' + dic['inputid'] + ' '

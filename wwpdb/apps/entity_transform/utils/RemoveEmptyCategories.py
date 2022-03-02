@@ -16,44 +16,48 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import os, sys, string, traceback
-from datetime import date
-from mmcif.io.PdbxReader  import PdbxReader
-from mmcif.io.PdbxWriter  import PdbxWriter
-from mmcif.api.PdbxContainers import *
+import sys
+import traceback
+from mmcif.io.PdbxReader import PdbxReader
+from mmcif.io.PdbxWriter import PdbxWriter
+from mmcif.api.PdbxContainers import DataContainer
 #
+
+
 def ReadCif(filepath):
     try:
-        myDataList=[]
+        myDataList = []
         ifh = open(filepath, 'r')
-        pRd=PdbxReader(ifh)
+        pRd = PdbxReader(ifh)
         pRd.read(myDataList)
         ifh.close()
         return myDataList[0]
-    except:
+    except:  # noqa: E722 pylint: disable=bare-except
         traceback.print_exc(file=sys.stderr)
         return None
     #
 #
 
+
 def WriteCif(myBlock, filepath):
     try:
-        myDataList=[]
+        myDataList = []
         ofh = open(filepath, 'w')
         myDataList.append(myBlock)
-        pdbxW=PdbxWriter(ofh)
+        pdbxW = PdbxWriter(ofh)
         pdbxW.write(myDataList)
         ofh.close()
-    except:
+    except:  # noqa: E722 pylint: disable=bare-except
         traceback.print_exc(file=sys.stderr)
         sys.exit(0)
     #
 #
+
 
 def RemoveEmptyCategories(filepath):
     myBlock = ReadCif(filepath)
@@ -62,7 +66,7 @@ def RemoveEmptyCategories(filepath):
     #
     catList = myBlock.getObjNameList()
     for catName in catList:
-        myCat=myBlock.getObj(catName)
+        myCat = myBlock.getObj(catName)
         row = myCat.getRowCount()
         if row > 1:
             newBlock.append(myCat)

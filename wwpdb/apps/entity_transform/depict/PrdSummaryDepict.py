@@ -16,15 +16,17 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import os, sys, string, traceback
+import os
+import sys
 
 from wwpdb.apps.entity_transform.depict.DepictBase import DepictBase
 from wwpdb.apps.entity_transform.depict.ProcessPrdSummary import ProcessPrdSummary
+
 
 class PrdSummaryDepict(DepictBase):
     """ Class responsible for generating HTML depiction of PRD search results.
@@ -59,22 +61,22 @@ class PrdSummaryDepict(DepictBase):
         #
         if self.__splitPolymerResidueFlag:
             text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data + '&type=split" target="_blank"> ' \
-                  + '<span style="color:red;">Split modified amino acid residue to standard amino acid residue + modification in polymer</span> </a></li>\n'
+                + '<span style="color:red;">Split modified amino acid residue to standard amino acid residue + modification in polymer</span> </a></li>\n'
         #
         if self.__combResidueFlag:
             text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data + '&type=merge" target="_blank"> ' \
-                  + '<span style="color:red;">Merge standard amino acid residue + modification to modified amino acid residue in polymer</span> </a></li>\n' 
+                + '<span style="color:red;">Merge standard amino acid residue + modification to modified amino acid residue in polymer</span> </a></li>\n'
         #
         if self.__matchResultFlag:
             text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data \
-                  + '" target="_blank"> <span style="color:red;">View All Search Result(s)</span> </a></li>\n'
-        # 
+                + '" target="_blank"> <span style="color:red;">View All Search Result(s)</span> </a></li>\n'
+        #
         if self.__graphmatchResultFlag:
             text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data \
-                  + '&type=match" target="_blank"> Update Coordinate File with Match Result(s) </a></li>\n' 
+                + '&type=match" target="_blank"> Update Coordinate File with Match Result(s) </a></li>\n'
         #
         text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data \
-              + '&type=input" target="_blank"> Update Coordinate File with Input IDs </a></li>\n'
+            + '&type=input" target="_blank"> Update Coordinate File with Input IDs </a></li>\n'
         #
         text += '<li><a class="fltlft" href="/service/entity/download_file?' + input_data + '" target="_blank"> Download Files </a></li>\n'
         #
@@ -91,7 +93,7 @@ class PrdSummaryDepict(DepictBase):
         #
         for d in datalist:
             myD = {}
-            for item in ( "id", "arrow", "text", "display", "image2d" ):
+            for item in ("id", "arrow", "text", "display", "image2d"):
                 if item in d:
                     myD[item] = d[item]
                 else:
@@ -127,8 +129,8 @@ class PrdSummaryDepict(DepictBase):
         for d in datalist:
             myD = {}
             myD['sessionid'] = self._sessionId
-            myD['identifier'] =  self._identifier
-            myD['pdbid' ] = self._pdbId
+            myD['identifier'] = self._identifier
+            myD['pdbid'] = self._pdbId
             myD['instanceid'] = d['id']
             myD['label'] = d['label']
             myD['focus'] = d['focus']

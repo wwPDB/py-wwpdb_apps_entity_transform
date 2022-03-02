@@ -16,28 +16,31 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import os, sys, string, traceback
+import os
+import sys
+import inspect
 
-from wwpdb.apps.entity_transform.utils.CommandUtil    import CommandUtil
-from wwpdb.apps.entity_transform.utils.GetLogMessage  import GetLogMessage
+from wwpdb.apps.entity_transform.utils.CommandUtil import CommandUtil
+from wwpdb.apps.entity_transform.utils.GetLogMessage import GetLogMessage
+
 
 class UpdateBase(object):
     """ Class responsible for merging polymer(s) in coordinate cif file.
 
     """
     def __init__(self, reqObj=None, summaryCifObj=None, verbose=False, log=sys.stderr):
-        self._verbose=verbose
-        self._lfh=log
-        self._reqObj=reqObj
+        self._verbose = verbose
+        self._lfh = log
+        self._reqObj = reqObj
         self._cifObj = summaryCifObj
-        self._sObj=None
-        self._sessionPath=None
-        self._cmdUtil=None
+        self._sObj = None
+        self._sessionPath = None
+        self._cmdUtil = None
         #
         self._identifier = str(self._reqObj.getValue("identifier"))
         self._modelCIFile = self._identifier + '_model_P1.cif'
@@ -56,12 +59,12 @@ class UpdateBase(object):
         """ Join existing session or create new session as required.
         """
         #
-        self._sObj=self._reqObj.newSessionObj()
-        self._sessionPath=self._sObj.getPath()
-        if (self._verbose):
-            self._lfh.write("------------------------------------------------------\n")                    
-            self._lfh.write("+%s.%s() - creating/joining session %s\n" % ( self.__class__.__name__, sys._getframe().f_code.co_name, self._sObj.getId() ))
-            self._lfh.write("+%s.%s() - session path %s\n" % ( self.__class__.__name__, sys._getframe().f_code.co_name, self._sessionPath ))
+        self._sObj = self._reqObj.newSessionObj()
+        self._sessionPath = self._sObj.getPath()
+        if self._verbose:
+            self._lfh.write("------------------------------------------------------\n")
+            self._lfh.write("+%s.%s() - creating/joining session %s\n" % (self.__class__.__name__, inspect.currentframe().f_code.co_name, self._sObj.getId()))
+            self._lfh.write("+%s.%s() - session path %s\n" % (self.__class__.__name__, inspect.currentframe().f_code.co_name, self._sessionPath))
         #
 
     def _getMergeOptions(self, ligandFlag=False):
@@ -116,25 +119,25 @@ class UpdateBase(object):
         if len(group_dic) > 1:
             multiGroupFlag = True
         #
-        for id,list in group_dic.items():
-            num = len(list)
+        for id, list in group_dic.items():  # pylint: disable=redefined-builtin
+            # num = len(list)
             int_order_dic = {}
             for v in list:
-                if not v in order_dic:
+                if v not in order_dic:
                     continue
                 #
                 order = int(order_dic[v])
                 if order in int_order_dic:
                     int_order_dic[order].append(v)
                 else:
-                    int_order_dic[order] = [ v ]
+                    int_order_dic[order] = [v]
                 #
             #
             # Check unique order numbering
             #
             foundError = False
             order_list = []
-            for k,list2 in int_order_dic.items():
+            for k, list2 in int_order_dic.items():
                 order_list.append(k)
                 if len(list2) <= 1:
                     continue
@@ -168,7 +171,7 @@ class UpdateBase(object):
                     continue
                 #
                 if multiGroupFlag:
-                    self._message += 'In group "' + id + '", order number "' + str(j) + '" is missing. <br/>\n' 
+                    self._message += 'In group "' + id + '", order number "' + str(j) + '" is missing. <br/>\n'
                 else:
                     self._message += 'Order number "' + str(j) + '" is missing. <br/>\n'
                 #
@@ -198,15 +201,15 @@ class UpdateBase(object):
             #
             self.__groups.append(group)
         #
-   
+
     def __processList(self, token, order_dic, group_dic):
         """ Process group list
         """
-        list = self._reqObj.getValueList(token)
-        if not list:
+        tlist = self._reqObj.getValueList(token)
+        if not tlist:
             return
         #
-        for v in list:
+        for v in tlist:
             val = str(v)
             name = 'order_' + val
             order_dic[val] = str(self._reqObj.getValue(name))
@@ -215,6 +218,6 @@ class UpdateBase(object):
             if value in group_dic:
                 group_dic[value].append(val)
             else:
-                group_dic[value] = [ val ]
+                group_dic[value] = [val]
             #
         #

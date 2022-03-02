@@ -16,16 +16,17 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 __docformat__ = "restructuredtext en"
-__author__    = "Zukang Feng"
-__email__     = "zfeng@rcsb.rutgers.edu"
-__license__   = "Creative Commons Attribution 3.0 Unported"
-__version__   = "V0.07"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "V0.07"
 
-import os, sys, string, traceback
+import sys
 
 from wwpdb.apps.entity_transform.depict.DepictBase import DepictBase
-from wwpdb.apps.entity_transform.utils.LinkUtil    import LinkUtil
+from wwpdb.apps.entity_transform.utils.LinkUtil import LinkUtil
 #
+
 
 class StrSummaryDepict(DepictBase):
     """ Class responsible for generating HTML depiction of Structure Summary.
@@ -64,7 +65,7 @@ class StrSummaryDepict(DepictBase):
         #
         if self._pdbId and self._pdbId != "unknown":
             text += '<li><a class="fltlft" href="/service/entity/download_file?struct=yes&sessionid=' + self._sessionId + "&identifier=" \
-                  + self._identifier + "&pdbid=" + self._pdbId + '" target="_blank"> Download Files </a></li>\n'
+                + self._identifier + "&pdbid=" + self._pdbId + '" target="_blank"> Download Files </a></li>\n'
         #
         text += "</ul>\n"
         return text
@@ -108,24 +109,24 @@ class StrSummaryDepict(DepictBase):
             return
         #
         for d in dlist:
-            #if (not d.has_key('pdbx_strand_id')) or (not d.has_key('mon_id')) or (not d.has_key('pdb_seq_num')):
+            # if (not d.has_key('pdbx_strand_id')) or (not d.has_key('mon_id')) or (not d.has_key('pdb_seq_num')):
             if ('mon_id' not in d) or ('pdb_seq_num' not in d):
                 continue
             #
-            list = []
-            list.append(d['mon_id'])
+            llist = []
+            llist.append(d['mon_id'])
             if 'pdbx_strand_id' in d:
-                list.append(d['pdbx_strand_id'])
+                llist.append(d['pdbx_strand_id'])
             else:
-                list.append('')
+                llist.append('')
             #
-            list.append(d['pdb_seq_num'])
+            llist.append(d['pdb_seq_num'])
             if 'pdb_ins_code' in d:
-                list.append(d['pdb_ins_code'])
+                llist.append(d['pdb_ins_code'])
             else:
-                list.append('')
+                llist.append('')
             #
-            self.__ligands.append(list)
+            self.__ligands.append(llist)
         #
 
     def __readGroupData(self):
@@ -145,7 +146,7 @@ class StrSummaryDepict(DepictBase):
 
     def __depictionList(self, listId, listText, listContent):
         myD = {}
-        myD["id"]   = listId
+        myD["id"] = listId
         myD["arrow"] = "ui-icon-circle-arrow-e"
         myD["text"] = listText
         myD["display"] = "none"
@@ -165,18 +166,18 @@ class StrSummaryDepict(DepictBase):
             text += '<tr>\n'
             text += '<td><input type="checkbox" name="entity" value="' + d['entity_id'] + '" /> ' + d['entity_id'] + ' </td>\n'
             if 'pdbx_strand_id' in d:
-                list = d['pdbx_strand_id'].split(',')
+                list = d['pdbx_strand_id'].split(',')  # pylint: disable=redefined-builtin
                 text += '<td>\n'
-                for v in list:
+                for v in list:  # pylint: disable=redefined-builtin
                     text += '<input type="checkbox" name="chain" value="' + v + '" /> ' + v + ' &nbsp; &nbsp; <input type="text" name="chain_' + v \
-                          + '" size="5" value="" />  <br/>\n'
+                        + '" size="5" value="" />  <br/>\n'
                 text += '</td>\n'
                 #
                 text += '<td>\n'
                 for v in list:
                     if v in self.__links:
                         text += '<a class="fltlft" href="/service/entity/link_view?sessionid=' + self._sessionId + '&pdbid=' + self._pdbId + '&identifier=' \
-                              + self._identifier + '&id=' + v + '" target="_blank"> ' + 'View Chain ' + v + "'s Link </a> <br/>\n"
+                            + self._identifier + '&id=' + v + '" target="_blank"> ' + 'View Chain ' + v + "'s Link </a> <br/>\n"
                     else:
                         text += ' &nbsp; '
                     #
@@ -212,7 +213,7 @@ class StrSummaryDepict(DepictBase):
             text += '<td><input type="text" name="chain_' + v + '" size="5" value="" /> </td>\n'
             if v in self.__links:
                 text += '<td><a class="fltlft" href="/service/entity/link_view?sessionid=' + self._sessionId + '&pdbid=' + self._pdbId + '&identifier=' \
-                      + self._identifier + '&id=' + v + '" target="_blank"> ' + 'View Link' + ' </a></rd>\n'
+                    + self._identifier + '&id=' + v + '" target="_blank"> ' + 'View Link' + ' </a></rd>\n'
             else:
                 text += '<td> &nbsp; &nbsp; &nbsp; </td>\n'
             #
@@ -234,17 +235,17 @@ class StrSummaryDepict(DepictBase):
         text += '<th>Links</th>\n'
         text += '</tr>\n'
         #
-        for list in self.__ligands:
-            ligand_id = list[1] + '_' + list[0] + '_' + list[2] + '_' + list[3]
+        for liglist in self.__ligands:
+            ligand_id = liglist[1] + '_' + liglist[0] + '_' + liglist[2] + '_' + liglist[3]
             text += '<tr>\n'
             text += '<td><input type="checkbox" name="ligand" value="' + ligand_id + '" />' + ' &nbsp; &nbsp; <input type="text" name="ligand_' \
-                  + ligand_id + '" size="5" value="" /> </td>\n'
-            for v in list:
+                + ligand_id + '" size="5" value="" /> </td>\n'
+            for v in liglist:
                 text += '<td> ' + v + ' </td>\n'
             #
             if ligand_id in self.__links:
                 text += '<td><a class="fltlft" href="/service/entity/link_view?sessionid=' + self._sessionId + '&pdbid=' + self._pdbId \
-                      + '&identifier=' + self._identifier + '&id=' + ligand_id + '" target="_blank"> ' + 'View Link' + ' </a></rd>\n'
+                    + '&identifier=' + self._identifier + '&id=' + ligand_id + '" target="_blank"> ' + 'View Link' + ' </a></rd>\n'
             else:
                 text += '<td> &nbsp; &nbsp; &nbsp; </td>\n'
             #
@@ -263,15 +264,15 @@ class StrSummaryDepict(DepictBase):
         text += '</tr>\n'
         count = 1
         for v in self.__groups:
-            group = str(count) + ',' +  v
+            group = str(count) + ',' + v
             text += '<tr>\n'
             label = 'GROUP_' + str(count)
             text += '<td><input type="checkbox" name="group" value="' + group + '" /> ' + label + ' </td>\n'
             text += '<td><input type="text" name="group_' + v + '" size="5" value="" /> </td>\n'
             #
             label = ''
-            list = v.split(',')
-            for val in list:
+            glist = v.split(',')
+            for val in glist:
                 if label:
                     label += ', '
                 list1 = val.split('_')
@@ -284,7 +285,7 @@ class StrSummaryDepict(DepictBase):
             text += '<td colspan="2">' + label + ' </td>\n'
             if v in self.__links:
                 text += '<td><a class="fltlft" href="/service/entity/link_view?sessionid=' + self._sessionId + '&pdbid=' + self._pdbId \
-                      + '&identifier=' + self._identifier + '&id=' + group + '" target="_blank"> ' + 'View Link' + ' </a></rd>\n'
+                    + '&identifier=' + self._identifier + '&id=' + group + '" target="_blank"> ' + 'View Link' + ' </a></rd>\n'
             else:
                 text += '<td> &nbsp; &nbsp; &nbsp; </td>\n'
             #

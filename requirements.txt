@@ -1,0 +1,12 @@
+wwpdb.apps.editormodule
+wwpdb.io
+wwpdb.utils.config
+wwpdb.utils.detach
+wwpdb.utils.dp
+wwpdb.utils.oe_util
+wwpdb.utils.session
+wwpdb.utils.wf
+
+
+# The next is for openeye code
+--extra-index-url https://pypi.anaconda.org/OpenEye/simple
