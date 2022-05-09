@@ -61,7 +61,7 @@ class UpdateFile(UpdateBase):
             ilist = id.split(',')
             dic = {}
             dic['instid'] = ilist[0]
-            if len(list) == 2:
+            if len(ilist) == 2:
                 dic['only'] = ilist[1]
             #
             has_value = False
