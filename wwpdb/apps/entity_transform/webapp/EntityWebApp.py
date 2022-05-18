@@ -32,6 +32,7 @@ from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.utils.wf.dbapi.WfTracking import WfTracking
 from wwpdb.apps.editormodule.depict.EditorDepict import EditorDepict
 from wwpdb.apps.editormodule.io.PdbxDataIo import PdbxDataIo
+from wwpdb.apps.editormodule.config.AccessTemplateFiles import get_template_file_path as get_editor_template_file_path
 from wwpdb.apps.entity_transform.depict.LinkDepict import LinkDepict
 from wwpdb.apps.entity_transform.depict.PrdSummaryDepict import PrdSummaryDepict
 from wwpdb.apps.entity_transform.depict.StrSummaryDepict import StrSummaryDepict
@@ -686,7 +687,9 @@ class EntityWebAppWorker(object):
             rC.setHtmlText(self.__processTemplate('prd/build_prd_failed_tmplt.html', myD))
             return rC
         #
-        templatePath = os.path.join(str(self.__reqObj.getValue('TopPath')), 'htdocs', 'editormodule')
+        # templatePath = os.path.join(str(self.__reqObj.getValue('TopPath')), 'htdocs', 'editormodule')
+        # Templates are stored in editor source tree
+        templatePath = get_editor_template_file_path()
         self.__reqObj.setValue('TemplatePath', templatePath)
         #
         # subdirectory = str(self.__reqObj.getValue('instanceid'))
