@@ -61,7 +61,7 @@ class PrdSummaryDepict(DepictBase):
         #
         if self.__splitPolymerResidueFlag:
             text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data + '&type=split" target="_blank"> ' \
-                + '<span style="color:red;">Split modified amino acid residue to standard amino acid residue + modification in polymer</span> </a></li>\n'
+                + '<span style="color:red;">Split modified residue to standard residue + modification in polymer</span> </a></li>\n'
         #
         if self.__combResidueFlag:
             text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data + '&type=merge" target="_blank"> ' \
