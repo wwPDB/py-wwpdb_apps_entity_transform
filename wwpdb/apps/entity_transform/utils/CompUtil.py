@@ -25,28 +25,27 @@ import os
 import sys
 
 from wwpdb.io.file.mmCIFUtil import mmCIFUtil
-from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
+from wwpdb.io.locator.ChemRefPathInfo import ChemRefPathInfo
 
 
 class CompUtil(object):
     """ Class responsible for checking Comp/PRD ID and finding chemical component file.
     """
     def __init__(self, reqObj=None, verbose=False, log=sys.stderr):  # pylint: disable=unused-argument
+        self.__verbose = verbose
+        self.__lfh = log
+
         self.__reqObj = reqObj
         self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
-        self.__cICommon = ConfigInfoAppCommon(self.__siteId)
-        #
-        self.__ccPath = self.__cICommon.get_site_cc_cvs_path()
-        self.__prdPath = self.__cICommon.get_site_prd_cvs_path()
-        self.__prdccPath = self.__cICommon.get_site_prdcc_cvs_path()
+        self.__crpi = ChemRefPathInfo(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
         #
 
     def checkInputId(self, id):  # pylint: disable=redefined-builtin
-        filePath = os.path.join(self.__ccPath, id[0], id, id + '.cif')
+        filePath = self.__crpi.getFilePath(id, "CC")
         if id[:4] == 'PRD_':
-            filePath = os.path.join(self.__prdPath, id[len(id) - 1], id + '.cif')
+            filePath = self.__crpi.getFilePath(id, "PRD")
         #
-        if not os.access(filePath, os.F_OK):
+        if filePath is None or not os.access(filePath, os.F_OK):
             return id + ' is not a valid Component or PRD ID.\n'
         #
         if id[:4] == 'PRD_':
@@ -61,13 +60,13 @@ class CompUtil(object):
     def getTemplateFile(self, id):  # pylint: disable=redefined-builtin
         if id[:4] == 'PRD_':
             ccid = id.replace('PRD', 'PRDCC')
-            filePath1 = os.path.join(self.__prdccPath, ccid[len(ccid) - 1], ccid + '.cif')
+            filePath1 = self.__crpi.getFilePath(ccid, "PRDCC")
             if os.access(filePath1, os.F_OK):
                 return filePath1
             #
             # check single ligand defined in PRD entry
             #
-            fileName = os.path.join(self.__prdPath, id[len(id) - 1], id + '.cif')
+            fileName = self.__crpi.getFilePath(id, "PRD")
             cf = mmCIFUtil(filePath=fileName)
             dlist = cf.GetValue('pdbx_reference_molecule')
             if not dlist:
@@ -77,13 +76,13 @@ class CompUtil(object):
                 return ''
             #
             ccid = dlist[0]['chem_comp_id'].strip().upper()
-            filePath1 = os.path.join(self.__ccPath, ccid[0], ccid, ccid + '.cif')
-            if os.access(filePath1, os.F_OK):
+            filePath1 = self.__crpi.getFilePath(ccid, "CC")
+            if filePath1 and os.access(filePath1, os.F_OK):
                 return filePath1
             #
         else:
-            filePath = os.path.join(self.__ccPath, id[0], id, id + '.cif')
-            if os.access(filePath, os.F_OK):
+            filePath = self.__crpi.getFilePath(id, "CC")
+            if filePath and os.access(filePath, os.F_OK):
                 return filePath
             #
         #
