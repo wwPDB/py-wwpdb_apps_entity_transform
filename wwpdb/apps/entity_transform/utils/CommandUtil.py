@@ -29,7 +29,7 @@ import sys
 import time
 import traceback
 
-from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon, ConfigInfoAppCc
 
 
 class CommandUtil(object):
@@ -43,6 +43,7 @@ class CommandUtil(object):
         self.__sessionPath = None
         self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
         self.__cICommon = ConfigInfoAppCommon(self.__siteId)
+        self.__cIcc = ConfigInfoAppCc(self.__siteId, verbose=verbose, log=log)
         #
 
     def setSessionPath(self, sessionPath):
@@ -170,8 +171,8 @@ class CommandUtil(object):
         """
         setting = " RCSBROOT=" + self.__cICommon.get_site_annot_tools_path() + "; export RCSBROOT; PDB2GLYCAN=" \
             + os.path.join(os.path.abspath(self.__cICommon.get_site_packages_path()), "pdb2glycan", "bin", "PDB2Glycan") + "; export PDB2GLYCAN; " \
-            + " COMP_PATH=" + self.__cICommon.get_site_cc_cvs_path() + "; export COMP_PATH; " \
-            + " PRD_PATH=" + self.__cICommon.get_site_prd_cvs_path() + "; export PRD_PATH; " \
+            + " COMP_PATH=" + self.__cIcc.get_site_cc_cvs_path() + "; export COMP_PATH; " \
+            + " PRD_PATH=" + self.__cIcc.get_site_prd_cvs_path() + "; export PRD_PATH; " \
             + " BINPATH=${RCSBROOT}/bin; export BINPATH; "
         #
         return setting
