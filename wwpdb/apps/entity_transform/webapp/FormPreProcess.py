@@ -94,7 +94,7 @@ class FormPreProcess(object):
         if not group_id:
             if ((self.__submitValue == 'Merge to polymer') or (self.__submitValue == 'Merge to ligand')) and \
                (len(self.__labelDic) == 1):
-                self.__errorMessage = 'Only one instance "' + self.__labelDic.keys()[0] + '" is selected.'
+                self.__errorMessage = 'Only one instance "' + list(self.__labelDic.keys())[0] + '" is selected.'
             #
             return
         #
@@ -109,7 +109,7 @@ class FormPreProcess(object):
             #
         #
         if ((self.__submitValue == 'Merge to polymer') or (self.__submitValue == 'Merge to ligand')):
-            for gid in sorted(dic.keys()):
+            for gid in sorted(list(dic.keys())):
                 if len(dic[gid]) == 1:
                     self.__errorMessage += 'For "User defind Group ' + gid + '", only one instance "' + dic[gid][0] + '" is selected.<br/>\n'
                 #
