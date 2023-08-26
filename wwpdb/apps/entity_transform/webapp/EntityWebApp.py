@@ -889,7 +889,7 @@ class EntityWebAppWorker(object):
         if fullFilePath:
             self.__reqObj.setReturnFormat(return_format="binary")
             rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
-            rC.setBinaryFile(fullFilePath, attachmentFlag=True, serveCompressed=False)
+            rC.setBinaryFile(fullFilePath, attachmentFlag=True, serveCompressed=True)
         elif fileId:
             self.__reqObj.setReturnFormat(return_format="binary")
             rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
@@ -901,7 +901,7 @@ class EntityWebAppWorker(object):
             if fileId.startswith('PRD_'):
                 RemoveEmptyCategories(filePath)
             #
-            rC.setBinaryFile(filePath, attachmentFlag=True, serveCompressed=False)
+            rC.setBinaryFile(filePath, attachmentFlag=True, serveCompressed=True)
         else:
             self.__reqObj.setReturnFormat(return_format="html")
             rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
