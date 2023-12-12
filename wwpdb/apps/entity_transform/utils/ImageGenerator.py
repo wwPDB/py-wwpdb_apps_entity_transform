@@ -111,5 +111,10 @@ class ImageGenerator(object):
         source = os.path.join(instancePath, het_id + '-500.gif')
         if os.access(source, os.F_OK):
             os.rename(source, os.path.join(instancePath, label + '.gif'))
+        else:
+            source = os.path.join(instancePath, het_id + '-500.png')
+            if os.access(source, os.F_OK):
+                os.rename(source, os.path.join(instancePath, label + '.png'))
+            #
         #
         self.__cmdUtil.removeSelectedFiles('__' + het_id + '__')

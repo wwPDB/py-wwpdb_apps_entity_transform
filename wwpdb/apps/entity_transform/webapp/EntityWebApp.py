@@ -659,7 +659,17 @@ class EntityWebAppWorker(object):
         myD['title'] = self.__title
         myD['instanceid'] = self.__reqObj.getValue('instanceid')
         myD['label'] = self.__reqObj.getValue('label')
-        myD['2dpath'] = os.path.join(self.__rltvSessionPath, 'search', myD['instanceid'], myD['label'] + '.gif')
+        imageRelPath = ""
+        imageAbsPath = os.path.join(self.__sessionPath, 'search', myD['instanceid'], myD['label'] + '.gif')
+        if os.access(imageAbsPath, os.F_OK):
+            imageRelPath = os.path.join(self.__rltvSessionPath, 'search', myD['instanceid'], myD['label'] + '.gif')
+        else:
+            imageAbsPath = os.path.join(self.__sessionPath, 'search', myD['instanceid'], myD['label'] + '.png')
+            if os.access(imageAbsPath, os.F_OK):
+                imageRelPath = os.path.join(self.__rltvSessionPath, 'search', myD['instanceid'], myD['label'] + '.png')
+            #
+        #
+        myD['2dpath'] = imageRelPath
         rC.setHtmlText(self.__processTemplate('summary_view/inst_2D_view_tmplt.html', myD))
         #
         return rC

@@ -164,12 +164,17 @@ class PrdSummaryDepict(DepictBase):
         #
         for d in datalist:
             imagePath = os.path.join(self._sessionPath, "search", d["id"], key + "-200.gif")
-            if not os.access(imagePath, os.F_OK):
-                continue
+            if os.access(imagePath, os.F_OK):
+                myD = {}
+                myD["2dpath"] = os.path.join(self._rltvSessionPath, "search", d["id"], key + "-200.gif")
+                return self._processTemplate("summary_view/ligand_2D_view_tmplt.html", myD)
             #
-            myD = {}
-            myD["2dpath"] = os.path.join(self._rltvSessionPath, "search", d["id"], key + "-200.gif")
-            return self._processTemplate("summary_view/ligand_2D_view_tmplt.html", myD)
+            imagePath = os.path.join(self._sessionPath, "search", d["id"], key + "-200.png")
+            if os.access(imagePath, os.F_OK):
+                myD = {}
+                myD["2dpath"] = os.path.join(self._rltvSessionPath, "search", d["id"], key + "-200.png")
+                return self._processTemplate("summary_view/ligand_2D_view_tmplt.html", myD)
+            #
         #
         return ""
 
@@ -178,7 +183,10 @@ class PrdSummaryDepict(DepictBase):
         """
         imagePath = os.path.join(self._sessionPath, 'search', instanceid, label + '.gif')
         if not os.access(imagePath, os.F_OK):
-            return False
+            imagePath = os.path.join(self._sessionPath, 'search', instanceid, label + '.png')
+            if not os.access(imagePath, os.F_OK):
+                return False
+            #
         #
         statinfo = os.stat(imagePath)
         if statinfo.st_size == 0:
