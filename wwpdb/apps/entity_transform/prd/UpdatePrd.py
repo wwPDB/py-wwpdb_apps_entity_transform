@@ -24,7 +24,7 @@ __version__ = "V0.07"
 import os
 import sys
 
-from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCc
 from wwpdb.apps.entity_transform.prd.ReadFormUtil import ReadFormUtil
 #
 
@@ -44,7 +44,7 @@ class UpdatePrd(object):
 
         # self.__rltvSessionPath = None
         self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
-        self.__cICommon = ConfigInfoAppCommon(self.__siteId)
+        self.__cIAppCc = ConfigInfoAppCc(self.__siteId)
         #
         self.__getSession()
         #
@@ -100,7 +100,7 @@ class UpdatePrd(object):
     def __getNewPrdID(self):
         """
         """
-        filePath = self.__cICommon.get_unused_prd_file()
+        filePath = self.__cIAppCc.get_unused_prd_file()
         with open(filePath, 'r') as f:
             data = f.read()
         #
@@ -109,7 +109,7 @@ class UpdatePrd(object):
         idx = 0
         for cid in idlist:
             idx += 1
-            prdfile = os.path.join(self.__cICommon.get_site_prd_cvs_path(), cid[len(cid) - 1], cid + '.cif')
+            prdfile = os.path.join(self.__cIAppCc.get_site_prd_cvs_path(), cid[len(cid) - 1], cid + '.cif')
             if not os.access(prdfile, os.F_OK):
                 newId = cid
                 break

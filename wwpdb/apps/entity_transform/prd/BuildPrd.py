@@ -25,7 +25,7 @@ import os
 import shutil
 import sys
 
-from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon, ConfigInfoAppCc
 from wwpdb.apps.entity_transform.prd.BuildPrdUtil import BuildPrdUtil
 #
 
@@ -44,6 +44,7 @@ class BuildPrd(object):
         self.__instanceId = str(self.__reqObj.getValue("instanceid"))
         self.__siteId = str(self.__reqObj.getValue("WWPDB_SITE_ID"))
         self.__cICommon = ConfigInfoAppCommon(self.__siteId)
+        self.__cIAppCc = ConfigInfoAppCc(self.__siteId)
         #
         self.__getSession()
         self.__instancePath = os.path.join(self.__sessionPath, "search", self.__instanceId)
@@ -101,7 +102,7 @@ class BuildPrd(object):
     def __getNewPrdID(self):
         """ Get new PRDID from unusedPrdId.lst file
         """
-        filePath = self.__cICommon.get_unused_prd_file()
+        filePath = self.__cIAppCc.get_unused_prd_file()
         f = open(filePath, "r")
         data = f.read()
         f.close()
@@ -110,7 +111,7 @@ class BuildPrd(object):
         idx = 0
         for prdid in idlist:
             idx += 1
-            prdfile = os.path.join(self.__cICommon.get_site_prd_cvs_path(), prdid[len(prdid) - 1], prdid + ".cif")
+            prdfile = os.path.join(self.__cIAppCc.get_site_prd_cvs_path(), prdid[len(prdid) - 1], prdid + ".cif")
             if not os.access(prdfile, os.F_OK):
                 self.__prdID = prdid
                 self.__prdccID = self.__prdID.replace("PRD", "PRDCC")
