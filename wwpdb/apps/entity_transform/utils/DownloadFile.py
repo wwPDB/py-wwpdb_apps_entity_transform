@@ -21,11 +21,10 @@ __email__ = "zfeng@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.07"
 
-import os
-import sys
+import os,sys,traceback
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
-
+from wwpdb.utils.dp.RcsbDpUtility import RcsbDpUtility
 
 class DownloadFile(object):
     """ Class responsible for download files.
@@ -99,6 +98,7 @@ class DownloadFile(object):
     def __updatePrdCcChemName(self):
         setting = " RCSBROOT=" + self.__cI.get("SITE_ANNOT_TOOLS_PATH") + "; export RCSBROOT; "
         #
+        dictCheckMsg = ""
         for prdid in self.__PrdIds:
             prdfile = os.path.join(self.__sessionPath, prdid + ".cif")
             if not os.access(prdfile, os.F_OK):
@@ -107,12 +107,44 @@ class DownloadFile(object):
             prdccid = prdid.replace("PRD", "PRDCC")
             prdccfile = os.path.join(self.__sessionPath, prdccid + ".cif")
             if not os.access(prdccfile, os.F_OK):
-                continue
+                cmd = setting + "${RCSBROOT}/bin/UpdatePrdCcName -prd " + prdfile + " -log " \
+                    + os.path.join(self.__sessionPath, prdid + "-name-update.log") + "  > " \
+                    + os.path.join(self.__sessionPath, prdid + "-name-update.clog") + " 2>&1; "
+            else:
+                cmd = setting + "${RCSBROOT}/bin/UpdatePrdCcName -prd " + prdfile + " -prdcc " + prdccfile + " -log " \
+                    + os.path.join(self.__sessionPath, prdid + "-name-update.log") + "  > " \
+                    + os.path.join(self.__sessionPath, prdid + "-name-update.clog") + " 2>&1; "
             #
-            cmd = setting + "${RCSBROOT}/bin/UpdatePrdCcName -prd " + prdfile + " -prdcc " + prdccfile + " -log " \
-                + os.path.join(self.__sessionPath, prdccid + "-name-update.log") + "  > " \
-                + os.path.join(self.__sessionPath, prdccid + "-name-update.clog") + " 2>&1; "
             os.system(cmd)
+            #
+            logfile = os.path.join(self.__sessionPath, "checking-" + prdid + ".log")
+            if os.access(logfile, os.F_OK):
+                os.remove(logfile)
+            #
+            try:
+                dp = RcsbDpUtility(tmpPath=self.__sessionPath, siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
+                dp.imp(prdfile)
+                dp.op("check-cif")
+                dp.exp(logfile)
+                if os.access(logfile, os.F_OK):
+                    ifh = open(logfile, "r")
+                    sIn = ifh.read()
+                    ifh.close()
+                    if not sIn:
+                        dictCheckMsg += "\n" + prdid + ": OK\n"
+                    else:
+                        dictCheckMsg += "\n" + prdid + ":\n" + sIn + "\n"
+                    #
+                #
+                dp.cleanup()
+            except:
+                traceback.print_exc(file=self.__lfh)
+            #
+        #
+        if not dictCheckMsg:
+            return dictCheckMsg
+        else:
+            return "<pre>\nCIF Dictionary Check:\n" + dictCheckMsg + "</pre>\n"
         #
 
     def ListFiles(self):
@@ -136,7 +168,7 @@ class DownloadFile(object):
         if not self.__PrdIds:
             return ""
         #
-        self.__updatePrdCcChemName()
+        dictCheckMsg = self.__updatePrdCcChemName()
         #
         content = ""
         for prd_id in self.__PrdIds:
@@ -147,4 +179,4 @@ class DownloadFile(object):
         myD = {}
         myD["sessionid"] = self.__sessionId
         myD["form_data"] = content
-        return self.__processTemplate("download/prd_cvs_tmplt.html", myD)
+        return dictCheckMsg + self.__processTemplate("download/prd_cvs_tmplt.html", myD)
