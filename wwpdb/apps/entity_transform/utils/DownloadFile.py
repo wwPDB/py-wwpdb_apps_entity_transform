@@ -21,10 +21,13 @@ __email__ = "zfeng@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.07"
 
-import os,sys,traceback
+import os
+import sys
+import traceback
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.utils.dp.RcsbDpUtility import RcsbDpUtility
+
 
 class DownloadFile(object):
     """ Class responsible for download files.
@@ -137,7 +140,7 @@ class DownloadFile(object):
                     #
                 #
                 dp.cleanup()
-            except:
+            except:  # noqa: E722 pylint: disable=bare-except
                 traceback.print_exc(file=self.__lfh)
             #
         #
