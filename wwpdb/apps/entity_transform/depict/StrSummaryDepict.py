@@ -228,7 +228,7 @@ class StrSummaryDepict(DepictBase):
         text = '<table>\n'
         text += '<tr>\n'
         text += '<th>Selection/<br/>User Defined Group ID<br/><input id="ligand_select_all" value="Select All" type="button" onClick="select_ligand(' \
-              + "'ligand_select_all'" + ');" /></th>\n'
+            + "'ligand_select_all'" + ');" /></th>\n'
         text += '<th>3 Letter Code</th>\n'
         text += '<th>Chain ID</th>\n'
         text += '<th>ResNum</th>\n'

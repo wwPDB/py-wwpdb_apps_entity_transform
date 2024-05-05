@@ -76,7 +76,7 @@ class CombineCoord(object):
         if self.__submitValue and (len(self.__instList) == 1) and self.__instList[0]:
             pickleFilePath = os.path.join(self.__instancePath, self.__instId + ".pkl")
             if os.access(pickleFilePath, os.F_OK):
-                 os.remove(pickleFilePath)
+                os.remove(pickleFilePath)
             #
             pickleD = {}
             pickleD['residue'] = self.__instList[0]
