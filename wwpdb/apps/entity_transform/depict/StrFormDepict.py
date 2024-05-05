@@ -106,9 +106,13 @@ class StrFormDepict(DepictBase):
 
     def __processSplitWithChopper(self, myD):
         ciffile = self._identifier + '_model_P1.cif'
-        combObj = CombineCoord(reqObj=self._reqObj, instList=[str(self._reqObj.getValue('split_polymer_residue'))], cifFile=ciffile,
-                               verbose=self._verbose, log=self._lfh)
-        combObj.processWithCopy()
+        residueId = str(self._reqObj.getValue('split_polymer_residue'))
+        if not residueId:
+            residueId = '_'.join([str(self._reqObj.getValue('chain_id')), str(self._reqObj.getValue('res_name')), \
+                                  str(self._reqObj.getValue('res_num')), str(self._reqObj.getValue('ins_code'))])
+        #
+        combObj = CombineCoord(reqObj=self._reqObj, instList=[residueId], cifFile=ciffile, verbose=self._verbose, log=self._lfh)
+        combObj.processWithCopy(submitValue=self.__submitValue)
         message = combObj.getMessage()
         #
         if message:

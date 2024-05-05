@@ -61,22 +61,25 @@ class PrdSummaryDepict(DepictBase):
         #
         if self.__splitPolymerResidueFlag:
             text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data + '&type=split" target="_blank"> ' \
-                + '<span style="color:red;">Split modified residue to standard residue + modification in polymer</span> </a></li>\n'
+                  + '<span style="color:red;">Split modified residue to standard residue + modification in polymer</span> </a></li>\n'
         #
         if self.__combResidueFlag:
             text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data + '&type=merge" target="_blank"> ' \
-                + '<span style="color:red;">Merge standard amino acid residue + modification to modified amino acid residue in polymer</span> </a></li>\n'
+                  + '<span style="color:red;">Merge standard amino acid residue + modification to modified amino acid residue in polymer</span> </a></li>\n'
         #
         if self.__matchResultFlag:
             text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data \
-                + '" target="_blank"> <span style="color:red;">View All Search Result(s)</span> </a></li>\n'
+                  + '" target="_blank"> <span style="color:red;">View All Search Result(s)</span> </a></li>\n'
         #
         if self.__graphmatchResultFlag:
             text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data \
-                + '&type=match" target="_blank"> Update Coordinate File with Match Result(s) </a></li>\n'
+                  + '&type=match" target="_blank"> Update Coordinate File with Match Result(s) </a></li>\n'
         #
         text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data \
-            + '&type=input" target="_blank"> Update Coordinate File with Input IDs </a></li>\n'
+              + '&type=input" target="_blank"> Update Coordinate File with Input IDs </a></li>\n'
+        #
+        text += '<li><a class="fltlft" href="/service/entity/result_view?' + input_data + '&type=split_with_input" target="_blank"> ' \
+              + 'Split non standard residue in polymer </a></li>\n'
         #
         text += '<li><a class="fltlft" href="/service/entity/download_file?' + input_data + '" target="_blank"> Download Files </a></li>\n'
         #

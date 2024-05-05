@@ -21,6 +21,12 @@ __email__ = "zfeng@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.07"
 
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle as pickle
+#
+
 import os
 import shutil
 import sys
@@ -45,6 +51,7 @@ class CombineCoord(object):
         self.__sessionPath = None
         self.__instId = ''
         self.__message = ''
+        self.__submitValue = ''
         #
         self.__getSession()
         self.__getInstId()
@@ -62,7 +69,22 @@ class CombineCoord(object):
         #
         self.__runUpdateScript()
 
-    def processWithCopy(self):
+    def processWithCopy(self, submitValue=''):
+        #
+        self.__submitValue = submitValue
+        #
+        if self.__submitValue and (len(self.__instList) == 1) and self.__instList[0]:
+            pickleFilePath = os.path.join(self.__instancePath, self.__instId + ".pkl")
+            if os.access(pickleFilePath, os.F_OK):
+                 os.remove(pickleFilePath)
+            #
+            pickleD = {}
+            pickleD['residue'] = self.__instList[0]
+            pickleD['submit'] = self.__submitValue
+            #
+            fb = open(pickleFilePath, "wb")
+            pickle.dump(pickleD, fb)
+            fb.close()
         #
         if not self.__runCopyScript():
             self.__runCombineScript()
@@ -121,7 +143,6 @@ class CombineCoord(object):
             source = os.path.join(self.__sessionPath, 'search', self.__instList[0], self.__instList[0] + ext)
             if not os.access(source, os.F_OK):
                 return False
-            #
             #
             shutil.copyfile(source, os.path.join(self.__instancePath, self.__instId + ext))
         #

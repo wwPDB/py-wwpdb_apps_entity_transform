@@ -793,7 +793,7 @@ class EntityWebAppWorker(object):
         rC = ResponseContent(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         #
         instId = str(self.__reqObj.getValue("instanceid"))
-        type = str(self.__reqObj.getValue("type"))  # pylint: disable=redefined-builtin
+        viewType = str(self.__reqObj.getValue("type"))  # pylint: disable=redefined-builtin
         resultObj = None
         if self.__summaryCifObj:
             resultObj = ResultDepict(reqObj=self.__reqObj, summaryCifObj=self.__summaryCifObj, verbose=self.__verbose, log=self.__lfh)
@@ -804,28 +804,30 @@ class EntityWebAppWorker(object):
         myD['title'] = self.__title
         myD['pdbid'] = self.__reqObj.getValue('pdbid')
         myD['label'] = self.__reqObj.getValue('label')
-        if type == 'match':
+        if viewType == 'match':
             if resultObj:
                 myD['form_data'] = resultObj.DoRenderUpdatePage()
             else:
                 myD['form_data'] = 'Can not find summary result file.'
             #
             rC.setHtmlText(self.__processTemplate('update_form/update_match_tmplt.html', myD))
-        elif type == 'input':
+        elif viewType == 'input':
             if resultObj:
                 myD['form_data'] = resultObj.DoRenderInputPage()
             else:
                 myD['form_data'] = 'Can not find summary result file.'
             #
             rC.setHtmlText(self.__processTemplate('update_form/update_user_input_tmplt.html', myD))
-        elif type == 'split':
+        elif viewType == 'split':
             if resultObj:
                 myD['form_data'] = resultObj.DoRenderSplitPage()
             else:
                 myD['form_data'] = '<tr><td colspan="6">Can not find summary result file.</td></tr>'
             #
             rC.setHtmlText(self.__processTemplate('summary_view/split_polymer_residue_tmplt.html', myD))
-        elif type == 'merge':
+        elif viewType == 'split_with_input':
+            rC.setHtmlText(self.__processTemplate('summary_view/split_polymer_residue_input_tmplt.html', myD))
+        elif viewType == 'merge':
             if resultObj:
                 myD['form_data'] = resultObj.DoRenderMergePage()
             else:

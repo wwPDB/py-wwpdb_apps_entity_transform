@@ -38,6 +38,9 @@ class FormPreProcess(object):
         self.__ligandList = self.__reqObj.getValueList('ligand')
         self.__groupList = self.__reqObj.getValueList('group')
         self.__splitPolymerResidue = str(self.__reqObj.getValue('split_polymer_residue'))
+        self.__chainID = str(self.__reqObj.getValue('chain_id'))
+        self.__resName = str(self.__reqObj.getValue('res_name'))
+        self.__resNum = str(self.__reqObj.getValue('res_num'))
         #
         self.__errorMessage = ''
         #
@@ -51,8 +54,13 @@ class FormPreProcess(object):
         # Check for non standard residue
         #
         if self.__submitValue == 'Split with chopper':
-            if not self.__splitPolymerResidue:
+            hasResidueSelected = False
+            if self.__splitPolymerResidue or (self.__chainID and self.__resName and self.__resNum):
+                hasResidueSelected = True
+            #
+            if not hasResidueSelected:
                 self.__errorMessage = 'No residue selected'
+            #
             return
         #
         # Check no values

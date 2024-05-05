@@ -21,6 +21,12 @@ __email__ = "zfeng@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.07"
 
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle as pickle
+#
+
 import os
 import sys
 
@@ -104,9 +110,28 @@ class ChopperHandler(object):
     def __searchOtherInstances(self):
         """ Get other instances list
         """
+        residue_id = ''
+        if self.__option == 'split_residue':
+            pickleFilePath = os.path.join(self.__instancePath, self.__instId + ".pkl")
+            if os.access(pickleFilePath, os.F_OK):
+                fb = open(pickleFilePath, "rb")
+                pickleD = pickle.load(fb)
+                fb.close()
+                #
+                if ('residue' in pickleD) and pickleD['residue']:
+                    residue_id = pickleD['residue']
+                #
+            #
+        #
+        self.__lfh.write("residue_id=%s\n" % residue_id)
         searchPath = os.path.join(self.__sessionPath, 'search')
         extraOptions = ' -summaryfile ' + self.__summaryFile + ' -searchpath ' + searchPath + ' -merge_cif ' + self.__instId \
             + '.merge.cif -chopper_cif ' + os.path.join(self.__instancePath, 'chopper_output.cif') + ' '
+        #
+        if residue_id != '':
+            identifier = str(self.__reqObj.getValue("identifier"))
+            ciffile = os.path.join(self.__sessionPath, identifier + '_model_P1.cif')
+            extraOptions += ' -residue_id ' + residue_id + ' -model_cif ' + ciffile
         #
         self.__cmdUtil.setSessionPath(self.__instancePath)
         self.__cmdUtil.runAnnotCmd('SearchAllInstances', '', self.__instId + '.all_instance_search.list',
