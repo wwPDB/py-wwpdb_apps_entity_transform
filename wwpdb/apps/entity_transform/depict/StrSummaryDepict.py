@@ -67,7 +67,7 @@ class StrSummaryDepict(DepictBase):
             text += '<li><a class="fltlft" href="/service/entity/download_file?struct=yes&sessionid=' + self._sessionId + "&identifier=" \
                 + self._identifier + "&pdbid=" + self._pdbId + '" target="_blank"> Download Files </a></li>\n'
         #
-        text += '<li><a class="fltlft" href="https://rcsbpdb.atlassian.net/wiki/spaces/WT/pages/2375385215/Protein+Modifications+Annotation+Documentation" target="_blank"> View PCM/PTM Documentation </a></li>\n'
+        text += '<li><a class="fltlft" href="https://rcsbpdb.atlassian.net/wiki/spaces/WT/pages/2375385215/Protein+Modifications+Annotation+Documentation" target="_blank"> View PCM/PTM Documentation </a></li>\n'  # noqa: E501
         #
         text += "</ul>\n"
         return text
