@@ -2,6 +2,8 @@
 # File:  ProcessPrdSummary.py
 # Date:  15-Feb-2019
 # Updates:
+#  25-Aug-2024  zf   add getPcmLabelList()
+#                    change the default 'red' color code to different color codes read from '_pdbx_non_polymer_info.highlight_with_color' item
 ##
 """
 Process PRD search results and generate images.
@@ -55,6 +57,7 @@ class ProcessPrdSummary(object):
         self.__graphmatchResultFlag = False
         self.__combResidueFlag = False
         self.__splitPolymerResidueFlag = False
+        self.__pcmLabelList = []
 
     def setTopDirPath(self, topPath):
         self.__topDirPath = topPath
@@ -73,6 +76,10 @@ class ProcessPrdSummary(object):
         self.__readSplitMergePolymerResidueResult()
         if imageFlag:
             self.__generateImage()
+        #
+        val = self.__cifObj.getPcmLabel() 
+        if val:
+            self.__pcmLabelList = val.split(",")
         #
         if self.__action_required_data:
             dic = {}
@@ -111,6 +118,9 @@ class ProcessPrdSummary(object):
 
     def getSplitPolymerResidueFlag(self):
         return self.__splitPolymerResidueFlag
+
+    def getPcmLabelList(self):
+        return self.__pcmLabelList
 
     def __readEntityData(self):
         elist = self.__cifObj.getValueList("pdbx_entity_info")
@@ -273,14 +283,14 @@ class ProcessPrdSummary(object):
             return
         #
         nonpolymermap = {}
-        colorList = []
+        colorMap = {}
         for d in elist:
             if ('instance_id' not in d) or ('residue_id' not in d) or ('linkage_info' not in d):
                 continue
             #
-            if ("highlight_with_color" in d) and (d["highlight_with_color"] == "Y"):
-                if d['residue_id'] not in colorList:
-                    colorList.append(d['residue_id'])
+            if ("highlight_with_color" in d) and d["highlight_with_color"]:
+                if d['residue_id'] not in colorMap:
+                    colorMap[d['residue_id']] = d["highlight_with_color"]
                 #
             #
             if d['linkage_info'] == 'linked':
@@ -308,8 +318,8 @@ class ProcessPrdSummary(object):
         for k in keylist:
             v = nonpolymermap[k]
             count = len(v)
-            if k in colorList:
-                text = '<span style="color:red;">' + k + "</span> (" + str(count) + " "
+            if k in colorMap:
+                text = '<span style="color:' + colorMap[k] + ';">' + k + "</span> (" + str(count) + " "
             else:
                 text = k + ' (' + str(count) + ' '
             #

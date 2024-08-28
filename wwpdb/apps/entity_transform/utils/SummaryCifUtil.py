@@ -2,6 +2,7 @@
 # File:  SummaryCifUtil.py
 # Date:  17-Oct-2012
 # Updates:
+#  25-Aug-2024  zf   add getPcmLabel() method to read PCM information from '_entry.pcm_label' item
 ##
 """
 Read and handle search summary cif file.
@@ -69,6 +70,9 @@ class SummaryCifUtil(object):
 
     def getFileId(self):
         return self.__cifObj.GetSingleValue('entry', 'file')
+
+    def getPcmLabel(self):
+        return self.__cifObj.GetSingleValue('entry', 'pcm_label')
 
     def getTitle(self):
         return self.__cifObj.GetSingleValue('struct', 'title')

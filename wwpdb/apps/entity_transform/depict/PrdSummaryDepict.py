@@ -2,6 +2,10 @@
 # File:  PrdSummaryDepict.py
 # Date:  09-Oct-2012
 # Updates:
+# 25-Aug-2024  zf   add following warning message:
+#                       Unknown CCD ID covalently linked to a polymer residue, or in the polymer sequence
+#                       Existing CCD ID without PCM data covalently linked to a polymer residue, or in the polymer sequence
+#                       CCD ID that should be not used as PCM/PTM observed  covalently linked to a polymer residue, or in the polymer sequence
 ##
 """
 Create HTML depiction for PRD search summary.
@@ -50,6 +54,7 @@ class PrdSummaryDepict(DepictBase):
         self.__graphmatchResultFlag = prdUtil.getGraphmatchResultFlag()
         self.__combResidueFlag = prdUtil.getCombResidueFlag()
         self.__splitPolymerResidueFlag = prdUtil.getSplitPolymerResidueFlag()
+        self.__pcmLabelList = prdUtil.getPcmLabelList()
         #
         input_data = 'sessionid=' + self._sessionId + '&identifier=' + self._identifier + '&pdbid=' + self._pdbId
         #
@@ -84,6 +89,15 @@ class PrdSummaryDepict(DepictBase):
         text += '<li><a class="fltlft" href="/service/entity/download_file?' + input_data + '" target="_blank"> Download Files </a></li>\n'
         #
         text += '<li><a class="fltlft" href="https://rcsbpdb.atlassian.net/wiki/spaces/WT/pages/2375385215/Protein+Modifications+Annotation+Documentation" target="_blank"> View PCM/PTM Documentation </a></li>\n'  # noqa: E501
+        #
+        if "1" in self.__pcmLabelList:
+            text += '<li><span style="color:orange" class="fltlft">Unknown CCD ID covalently linked to a polymer residue, or in the polymer sequence</span></li>\n'
+        #
+        if "2" in self.__pcmLabelList:
+            text += '<li><span style="color:orange" class="fltlft">Existing CCD ID without PCM data covalently linked to a polymer residue, or in the polymer sequence</span></li>\n'
+        #
+        if "3" in self.__pcmLabelList:
+            text += '<li><span style="color:red" class="fltlft">CCD ID that should be not used as PCM/PTM observed  covalently linked to a polymer residue, or in the polymer sequence</span></li>\n'
         #
         text += '</ul>\n'
         #
