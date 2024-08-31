@@ -77,7 +77,7 @@ class ProcessPrdSummary(object):
         if imageFlag:
             self.__generateImage()
         #
-        val = self.__cifObj.getPcmLabel() 
+        val = self.__cifObj.getPcmLabel()
         if val:
             self.__pcmLabelList = val.split(",")
         #
