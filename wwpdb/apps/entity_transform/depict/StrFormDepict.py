@@ -232,8 +232,8 @@ class StrFormDepict(DepictBase):
         instId = combObj.getInstId()
         myD['instanceid'] = instId
         myD['comp'] = os.path.join(self._rltvSessionPath, instId, instId + '.comp.cif')
-        myD['button'] = self._processTemplate('chopper/button_tmplt.html', {'value' : 'Merge to Ligand', 'option' : 'merge'}) \
-            + self._processTemplate('chopper/button_tmplt.html', {'value' : 'Split to Polymer', 'option' : 'split'})
+        myD['button'] = self._processTemplate('chopper/button_tmplt.html', {'value' : 'Merge', 'option' : 'merge'}) \
+            + self._processTemplate('chopper/button_tmplt.html', {'value' : 'Split', 'option' : 'split'})
         myD['processing_site'] = self.__cI.get('SITE_NAME').upper()
         return 'chopper/chopper_tmplt.html', myD
 
