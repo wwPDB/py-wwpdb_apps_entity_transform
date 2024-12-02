@@ -108,6 +108,29 @@ class StrFormDepict(DepictBase):
         ciffile = self._identifier + '_model_P1.cif'
         residueId = str(self._reqObj.getValue('split_polymer_residue'))
         if not residueId:
+            message = ''
+            for checkValTup in ( ( 'PDB Chain ID', 'chain_id' ), ( 'Residue Name', 'res_name' ), ( 'Residue Number', 'res_num' ), \
+                                 ( 'Insert. Code', 'ins_code' ) ):
+                val = str(self._reqObj.getValue(checkValTup[1]))
+                if val == '':
+                    if checkValTup[1] != 'ins_code':
+                        message += ' Missing "' + checkValTup[0] + '" value.'
+                    #
+                    continue
+                #
+                if checkValTup[1] == 'res_num':
+                    ret = self.__is_integer(val)
+                else:
+                    ret = val.isalnum()
+                #
+                if not ret:
+                    message += ' Invalid value "' + val + '" for "' + checkValTup[0] + '".'
+                #
+            #
+            if message:
+                myD['data'] = message
+                return 'update_form/update_result_tmplt.html', myD
+            #
             residueId = '_'.join([str(self._reqObj.getValue('chain_id')), str(self._reqObj.getValue('res_name')),
                                   str(self._reqObj.getValue('res_num')), str(self._reqObj.getValue('ins_code'))])
         #
@@ -222,7 +245,7 @@ class StrFormDepict(DepictBase):
         self.__getList(self.__groupList, instlist)
         ciffile = self._identifier + '_model_P1.cif'
         combObj = CombineCoord(reqObj=self._reqObj, instList=instlist, cifFile=ciffile, verbose=self._verbose, log=self._lfh)
-        combObj.processWithCombine()
+        combObj.processWithCombine(submitValue=self.__submitValue)
         message = combObj.getMessage()
         #
         if message:
@@ -458,3 +481,11 @@ class StrFormDepict(DepictBase):
             #
         #
         groups.append(val)
+
+    def __is_integer(self, s):
+        try:
+            int(s)
+            return True
+        except ValueError:
+            return False
+        #

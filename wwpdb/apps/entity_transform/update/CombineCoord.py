@@ -60,9 +60,9 @@ class CombineCoord(object):
         #
         self.__cmdUtil = CommandUtil(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
 
-    def processWithCombine(self):
+    def processWithCombine(self, submitValue=''):
         #
-        self.__runCombineScript()
+        self.__runCombineScript(submitValue=submitValue)
         #
         if self.__message:
             return
@@ -87,7 +87,7 @@ class CombineCoord(object):
             fb.close()
         #
         if not self.__runCopyScript():
-            self.__runCombineScript()
+            self.__runCombineScript(submitValue=submitValue)
         #
         if self.__message:
             return
@@ -112,7 +112,7 @@ class CombineCoord(object):
             count += 1
         #
 
-    def __runCombineScript(self):
+    def __runCombineScript(self, submitValue=''):
         if not self.__instList or not self.__instList[0]:
             self.__message = 'No instance found.'
             return
@@ -127,7 +127,11 @@ class CombineCoord(object):
         #
         logfile = os.path.join(self.__instancePath, 'run-comb.log')
         if not os.access(logfile, os.F_OK):
-            self.__message = 'Option "Merge to polymer" failed. No log file found.'
+            if submitValue:
+                self.__message = 'Option "' + submitValue + '" failed. No log file found.'
+            else:
+                self.__message = 'Option "Merge to polymer" failed. No log file found.'
+            #
             return
         #
         error = GetLogMessage(logfile)
