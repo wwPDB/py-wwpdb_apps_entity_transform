@@ -109,8 +109,10 @@ class StrFormDepict(DepictBase):
         residueId = str(self._reqObj.getValue('split_polymer_residue'))
         if not residueId:
             message = ''
-            for checkValTup in ( ( 'PDB Chain ID', 'chain_id' ), ( 'Residue Name', 'res_name' ), ( 'Residue Number', 'res_num' ), \
-                                 ( 'Insert. Code', 'ins_code' ) ):
+            for checkValTup in (('PDB Chain ID', 'chain_id'),
+                                ('Residue Name', 'res_name'),
+                                ('Residue Number', 'res_num'),
+                                ('Insert. Code', 'ins_code')):
                 val = str(self._reqObj.getValue(checkValTup[1]))
                 if val == '':
                     if checkValTup[1] != 'ins_code':
