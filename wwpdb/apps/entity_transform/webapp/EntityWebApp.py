@@ -1,7 +1,10 @@
 ##
 # File:  EntityWebApp.py
 # Date:  02-Oct-2012
+#
 # Updates:
+#  09-Dec-2024  zf   get ext_pdb_id from '_database_2.pdbx_database_accession' field
+#
 ##
 """
 Entity fixer web request and response processing modules.
@@ -1226,6 +1229,9 @@ class EntityWebAppWorker(object):
                 dbcode = d['database_code'].upper().strip()
                 if dbname == 'PDB':
                     self.__pdbId = dbcode
+                    if ('pdbx_database_accession' in d) and d['pdbx_database_accession']:
+                        self.__pdbId = d['pdbx_database_accession'].strip()
+                    #
                     self.__lfh.write("+EntityWebApp.__getInputFileInfo() pdbId %s\n" % self.__pdbId)
                 elif dbname == 'WWPDB':
                     self.__identifier = dbcode
