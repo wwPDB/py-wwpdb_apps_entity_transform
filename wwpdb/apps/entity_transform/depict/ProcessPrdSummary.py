@@ -493,7 +493,7 @@ class ProcessPrdSummary(object):
                 if d['linkage_info'] == 'linked':
                     # For the time being, only get self.__combResidueFlag value from 'pdbx_match_result' category,
                     # not from 'pdbx_merge_polymer_residue_info' category.
-                    #self.__combResidueFlag = True
+                    # self.__combResidueFlag = True
                     self.__image_data.append((d['merge_id'], d['merge_id'].upper()))
                 #
             #
