@@ -831,8 +831,12 @@ class EntityWebAppWorker(object):
         elif viewType == 'split_with_input':
             rC.setHtmlText(self.__processTemplate('summary_view/split_polymer_residue_input_tmplt.html', myD))
         elif viewType == 'merge':
+            myD['no_match_instruction'] = ''
             if resultObj:
-                myD['form_data'] = resultObj.DoRenderMergePage()
+                myD['form_data'],no_match_flag = resultObj.DoRenderMergePage()
+                if no_match_flag:
+                    myD['no_match_instruction'] = self.__processTemplate('update_form/update_merge_polymer_residue_no_match_instruction_tmplt.html', {})
+                #
             else:
                 myD['form_data'] = '<tr><td colspan="5">Can not find summary result file.</td></tr>'
             #

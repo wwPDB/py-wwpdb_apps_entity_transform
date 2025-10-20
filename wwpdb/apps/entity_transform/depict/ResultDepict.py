@@ -126,13 +126,19 @@ class ResultDepict(DepictBase):
 
     def DoRenderMergePage(self):
         form_data = ''
+        no_match_flag = False
         count = 0
         allInstIds = self._cifObj.getAllInstIds()
         for instId in allInstIds:
             if not instId.startswith('merge'):
                 continue
             #
+            tr_class = ''
+            if count % 2:
+                tr_class = 'class="odd"'
+            #
             myD = {}
+            myD['tr_class'] = tr_class
             myD['sessionid'] = self._sessionId
             myD['identifier'] = self._identifier
             myD['pdbid'] = self._pdbId
@@ -153,7 +159,7 @@ class ResultDepict(DepictBase):
             form_data += self._processTemplate('update_form/update_merge_polymer_residue_instance_header_tmplt.html', myD)
             #
             if instId in self.__matchResults and 'graph' in self.__matchResults[instId]:
-                form_data += self._processTemplate('update_form/update_merge_polymer_residue_match_header_tmplt.html', {})
+                form_data += self._processTemplate('update_form/update_merge_polymer_residue_match_header_tmplt.html', myD)
                 for d in self.__matchResults[instId]['graph']:
                     myD['match_id'] = 'match_id_' + str(count)
                     myD['selection'] = instId + ',' + d['ccid']
@@ -162,11 +168,14 @@ class ResultDepict(DepictBase):
                     myD['value'] = d['value']
                     form_data += self._processTemplate('update_form/update_merge_polymer_residue_match_row_tmplt.html', myD)
                 #
+            else:
+                form_data += self._processTemplate('update_form/update_merge_polymer_residue_no_match_text_tmplt.html', myD)
+                no_match_flag = True
             #
             count += 1
         #
         form_data += '<input type="hidden" name="count" value="' + str(count) + '" />\n'
-        return form_data
+        return form_data,no_match_flag
 
     def __processMatch(self, instId):
         if instId not in self.__matchResults:

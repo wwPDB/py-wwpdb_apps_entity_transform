@@ -136,8 +136,21 @@ class UpdateFile(UpdateBase):
             return 'Can not find chemical component file for ID ' + dic['inputid'] + '\n'
         #
         instancePath = os.path.join(self._sessionPath, 'search', dic['instid'])
-        option = ' -template ' + templateFile + ' -cif ' + os.path.join(instancePath, dic['instid'] + '.orig.cif') \
-            + ' -path ' + os.path.join(self._sessionPath, 'search') + ' -idlist ' + dic['instid'] + ' '
+        #
+        origCifPath = os.path.join(instancePath, dic['instid'] + '.orig.cif')
+        mergeCifPath = os.path.join(instancePath, dic['instid'] + '.merge.cif')
+        compCifPath = os.path.join(instancePath, dic['instid'] + '.comp.cif')
+        origCompPath = os.path.join(instancePath, dic['instid'] + '.comp.orig.cif')
+        #
+        option = ''
+        if os.access(mergeCifPath, os.F_OK) and os.access(compCifPath, os.F_OK) and os.access(origCompPath, os.F_OK):
+             option = ' -template ' + templateFile + ' -cif ' + mergeCifPath + ' -comp_cif ' + compCifPath + ' -orig_comp_cif ' + origCompPath \
+                    + ' -path ' + os.path.join(self._sessionPath, 'search') + ' -idlist ' + dic['instid'] + ' '
+        elif os.access(origCifPath, os.F_OK):
+             option = ' -template ' + templateFile + ' -cif ' + origCifPath + ' -path ' + os.path.join(self._sessionPath, 'search') \
+                    + ' -idlist ' + dic['instid'] + ' '
+        else:
+            return 'Can not find ' + origCifPath + ' file\n'
         #
         if dic['inputid'][:4] == 'PRD_':
             option += ' -prd_id ' + dic['inputid'] + ' '
@@ -149,7 +162,11 @@ class UpdateFile(UpdateBase):
         self._cmdUtil.runAnnotCmd('MatchInstanceWithTemplate', '', '', 'run-match.log', 'run-match.clog', option)
         error = GetLogMessage(os.path.join(instancePath, 'run-match.log'))
         if error:
-            return error
+            instanceId = dic['instid']
+            if instanceId.startswith("merge_"):
+                instanceId = instanceId.upper()
+            #
+            return 'Instance ID "' + instanceId + '": ' + error
         #
         dic['hitid'] = dic['inputid']
         dic['fileid'] = 'TEMP'
