@@ -144,11 +144,11 @@ class UpdateFile(UpdateBase):
         #
         option = ''
         if os.access(mergeCifPath, os.F_OK) and os.access(compCifPath, os.F_OK) and os.access(origCompPath, os.F_OK):
-             option = ' -template ' + templateFile + ' -cif ' + mergeCifPath + ' -comp_cif ' + compCifPath + ' -orig_comp_cif ' + origCompPath \
-                    + ' -path ' + os.path.join(self._sessionPath, 'search') + ' -idlist ' + dic['instid'] + ' '
+            option = ' -template ' + templateFile + ' -cif ' + mergeCifPath + ' -comp_cif ' + compCifPath + ' -orig_comp_cif ' + origCompPath \
+                + ' -path ' + os.path.join(self._sessionPath, 'search') + ' -idlist ' + dic['instid'] + ' '
         elif os.access(origCifPath, os.F_OK):
-             option = ' -template ' + templateFile + ' -cif ' + origCifPath + ' -path ' + os.path.join(self._sessionPath, 'search') \
-                    + ' -idlist ' + dic['instid'] + ' '
+            option = ' -template ' + templateFile + ' -cif ' + origCifPath + ' -path ' + os.path.join(self._sessionPath, 'search') \
+                + ' -idlist ' + dic['instid'] + ' '
         else:
             return 'Can not find ' + origCifPath + ' file\n'
         #

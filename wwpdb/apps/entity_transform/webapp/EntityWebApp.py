@@ -833,7 +833,7 @@ class EntityWebAppWorker(object):
         elif viewType == 'merge':
             myD['no_match_instruction'] = ''
             if resultObj:
-                myD['form_data'],no_match_flag = resultObj.DoRenderMergePage()
+                myD['form_data'], no_match_flag = resultObj.DoRenderMergePage()
                 if no_match_flag:
                     myD['no_match_instruction'] = self.__processTemplate('update_form/update_merge_polymer_residue_no_match_instruction_tmplt.html', {})
                 #

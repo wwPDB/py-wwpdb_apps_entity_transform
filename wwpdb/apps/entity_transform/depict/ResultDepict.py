@@ -175,7 +175,7 @@ class ResultDepict(DepictBase):
             count += 1
         #
         form_data += '<input type="hidden" name="count" value="' + str(count) + '" />\n'
-        return form_data,no_match_flag
+        return form_data, no_match_flag
 
     def __processMatch(self, instId):
         if instId not in self.__matchResults:
