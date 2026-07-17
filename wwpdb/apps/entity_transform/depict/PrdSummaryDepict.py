@@ -92,13 +92,13 @@ class PrdSummaryDepict(DepictBase):
         text += '<li><a class="fltlft" href="https://rcsbpdb.atlassian.net/wiki/spaces/WT/pages/2375385215/Protein+Modifications+Annotation+Documentation" target="_blank"> View PCM/PTM Documentation </a></li>\n'  # noqa: E501
         #
         if "1" in self.__pcmLabelList:
-            text += '<li><span style="color:orange" class="fltlft">Unknown CCD ID covalently linked to a polymer residue, or in the polymer sequence</span></li>\n'
+            text += '<li><span style="color:orange" class="fltlft">Unknown CCD ID covalently linked to/metal coordinated with a polymer residue, or in the polymer sequence</span></li>\n'
         #
         if "2" in self.__pcmLabelList:
-            text += '<li><span style="color:orange" class="fltlft">Existing CCD ID without PCM data covalently linked to a polymer residue, or in the polymer sequence</span></li>\n'
+            text += '<li><span style="color:orange" class="fltlft">Existing CCD ID without PCM data covalently linked to/metal coordinated with a polymer residue, or in the polymer sequence</span></li>\n'
         #
         if "3" in self.__pcmLabelList:
-            text += '<li><span style="color:red" class="fltlft">CCD ID that should be not used as PCM/PTM observed  covalently linked to a polymer residue, or in the polymer sequence</span></li>\n'  # noqa: E501
+            text += '<li><span style="color:red" class="fltlft">CCD ID that should be not used as PCM/PTM observed  covalently linked to/metal coordinated with a polymer residue, or in the polymer sequence</span></li>\n'  # noqa: E501
         #
         text += '</ul>\n'
         #
