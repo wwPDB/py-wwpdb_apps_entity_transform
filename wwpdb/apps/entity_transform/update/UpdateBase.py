@@ -195,6 +195,12 @@ class UpdateBase(object):
                     continue
                 #
                 group.append(residue_name)
+            else:
+                polymer_type = str(self._reqObj.getValue('group_id_polymer_type_' + id))
+                if polymer_type:
+                    polymer_type = polymer_type.replace(' ', 'Space').replace('/', 'Slash').replace('(', 'OpenBracket').replace(')', 'CloseBracket')
+                    group.append('type:' + polymer_type)
+                #
             #
             for i in order_list:
                 group.append(int_order_dic[i][0])

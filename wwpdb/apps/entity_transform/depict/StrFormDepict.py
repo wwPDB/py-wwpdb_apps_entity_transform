@@ -27,7 +27,9 @@ import sys
 from wwpdb.apps.entity_transform.depict.DepictBase import DepictBase
 from wwpdb.apps.entity_transform.depict.SeqDepict import SeqDepict
 from wwpdb.apps.entity_transform.update.CombineCoord import CombineCoord
+from wwpdb.apps.entity_transform.utils.CommandUtil import CommandUtil
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 #
 
 
@@ -48,6 +50,7 @@ class StrFormDepict(DepictBase):
         self.__entity_info = {}
         self.__entity_chain_mapping = {}
         self.__chain_entity_mapping = {}
+        self.__entityPolyTypeList = []
 
     def LaunchFixer(self):
         template = ''
@@ -338,6 +341,26 @@ class StrFormDepict(DepictBase):
         #
 
     def __processMergeGroup(self, group, group_id, polymer=True):
+        if polymer and (len(self.__entityPolyTypeList) == 0):
+            cICommon = ConfigInfoAppCommon(self.__siteId)
+            dictRoot = cICommon.get_mmcif_dict_path()
+            dictionary_v5 = cICommon.get_mmcif_archive_next_dict_filename() + '.odb'
+            #
+            cmdUtil = CommandUtil(reqObj=self._reqObj, verbose=self._verbose, log=self._lfh)
+            rootName = cmdUtil.getRootFileName('Enum')
+            cmdUtil.runAnnotCmd('GetEnumValue', os.path.join(dictRoot, dictionary_v5), rootName + '.txt', '', rootName + '.log', ' -item _entity_poly.type')
+            #   
+            filepath = os.path.join(self._sessionPath, rootName + '.txt')
+            if os.access(filepath, os.F_OK):
+                f = open(filepath, 'r')
+                data = f.read()
+                f.close()
+                #   
+                self.__entityPolyTypeList = data.split('\n')
+                self.__entityPolyTypeList.sort()
+                self.__entityPolyTypeList.remove('other')
+            #
+        #
         enum = []
         for i in range(0, len(group)):
             enum.append(str(i + 1))
@@ -367,8 +390,13 @@ class StrFormDepict(DepictBase):
             #
             count += 1
         #
-        if not polymer:
-            text += ' &nbsp; &nbsp; New Residue Name: &nbsp; &nbsp; <input type="text" size="10" name="group_id_' + group_id + '" value="' + new_ligand_id + '" />'
+        text += ' <br/>'
+        if polymer:
+            if len(self.__entityPolyTypeList) > 0:
+                text += 'Select polymer type: &nbsp; &nbsp; ' + self.__selectTag('group_id_polymer_type_' + group_id, '', self.__entityPolyTypeList)
+            #
+        else:
+            text += 'New Residue Name: &nbsp; &nbsp; <input type="text" size="10" name="group_id_' + group_id + '" value="' + new_ligand_id + '" />'
         #
         text += ' <br/>\n'
         return text

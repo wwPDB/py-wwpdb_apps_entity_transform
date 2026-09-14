@@ -290,8 +290,7 @@ class DepictPrd(object):
         #
         cmdUtil = CommandUtil(reqObj=self.__reqObj, verbose=self.__verbose, log=self.__lfh)
         rootName = cmdUtil.getRootFileName('Enum')
-        cmdUtil.runAnnotCmd('GetEnumValue', os.path.join(self.__dictRoot, self.__dictionary_v5), rootName + '.txt',
-                            rootName + '.log', '', ' -item ' + item)
+        cmdUtil.runAnnotCmd('GetEnumValue', os.path.join(self.__dictRoot, self.__dictionary_v5), rootName + '.txt', '', rootName + '.log', ' -item ' + item)
         #
         filepath = os.path.join(self.__sessionPath, rootName + '.txt')
         if not os.access(filepath, os.F_OK):
