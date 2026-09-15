@@ -349,13 +349,13 @@ class StrFormDepict(DepictBase):
             cmdUtil = CommandUtil(reqObj=self._reqObj, verbose=self._verbose, log=self._lfh)
             rootName = cmdUtil.getRootFileName('Enum')
             cmdUtil.runAnnotCmd('GetEnumValue', os.path.join(dictRoot, dictionary_v5), rootName + '.txt', '', rootName + '.log', ' -item _entity_poly.type')
-            #   
+            #
             filepath = os.path.join(self._sessionPath, rootName + '.txt')
             if os.access(filepath, os.F_OK):
                 f = open(filepath, 'r')
                 data = f.read()
                 f.close()
-                #   
+                #
                 self.__entityPolyTypeList = data.split('\n')
                 self.__entityPolyTypeList.sort()
                 self.__entityPolyTypeList.remove('other')
